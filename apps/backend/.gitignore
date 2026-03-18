@@ -1,0 +1,5 @@
+.venv/
+.packages/
+.pip-cache/
+.tmp/
+__pycache__/

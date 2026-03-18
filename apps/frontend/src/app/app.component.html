@@ -1,0 +1,21 @@
+<main class="shell">
+  <header class="hero">
+    <p class="eyebrow">Local-first AI workbench</p>
+    <h1>{{ title }}</h1>
+    <p class="intro">
+      Minimal Angular shell for the MVP. The first slice focuses on document ingest,
+      scoped storage, and source-grounded answers without retrieval or model integrations yet.
+    </p>
+  </header>
+
+  <nav class="top-nav" aria-label="Primary">
+    <a routerLink="/">Overview</a>
+    <a routerLink="/inbox">Inbox / Capture</a>
+    <a routerLink="/documents">Documents</a>
+    <a routerLink="/ask">Ask Copilot</a>
+    <a routerLink="/scope-manager">Scope Manager</a>
+    <a routerLink="/settings">Settings</a>
+  </nav>
+
+  <router-outlet></router-outlet>
+</main>
