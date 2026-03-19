@@ -22,8 +22,8 @@ import { Component } from '@angular/core';
         <p>Postgres is prepared as the metadata store while backend persistence stays intentionally thin.</p>
       </article>
       <article class="card">
-        <h3>Retrieve Later</h3>
-        <p>Chunking, embeddings, vector storage, and answers are reserved for later phases.</p>
+        <h3>Retrieve</h3>
+        <p>Scoped chunk retrieval is now available, while answer synthesis stays out of scope for now.</p>
       </article>
     </section>
   `,

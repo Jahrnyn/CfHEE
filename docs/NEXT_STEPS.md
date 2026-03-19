@@ -2,28 +2,28 @@
 
 ## Recommended next development step
 
-Implement the first scoped retrieval vertical slice.
+Implement the first source-grounded answer slice on top of retrieved chunks.
 
 Why this is next:
 
-- the project already stores documents, chunks, and Chroma vectors
-- `Ask Copilot` is still an explicit placeholder
-- retrieval is the next core MVP capability after ingestion and listing
+- the project now supports scoped retrieval from the `Ask Copilot` page
+- the next missing MVP capability is turning retrieved context into a source-grounded response
+- retrieval-only results are already traceable to chunks and documents
 
 ## Suggested narrow scope
 
-1. Add a backend retrieval service that queries Chroma with explicit scope filters.
-2. Add a minimal `POST /ask` or `POST /retrieval/query` endpoint.
-3. Return matching chunks with source metadata only at first.
-4. Wire the `Ask Copilot` page to submit a scoped query and render retrieved chunks.
+1. Add a minimal answer endpoint that accepts query text plus explicit scope.
+2. Reuse the current retrieval results as the only answer context.
+3. Return a short answer together with cited chunks and active scope.
+4. Keep the first answer flow simple and inspectable.
 
 ## Keep out of scope for that step
 
-- free-form answer synthesis
+- broad answer orchestration beyond a small cited response
 - agent workflows
 - external connectors
 - complex ranking or orchestration
 
 ## After that
 
-Once scoped retrieval works, add the first source-grounded answer composer on top of retrieved chunks.
+Once the first answer flow works, tighten confidence/citation formatting and retrieval quality.

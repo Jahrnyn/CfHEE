@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 
+import { AskPageComponent } from './pages/ask-page.component';
 import { DocumentsPageComponent } from './pages/documents-page.component';
 import { HomePageComponent } from './pages/home-page.component';
 import { InboxPageComponent } from './pages/inbox-page.component';
@@ -23,11 +24,8 @@ export const routes: Routes = [
   },
   {
     path: 'ask',
-    component: StaticPageComponent,
-    data: {
-      title: 'Ask Copilot',
-      description: 'Scoped Q&A stays intentionally unimplemented until retrieval and answers land.'
-    }
+    component: AskPageComponent,
+    title: 'Ask Copilot'
   },
   {
     path: 'scope-manager',

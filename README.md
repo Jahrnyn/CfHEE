@@ -65,6 +65,7 @@ The API starts on `http://127.0.0.1:8000` and exposes:
 - `POST /documents`
 - `GET /documents`
 - `GET /documents/{document_id}/chunks`
+- `POST /retrieval/query`
 - `GET /docs`
 
 If you need a different Postgres connection, set `DATABASE_URL` before starting the backend.
@@ -83,6 +84,7 @@ The current vertical slices are available at:
 
 - `Inbox / Capture` for manual document ingestion
 - `Documents` for listing stored documents and inspecting generated chunks
+- `Ask Copilot` for scoped retrieval of matching chunks and source metadata
 
 ## Local Dev Bootstrap
 
