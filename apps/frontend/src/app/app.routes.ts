@@ -1,6 +1,8 @@
 import { Routes } from '@angular/router';
 
+import { DocumentsPageComponent } from './pages/documents-page.component';
 import { HomePageComponent } from './pages/home-page.component';
+import { InboxPageComponent } from './pages/inbox-page.component';
 import { StaticPageComponent } from './pages/static-page.component';
 
 export const routes: Routes = [
@@ -11,19 +13,13 @@ export const routes: Routes = [
   },
   {
     path: 'inbox',
-    component: StaticPageComponent,
-    data: {
-      title: 'Inbox / Capture',
-      description: 'Manual ingest will start here with explicit workspace and domain selection.'
-    }
+    component: InboxPageComponent,
+    title: 'Inbox / Capture'
   },
   {
     path: 'documents',
-    component: StaticPageComponent,
-    data: {
-      title: 'Documents',
-      description: 'This page will list stored documents from Postgres in the next vertical slice.'
-    }
+    component: DocumentsPageComponent,
+    title: 'Documents'
   },
   {
     path: 'ask',

@@ -1,0 +1,67 @@
+CREATE TABLE IF NOT EXISTS workspaces (
+  id BIGSERIAL PRIMARY KEY,
+  name TEXT NOT NULL UNIQUE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS domains (
+  id BIGSERIAL PRIMARY KEY,
+  workspace_id BIGINT NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (workspace_id, name)
+);
+
+CREATE TABLE IF NOT EXISTS projects (
+  id BIGSERIAL PRIMARY KEY,
+  domain_id BIGINT NOT NULL REFERENCES domains(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (domain_id, name)
+);
+
+CREATE TABLE IF NOT EXISTS clients (
+  id BIGSERIAL PRIMARY KEY,
+  project_id BIGINT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (project_id, name)
+);
+
+CREATE TABLE IF NOT EXISTS modules (
+  id BIGSERIAL PRIMARY KEY,
+  client_id BIGINT NOT NULL REFERENCES clients(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (client_id, name)
+);
+
+CREATE TABLE IF NOT EXISTS documents (
+  id BIGSERIAL PRIMARY KEY,
+  workspace_id BIGINT NOT NULL REFERENCES workspaces(id) ON DELETE RESTRICT,
+  domain_id BIGINT NOT NULL REFERENCES domains(id) ON DELETE RESTRICT,
+  project_id BIGINT REFERENCES projects(id) ON DELETE RESTRICT,
+  client_id BIGINT REFERENCES clients(id) ON DELETE RESTRICT,
+  module_id BIGINT REFERENCES modules(id) ON DELETE RESTRICT,
+  title TEXT NOT NULL,
+  source_type TEXT NOT NULL,
+  language TEXT,
+  source_ref TEXT,
+  raw_text TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS chunks (
+  id BIGSERIAL PRIMARY KEY,
+  document_id BIGINT NOT NULL REFERENCES documents(id) ON DELETE CASCADE,
+  workspace_id BIGINT NOT NULL REFERENCES workspaces(id) ON DELETE RESTRICT,
+  domain_id BIGINT NOT NULL REFERENCES domains(id) ON DELETE RESTRICT,
+  project_id BIGINT REFERENCES projects(id) ON DELETE RESTRICT,
+  client_id BIGINT REFERENCES clients(id) ON DELETE RESTRICT,
+  module_id BIGINT REFERENCES modules(id) ON DELETE RESTRICT,
+  chunk_index INTEGER NOT NULL,
+  text TEXT NOT NULL,
+  char_count INTEGER NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (document_id, chunk_index)
+);

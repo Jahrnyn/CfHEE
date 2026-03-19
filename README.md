@@ -41,6 +41,10 @@ Postgres will be available on `localhost:5432` with:
 - user: `cfhee`
 - password: `cfhee`
 
+The initial schema for `workspaces`, `domains`, `projects`, `clients`, `modules`, `documents`, and `chunks`
+is defined in `apps/backend/sql/schema.sql`. It is mounted into the Postgres container on first database
+initialization, and the backend also runs the same schema on startup with `CREATE TABLE IF NOT EXISTS`.
+
 ### Backend
 
 ```bash
@@ -51,11 +55,19 @@ python -m pip install -e .
 python -m uvicorn cfhee_backend.main:app --reload
 ```
 
+The backend also creates a local Chroma index under `apps/backend/data/chroma` by default.
+You can override that location with `CHROMA_PERSIST_DIRECTORY`.
+
 The API starts on `http://127.0.0.1:8000` and exposes:
 
 - `GET /`
 - `GET /health`
+- `POST /documents`
+- `GET /documents`
+- `GET /documents/{document_id}/chunks`
 - `GET /docs`
+
+If you need a different Postgres connection, set `DATABASE_URL` before starting the backend.
 
 ### Frontend
 
@@ -66,3 +78,8 @@ npm start
 ```
 
 The Angular app starts on `http://localhost:4200`.
+
+The current vertical slices are available at:
+
+- `Inbox / Capture` for manual document ingestion
+- `Documents` for listing stored documents and inspecting generated chunks

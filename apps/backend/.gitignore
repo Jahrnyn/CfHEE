@@ -3,3 +3,4 @@
 .pip-cache/
 .tmp/
 __pycache__/
+data/

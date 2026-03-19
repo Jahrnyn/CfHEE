@@ -1,6 +1,9 @@
 from fastapi import APIRouter
 
+from cfhee_backend.api.document_routes import router as document_router
+
 router = APIRouter()
+router.include_router(document_router)
 
 
 @router.get("/health", tags=["system"])
