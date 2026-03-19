@@ -1,0 +1,633 @@
+# Arcitectire
+## Goal
+Local-first personal AI workbench that:
+- builds a scoped knowledge base from heterogeneous enterprise inputs
+- enables fast retrieval + grounded answers
+- avoids cross-contamination between companies/projects
+- prepares for future agent workflows
+
+## Core Architecture
+```
+Frontend (Angular)
+    ↓
+API / Orchestrator (FastAPI)
+    ↓
++-------------------------------+
+| Scope Layer                   |
+| Ingestion Pipeline            |
+| Query / Answer Pipeline       |
++-------------------------------+
+    ↓
+Persistence (Postgres + Vector DB + Files)
+```
+## Core Concepts (STRICT)
+Hierarchy (ALWAYS applied):
+```
+Workspace > Domain > Project > Client > Module
+```
+Each document/chunk MUST include:
+- workspace (required)
+- domain (recommended)
+- optional: project, client, module
+- language
+- source_type
+User-defined top-level metadata is NEVER overridden.
+
+## Isolation Rules (CRITICAL)
+- retrieval is ALWAYS scoped by default
+- cross-workspace access = forbidden unless explicit
+- global search = opt-in only
+- every answer includes source attribution
+- query session has fixed scope
+
+## Ingestion Pipeline
+Flow:
+```
+Input → Scope metadata → Normalize → Chunk → Embed → Store → (Optional enrichment)
+```
+Input types:
+- pasted text (primary)
+- wiki / tickets
+- code snippets
+- later: files (PDF, HTML, MD)
+Key components:
+- Document Normalizer
+- Chunking Service (heading-aware)
+- Embedding Service
+- Vector Store Adapter
+Optional async:
+- translation
+- summary
+- tagging
+
+## Retrieval Pipeline (CORE VALUE)
+Flow:
+```
+Query → Scope resolve → Embed → Scoped search → Rank → Build context → Answer
+```
+Components:
+- Scoped Retriever (STRICT filtering)
+- Hybrid search (vector + metadata)
+- Context Budget Manager (token control)
+- Context Builder (dedupe + ordering)
+
+## Answer Layer
+Components:
+- LLM Adapter (Ollama first)
+- Model Router (later)
+- Answer Composer
+Rules:
+- MUST be source-grounded
+- MUST NOT hallucinate outside context
+- response language: EN/HU
+Response schema:
+```
+{
+  direct_answer,
+  why_this_answer,
+  source_snippets,
+  confidence,
+  follow_up_terms,
+  active_scope
+}
+```
+## Persistence
+### Postgres (metadata)
+Main tables:
+- workspaces, domains, projects, clients, modules
+- documents, chunks
+- glossary_entries
+- ingestion_jobs
+- query_logs
+### Vector DB
+- Chroma (MVP)
+- Qdrant (later)
+### Raw storage
+- local filesystem (original inputs)
+
+## Key Layers
+### 1. Frontend (Angular)
+- ingest UI (with scope selection)
+- document browser
+- chat interface
+- scope selector
+- admin tools (reindex, inspect)
+### 2. API / Orchestrator (FastAPI)
+- ingest workflow
+- query workflow
+- scope enforcement
+### 3. Scope Layer
+- Scope Registry (hierarchy)
+- Scope Policy Engine (rules)
+- Query Scope Resolver
+### 4. Background Jobs
+- ingestion processing
+- enrichment
+- reindex
+
+## Modules (Backend)
+```
+api
+scope_registry
+scope_policy
+ingestion
+normalization
+chunking
+enrichment
+embeddings
+vector_store
+retrieval
+llm
+answers
+persistence
+jobs
+admin
+```
+
+## End-to-End Flows
+
+### A - Ingest
+```
+User → API → Job → Normalize → Chunk → Embed → Store → Done
+```
+### B - Query
+```
+User → API → Scope → Retrieve → Build context → LLM → Response
+```
+
+## MVP Scope
+Include:
+- manual scope input
+- ingest + chunk + embed
+- scoped retrieval
+- chat with sources
+- basic summary/translation
+Exclude:
+- agents
+- automation workflows
+- external connectors
+- complex auth
+
+## 🛠 Tech Stack (MVP)
+- Frontend: Angular
+- Backend: Python + FastAPI
+- DB: Postgres
+- Vector: Chroma
+- LLM: Ollama (local)
+- Storage: local FS
+
+## Key Architectural Principles
+1. Retrieval-first
+2. Scope isolation by default
+3. Raw data always preserved
+4. Async enrichment
+5. Provider abstraction (LLM + vector DB)
+6. User controls top-level metadata
+
+## Build Phases
+### Phase 1
+- schema + ingest + scope basics
+### Phase 2
+- embeddings + retrieval + chat
+### Phase 3
+- enrichment + tagging + glossary
+### Phase 4
+- admin + tuning + model routing
+
+## Final State
+A multi-workspace, domain-aware, local-first knowledge copilot that:
+- aggregates enterprise + personal knowledge
+- enables fast scoped retrieval
+- provides grounded answers
+- serves as foundation for future AI agents
+
+# Dev Changelog
+
+## 2026-03-19
+
+- Added Windows-first local bootstrap scripts:
+  - `scripts/dev-up.ps1`
+  - `scripts/dev-check.ps1`
+- Updated `README.md` with a short local development bootstrap section.
+- Confirmed the repo currently contains:
+  - manual document ingest UI
+  - document list UI
+  - chunk inspection UI
+  - FastAPI document endpoints
+  - Postgres persistence
+  - paragraph-based chunking
+  - Chroma indexing with local hash embeddings
+
+## Known issues already observed
+
+- Direct `.\scripts\*.ps1` execution can be blocked by PowerShell execution policy in this environment.
+- Docker emitted a user-config warning under PowerShell in this environment; the bootstrap scripts route Docker calls through `cmd.exe` to avoid that issue.
+- The latest local check found that Postgres, backend, and frontend were not running at the time of verification.
+- `docs/TASKS.md` no longer reflects current implementation status and should be updated later.
+# Architectural Decisions
+
+## ADR-001
+Backend is Python + FastAPI.
+Reason: better ecosystem fit for AI/RAG workflows.
+
+## ADR-002
+Frontend is Angular.
+Reason: existing familiarity and faster iteration.
+
+## ADR-003
+Postgres is the primary relational store.
+Reason: robust metadata persistence and future growth.
+
+## ADR-004
+Chroma is the first vector store, behind an abstraction layer.
+Reason: simple local-first MVP.
+
+## ADR-005
+Top-level scope metadata is user-defined.
+Reason: reduce cross-contamination risk.
+
+## ADR-006
+Retrieval is scoped by default.
+Reason: prevent accidental mixing across companies/clients/projects.
+
+## ADR-007
+LLM provider must remain replaceable.
+Reason: local-first now, stronger model routing later.
+# Docs Index
+
+This file explains the role of each documentation file in the repository.
+
+## Core architecture docs
+
+### `docs/ARCHITECTURE.md`
+High-level architecture overview of the system.
+Use this to understand layers, modules, and long-term structure.
+
+### `docs/MVP.md`
+Defines the intended MVP scope and what is explicitly out of scope.
+
+### `docs/DECISIONS.md`
+Architecture decisions that should not be re-debated casually.
+Use this to avoid drifting away from agreed technical choices.
+
+### `docs/DOMAIN_MODEL.md`
+Defines the core domain hierarchy:
+- workspace
+- domain
+- project
+- client
+- module
+- document
+- chunk
+
+Use this when working on persistence, retrieval, and scoping.
+
+## Live project state docs
+
+### `docs/PROJECT_STATE.md`
+Current verified status of the project.
+Use this first when you need to know what already exists.
+
+### `docs/NEXT_STEPS.md`
+The current recommended next development target.
+Use this to avoid scope drift.
+
+### `docs/CHANGELOG_DEV.md`
+Chronological development log.
+Use this to understand what changed recently and what issues were observed.
+
+### `docs/PROMPTING_GUIDE.md`
+Practical rules for working with Codex in this repository.
+Use this before writing or refining prompts.
+
+### `docs/PROMPT_TEMPLATE.md`
+Reusable template for future Codex prompts.
+Use this to keep prompts consistent and complete.
+
+## Suggested reading order for AI assistants
+
+For most implementation tasks, read in this order:
+1. `AGENTS.md`
+2. `docs/PROJECT_STATE.md`
+3. `docs/NEXT_STEPS.md`
+4. `docs/ARCHITECTURE.md`
+5. `docs/MVP.md`
+6. `docs/DECISIONS.md`
+7. `docs/DOMAIN_MODEL.md`
+8. `docs/PROMPTING_GUIDE.md`
+9. `docs/CHANGELOG_DEV.md` if the task relates to recent work
+
+## Human usage note
+
+If you are resuming work after a break, start with:
+- `docs/PROJECT_STATE.md`
+- `docs/NEXT_STEPS.md`
+- `docs/CHANGELOG_DEV.md`
+
+## Authority rules
+
+When documents disagree, prefer:
+1. `docs/PROJECT_STATE.md` for current verified implementation state
+2. `docs/NEXT_STEPS.md` for current intended next step
+3. `docs/DECISIONS.md` for fixed technical decisions
+4. `docs/ARCHITECTURE.md` for long-term structure
+5. `docs/MVP.md` for scope boundaries
+6. `docs/CHANGELOG_DEV.md` for recent historical context
+# Domain Model
+
+## Hierarchy
+Workspace
+  -> Domain
+    -> Project
+      -> Client
+        -> Module
+
+## Minimum required on document ingest
+- workspace
+- domain
+- source_type
+- title
+- raw_text
+
+## Optional
+- project
+- client
+- module
+- language
+- source_ref
+
+## Rule
+User-provided top-level scope is authoritative.
+Model-generated tags are advisory only.
+# MVP
+
+## Goal
+Deliver the smallest useful version of the system:
+- ingest document with explicit scope
+- store in Postgres
+- list documents
+- prepare for chunking/indexing
+- later add scoped retrieval
+
+## In scope
+- Angular shell
+- FastAPI backend
+- Postgres schema
+- manual ingest form
+- basic document list
+- workspace/domain/project/client/module metadata
+- raw text storage
+
+## Out of scope
+- autonomous workflows
+- connectors
+- cloud fallback
+- OCR
+- advanced auth
+- production deployment
+# Next Steps
+
+## Recommended next development step
+
+Implement the first scoped retrieval vertical slice.
+
+Why this is next:
+
+- the project already stores documents, chunks, and Chroma vectors
+- `Ask Copilot` is still an explicit placeholder
+- retrieval is the next core MVP capability after ingestion and listing
+
+## Suggested narrow scope
+
+1. Add a backend retrieval service that queries Chroma with explicit scope filters.
+2. Add a minimal `POST /ask` or `POST /retrieval/query` endpoint.
+3. Return matching chunks with source metadata only at first.
+4. Wire the `Ask Copilot` page to submit a scoped query and render retrieved chunks.
+
+## Keep out of scope for that step
+
+- free-form answer synthesis
+- agent workflows
+- external connectors
+- complex ranking or orchestration
+
+## After that
+
+Once scoped retrieval works, add the first source-grounded answer composer on top of retrieved chunks.
+# Project State
+
+Last reviewed: 2026-03-19
+
+## Current slice in repo
+
+Implemented in code:
+
+- Angular frontend shell with routes for `Overview`, `Inbox / Capture`, `Documents`, `Ask Copilot`, `Scope Manager`, and `Settings`
+- Working frontend views for manual ingest and document listing
+- FastAPI backend with `GET /`, `GET /health`, `POST /documents`, `GET /documents`, and `GET /documents/{id}/chunks`
+- Postgres schema for workspaces, domains, projects, clients, modules, documents, and chunks
+- Document ingest flow that:
+  - validates required scope and hierarchy
+  - upserts scope rows
+  - stores raw document text in Postgres
+  - chunks text by paragraph blocks
+  - computes local hash-based embeddings
+  - indexes chunks into Chroma
+- Windows-first local bootstrap scripts:
+  - `scripts/dev-up.ps1`
+  - `scripts/dev-check.ps1`
+
+## Verified status
+
+Verified by code inspection:
+
+- manual ingest is implemented end to end in backend and frontend code
+- document listing and chunk inspection are implemented in backend and frontend code
+- vector-store abstraction exists and is currently backed by Chroma
+- embedding abstraction exists and is currently backed by a local hash embedding service
+
+Verified in the local environment during the latest check:
+
+- `dev-check.ps1` runs successfully when invoked with `powershell.exe -ExecutionPolicy Bypass -File ...`
+- Postgres, backend, and frontend were not running at the time of the latest check
+
+Not implemented yet:
+
+- scoped retrieval endpoint
+- answer generation / source-grounded answer composer
+- Ollama integration
+- real scope management UI
+- settings UI beyond placeholder copy
+
+## Current alignment with MVP docs
+
+Already present:
+
+- Angular shell
+- FastAPI backend
+- Postgres schema
+- manual ingest form
+- document list
+- workspace/domain/project/client/module metadata
+- raw text storage
+- basic chunking
+- vector indexing hook on ingest
+
+Still missing from the broader architecture direction:
+
+- scoped retrieval
+- ask flow with sources
+- enrichment
+- provider-backed LLM answer layer
+# Prompting Guide
+
+Use this repo with a thin-slice mindset.
+
+## Default instructions for future work
+
+- Read `AGENTS.md`, `docs/ARCHITECTURE.md`, and `docs/MVP.md` first.
+- Keep changes small and practical.
+- Prefer vertical slices over scaffolding.
+- Treat user-provided scope metadata as authoritative.
+- Do not claim retrieval, answer generation, or Ollama support already exists.
+
+## Good prompts
+
+- "Implement the smallest scoped retrieval endpoint using the existing Chroma adapter."
+- "Add a minimal Ask page wired to a retrieval-only backend response."
+- "Review the ingest flow for bugs and missing validation."
+- "Improve local dev workflow on Windows without turning it into a task runner."
+
+## State-awareness rules
+
+- Distinguish clearly between:
+  - implemented in code
+  - verified by running locally
+  - planned in docs only
+- If services are not running, say that explicitly instead of implying runtime verification.
+- Prefer file-based evidence over assumptions.
+
+## Current known constraints
+
+- Windows-first local development is the active path.
+- Frontend API calls are currently pointed at `http://127.0.0.1:8000`.
+- `Ask Copilot`, `Scope Manager`, and `Settings` are placeholder pages today.
+- Retrieval and answers should remain scoped by default when implemented.
+# Prompt Template for Codex
+
+Use this template when asking Codex to implement or modify something in this repo.
+
+---
+
+## Standard opening
+
+Read `AGENTS.md` and the relevant files under `docs/` first.
+
+Before making changes, align with:
+- `docs/ARCHITECTURE.md`
+- `docs/MVP.md`
+- `docs/DECISIONS.md`
+- `docs/DOMAIN_MODEL.md`
+- `docs/PROJECT_STATE.md`
+- `docs/NEXT_STEPS.md`
+- `docs/PROMPTING_GUIDE.md`
+
+If the task touches recent work, also read:
+- `docs/CHANGELOG_DEV.md`
+
+---
+
+## Task statement
+
+Implement the following narrow vertical slice:
+
+[DESCRIBE THE TASK HERE]
+
+---
+
+## Requirements
+
+- keep the implementation small and practical
+- do not refactor unrelated parts
+- avoid speculative abstractions
+- keep business logic readable and easy to debug
+- preserve existing working behavior unless a change is required
+- stay aligned with the documented architecture and current verified project state
+- do not claim something is implemented unless it is actually implemented in code
+- do not claim runtime verification unless it was actually verified
+
+---
+
+## Explicit in-scope
+
+- [LIST WHAT IS IN SCOPE]
+
+## Explicit out-of-scope
+
+- [LIST WHAT MUST NOT BE DONE]
+
+---
+
+## Implementation guidance
+
+- [OPTIONAL GUIDANCE]
+- prefer minimal diffs
+- prefer thin vertical slices
+- keep local-first behavior by default
+- preserve scope isolation rules
+
+---
+
+## Deliverables
+
+1. [DELIVERABLE 1]
+2. [DELIVERABLE 2]
+3. [DELIVERABLE 3]
+
+---
+
+## Verification
+
+Please verify what you can locally and clearly distinguish between:
+- implemented in code
+- verified by running locally
+- not verified due to environment limits
+
+If local setup or run steps changed, update `README.md` briefly.
+
+After the implementation, also update:
+- `docs/PROJECT_STATE.md`
+- `docs/NEXT_STEPS.md`
+- `docs/CHANGELOG_DEV.md`
+
+Keep those updates concise, factual, and aligned with the verified current state.
+Do not speculate.
+# MVP Tasks
+
+## Phase 1 - Foundation
+- [ ] Initialize repo structure
+- [ ] Create Angular frontend app
+- [ ] Create FastAPI backend app
+- [ ] Add Postgres via docker compose
+- [ ] Create initial DB schema
+- [ ] Add AGENTS.md
+- [ ] Add architecture docs
+
+## Phase 2 - Ingestion vertical slice
+- [ ] Build manual ingest form
+- [ ] Create POST /documents endpoint
+- [ ] Persist documents with scope metadata
+- [ ] Build documents list endpoint
+- [ ] Build documents list page
+
+## Phase 3 - Retrieval foundation
+- [ ] Add chunking service
+- [ ] Add embedding service abstraction
+- [ ] Add vector store abstraction
+- [ ] Add Chroma adapter
+- [ ] Index chunks on ingest
+
+## Phase 4 - Query
+- [ ] Build scoped search endpoint
+- [ ] Build Ask Copilot page
+- [ ] Return source-grounded answers

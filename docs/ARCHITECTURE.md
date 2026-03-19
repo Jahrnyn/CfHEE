@@ -1,3 +1,4 @@
+# Arcitectire
 ## Goal
 Local-first personal AI workbench that:
 - builds a scoped knowledge base from heterogeneous enterprise inputs

@@ -83,3 +83,31 @@ The current vertical slices are available at:
 
 - `Inbox / Capture` for manual document ingestion
 - `Documents` for listing stored documents and inspecting generated chunks
+
+## Local Dev Bootstrap
+
+For a Windows-first local setup, use the PowerShell scripts in `scripts/` from the repo root:
+
+```powershell
+.\scripts\dev-up.ps1
+```
+
+`dev-up.ps1` checks Docker availability, starts Postgres with `docker compose`, creates `apps/backend/.venv` if needed, installs backend and frontend dependencies only when their manifest files changed, and opens backend plus frontend in separate PowerShell windows.
+
+If your PowerShell execution policy blocks local scripts, run them with:
+
+```powershell
+powershell.exe -ExecutionPolicy Bypass -File .\scripts\dev-up.ps1
+```
+
+After the services are up, run:
+
+```powershell
+.\scripts\dev-check.ps1
+```
+
+`dev-check.ps1` verifies:
+
+- the `cfhee-postgres` container is running
+- the backend responds on `http://127.0.0.1:8000/health`
+- the frontend responds on `http://127.0.0.1:4200`
