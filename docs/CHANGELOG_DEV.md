@@ -11,6 +11,12 @@
   - `POST /retrieval/query`
   - Chroma scoped query support through the existing vector-store layer
   - `Ask Copilot` UI for scoped retrieval-only queries
+- Hardened the retrieval slice:
+  - added `top_k` support while keeping retrieval scoped by default
+  - added explicit missing-scope validation
+  - added similarity score plus explicit chunk/document identifiers in results
+  - added retrieval service logging for query text, scope, and returned result count
+  - added clearer loading and empty states on the Ask page
 - Updated `README.md` with a short local development bootstrap section.
 - Confirmed the repo currently contains:
   - manual document ingest UI

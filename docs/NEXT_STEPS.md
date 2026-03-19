@@ -7,6 +7,7 @@ Implement the first source-grounded answer slice on top of retrieved chunks.
 Why this is next:
 
 - the project now supports scoped retrieval from the `Ask Copilot` page
+- retrieval behavior is now more explicit and inspectable for downstream answer use
 - the next missing MVP capability is turning retrieved context into a source-grounded response
 - retrieval-only results are already traceable to chunks and documents
 

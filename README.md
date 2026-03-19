@@ -84,7 +84,7 @@ The current vertical slices are available at:
 
 - `Inbox / Capture` for manual document ingestion
 - `Documents` for listing stored documents and inspecting generated chunks
-- `Ask Copilot` for scoped retrieval of matching chunks and source metadata
+- `Ask Copilot` for scoped retrieval of matching chunks and source metadata; workspace and domain are required so global retrieval is never implicit
 
 ## Local Dev Bootstrap
 

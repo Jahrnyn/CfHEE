@@ -29,6 +29,7 @@ Verified by code inspection:
 - manual ingest is implemented end to end in backend and frontend code
 - document listing and chunk inspection are implemented in backend and frontend code
 - scoped retrieval is implemented in backend and frontend code
+- retrieval responses now include explicit scope, chunk/document identifiers, distance, and similarity score
 - vector-store abstraction exists and is currently backed by Chroma
 - embedding abstraction exists and is currently backed by a local hash embedding service
 
@@ -37,7 +38,7 @@ Verified in the local environment during the latest check:
 - `dev-check.ps1` runs successfully when invoked with `powershell.exe -ExecutionPolicy Bypass -File ...`
 - frontend production build succeeds with `npm.cmd run build`
 - backend source compiles with `python -m compileall`
-- retrieval endpoint returns scoped chunk results for a matching scope and zero results for a wrong workspace when exercised against local Postgres + Chroma
+- retrieval endpoint accepts `top_k`, returns explicit empty results, logs query/scope/result count, and rejects missing scope with a clear validation error when exercised against local Postgres + Chroma
 
 Not implemented yet:
 

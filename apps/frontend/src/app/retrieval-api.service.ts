@@ -9,7 +9,7 @@ export interface RetrievalQueryPayload {
   project: string | null;
   client: string | null;
   module: string | null;
-  limit: number;
+  top_k: number;
 }
 
 export interface RetrievalScope {
@@ -36,6 +36,7 @@ export interface RetrievedChunkMatch {
   chunk_index: number;
   text: string;
   char_count: number;
+  similarity_score: number | null;
   distance: number | null;
   created_at: string;
   document: RetrievedDocumentSummary;
@@ -45,6 +46,9 @@ export interface RetrievedChunkMatch {
 export interface RetrievalQueryResponse {
   query_text: string;
   active_scope: RetrievalScope;
+  top_k: number;
+  returned_results: number;
+  empty: boolean;
   results: RetrievedChunkMatch[];
 }
 

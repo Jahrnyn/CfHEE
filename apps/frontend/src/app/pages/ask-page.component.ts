@@ -21,6 +21,10 @@ import {
         scoped by default and do not mix unrelated content.
       </p>
 
+      <div class="scope-summary">
+        <strong>Current scope:</strong> {{ currentScopeSummary }}
+      </div>
+
       <form class="query-form" (ngSubmit)="submit()" #queryForm="ngForm">
         <label>
           <span>Query text</span>
@@ -54,17 +58,20 @@ import {
           </label>
 
           <label>
-            <span>Result limit</span>
-            <input [(ngModel)]="form.limit" name="limit" type="number" min="1" max="20" />
+            <span>Top K</span>
+            <input [(ngModel)]="form.topK" name="topK" type="number" min="1" max="20" />
           </label>
         </div>
 
         <div class="actions">
-          <button type="submit" [disabled]="isSubmitting || queryForm.invalid">Retrieve chunks</button>
+          <button type="submit" [disabled]="isSubmitting || queryForm.invalid">
+            {{ isSubmitting ? 'Retrieving...' : 'Retrieve chunks' }}
+          </button>
         </div>
       </form>
 
       <p *ngIf="errorMessage" class="error">{{ errorMessage }}</p>
+      <p *ngIf="isSubmitting" class="status">Searching scoped chunks...</p>
 
       <section class="results" *ngIf="lastResponse">
         <div class="results-header">
@@ -84,17 +91,22 @@ import {
               </ng-container>
             </p>
           </div>
-          <p class="meta">{{ lastResponse.results.length }} result(s)</p>
+          <p class="meta">{{ lastResponse.returned_results }} result(s) from top_k={{ lastResponse.top_k }}</p>
         </div>
 
-        <p *ngIf="lastResponse.results.length === 0" class="empty">
-          No chunks matched this scoped query.
-        </p>
+        <div *ngIf="lastResponse.empty" class="empty-state">
+          <p class="empty-title">No results found</p>
+          <p class="empty">
+            No chunks matched this query inside the selected scope.
+          </p>
+        </div>
 
         <article class="result-card" *ngFor="let result of lastResponse.results">
           <div class="card-header">
             <h4>#{{ result.rank }} - {{ result.document.title }}</h4>
-            <p *ngIf="result.distance !== null">Distance: {{ result.distance | number: '1.3-3' }}</p>
+            <p *ngIf="result.similarity_score !== null">
+              Similarity: {{ result.similarity_score | number: '1.3-3' }}
+            </p>
           </div>
 
           <p class="meta">
@@ -105,7 +117,9 @@ import {
             <ng-container *ngIf="result.scope.module"> / {{ result.scope.module }}</ng-container>
           </p>
           <p class="meta"><strong>Document ID:</strong> {{ result.document_id }}</p>
+          <p class="meta"><strong>Chunk ID:</strong> {{ result.chunk_id }}</p>
           <p class="meta"><strong>Chunk:</strong> {{ result.chunk_index + 1 }} ({{ result.char_count }} chars)</p>
+          <p class="meta" *ngIf="result.distance !== null"><strong>Distance:</strong> {{ result.distance | number: '1.3-3' }}</p>
           <p class="meta"><strong>Source type:</strong> {{ result.document.source_type }}</p>
           <p class="meta" *ngIf="result.document.language"><strong>Language:</strong> {{ result.document.language }}</p>
           <p class="meta" *ngIf="result.document.source_ref"><strong>Source ref:</strong> {{ result.document.source_ref }}</p>
@@ -150,6 +164,19 @@ import {
       .query-form {
         display: grid;
         gap: 16px;
+      }
+
+      .scope-summary,
+      .status,
+      .empty-state {
+        margin-top: 16px;
+        padding: 12px 14px;
+        border-radius: 14px;
+      }
+
+      .scope-summary {
+        color: #1f2937;
+        background: #f4f4f5;
       }
 
       .field-grid {
@@ -214,6 +241,11 @@ import {
         background: #fee2e2;
       }
 
+      .status {
+        color: #1d4ed8;
+        background: #dbeafe;
+      }
+
       .results {
         margin-top: 24px;
         display: grid;
@@ -246,6 +278,17 @@ import {
         margin: 8px 0 0;
       }
 
+      .empty-state {
+        border: 1px dashed #d4d4d8;
+        background: #fafafa;
+      }
+
+      .empty-title {
+        margin: 0 0 8px;
+        color: #18181b;
+        font-weight: 700;
+      }
+
       .chunk-text {
         margin: 16px 0 0;
         padding-top: 16px;
@@ -269,12 +312,13 @@ export class AskPageComponent {
     project: '',
     client: '',
     module: '',
-    limit: 5
+    topK: 5
   };
 
   protected submit(): void {
     this.isSubmitting = true;
     this.errorMessage = '';
+    this.lastResponse = null;
 
     this.retrievalApi.query(this.buildPayload()).subscribe({
       next: (response) => {
@@ -282,10 +326,30 @@ export class AskPageComponent {
         this.isSubmitting = false;
       },
       error: (error) => {
-        this.errorMessage = error.error?.detail ?? 'Unable to retrieve chunks for this scoped query.';
+        this.errorMessage = this.formatError(error);
         this.isSubmitting = false;
       }
     });
+  }
+
+  protected get currentScopeSummary(): string {
+    if (!this.form.workspace.trim() || !this.form.domain.trim()) {
+      return 'Global retrieval is disabled. Workspace and domain are required.';
+    }
+
+    const scopeParts = [
+      this.form.workspace.trim(),
+      this.form.domain.trim(),
+      this.form.project.trim(),
+      this.form.client.trim(),
+      this.form.module.trim(),
+    ].filter((value) => value.length > 0);
+
+    if (scopeParts.length === 0) {
+      return 'Global retrieval is disabled. Workspace and domain are required.';
+    }
+
+    return scopeParts.join(' / ');
   }
 
   private buildPayload(): RetrievalQueryPayload {
@@ -296,12 +360,38 @@ export class AskPageComponent {
       project: this.optionalValue(this.form.project),
       client: this.optionalValue(this.form.client),
       module: this.optionalValue(this.form.module),
-      limit: Number(this.form.limit) || 5
+      top_k: Number(this.form.topK) || 5
     };
   }
 
   private optionalValue(value: string): string | null {
     const normalized = value.trim();
     return normalized ? normalized : null;
+  }
+
+  private formatError(error: { error?: { detail?: unknown } }): string {
+    const detail = error.error?.detail;
+
+    if (typeof detail === 'string') {
+      return detail;
+    }
+
+    if (Array.isArray(detail) && detail.length > 0) {
+      return detail
+        .map((item) => {
+          if (typeof item === 'string') {
+            return item;
+          }
+
+          if (item && typeof item === 'object' && 'msg' in item) {
+            return String(item.msg);
+          }
+
+          return 'Request validation failed.';
+        })
+        .join(' ');
+    }
+
+    return 'Unable to retrieve chunks for this scoped query.';
   }
 }

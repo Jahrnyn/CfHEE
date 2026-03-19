@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from typing import Any
 
 from cfhee_backend.embeddings import get_embedding_service
@@ -14,8 +15,24 @@ from cfhee_backend.retrieval.models import (
 from cfhee_backend.vector_store import get_vector_store
 from cfhee_backend.vector_store.base import VectorQuery
 
+logger = logging.getLogger(__name__)
+
 
 def query_retrieval(payload: RetrievalQueryRequest) -> RetrievalQueryResponse:
+    active_scope = RetrievalScope(
+        workspace=payload.workspace,
+        domain=payload.domain,
+        project=payload.project,
+        client=payload.client,
+        module=payload.module,
+    )
+    logger.info(
+        "Retrieval query text=%r scope=%s top_k=%s",
+        payload.query_text,
+        active_scope.model_dump(),
+        payload.top_k,
+    )
+
     embedding_service = get_embedding_service()
     query_embedding = embedding_service.embed_texts([payload.query_text])[0]
     vector_store = get_vector_store()
@@ -28,8 +45,18 @@ def query_retrieval(payload: RetrievalQueryRequest) -> RetrievalQueryResponse:
             project=payload.project,
             client=payload.client,
             module=payload.module,
-            limit=payload.limit,
+            top_k=payload.top_k,
         )
+    )
+    vector_matches = sorted(
+        vector_matches,
+        key=lambda match: (
+            match.distance is None,
+            match.distance if match.distance is not None else float("inf"),
+            match.document_id,
+            match.chunk_index,
+            match.chunk_id,
+        ),
     )
 
     rows_by_chunk_id = _load_chunk_rows([match.chunk_id for match in vector_matches])
@@ -42,12 +69,13 @@ def query_retrieval(payload: RetrievalQueryRequest) -> RetrievalQueryResponse:
 
         results.append(
             RetrievedChunkMatch(
-                rank=index,
+                rank=len(results) + 1,
                 chunk_id=row["chunk_id"],
                 document_id=row["document_id"],
                 chunk_index=row["chunk_index"],
                 text=row["text"],
                 char_count=row["char_count"],
+                similarity_score=_calculate_similarity_score(match.distance),
                 distance=match.distance,
                 created_at=row["chunk_created_at"],
                 document=RetrievedDocumentSummary(
@@ -68,15 +96,18 @@ def query_retrieval(payload: RetrievalQueryRequest) -> RetrievalQueryResponse:
             )
         )
 
+    logger.info(
+        "Retrieval returned %s result(s) scope=%s",
+        len(results),
+        active_scope.model_dump(),
+    )
+
     return RetrievalQueryResponse(
         query_text=payload.query_text,
-        active_scope=RetrievalScope(
-            workspace=payload.workspace,
-            domain=payload.domain,
-            project=payload.project,
-            client=payload.client,
-            module=payload.module,
-        ),
+        active_scope=active_scope,
+        top_k=payload.top_k,
+        returned_results=len(results),
+        empty=len(results) == 0,
         results=results,
     )
 
@@ -120,3 +151,13 @@ def _load_chunk_rows(chunk_ids: list[int]) -> dict[int, dict[str, Any]]:
             rows = cursor.fetchall()
 
     return {row["chunk_id"]: row for row in rows}
+
+
+def _calculate_similarity_score(distance: float | None) -> float | None:
+    if distance is None:
+        return None
+
+    if distance < 0:
+        return 1.0
+
+    return 1.0 / (1.0 + distance)

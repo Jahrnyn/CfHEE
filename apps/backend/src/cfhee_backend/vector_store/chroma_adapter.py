@@ -48,7 +48,7 @@ class ChromaVectorStore:
     def query_chunks(self, query: VectorQuery) -> list[VectorQueryMatch]:
         response = self._collection.query(
             query_embeddings=[query.embedding],
-            n_results=query.limit,
+            n_results=query.top_k,
             where=self._build_where(query),
             include=["documents", "metadatas", "distances"],
         )

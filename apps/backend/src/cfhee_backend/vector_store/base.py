@@ -29,7 +29,7 @@ class VectorQuery:
     project: str | None = None
     client: str | None = None
     module: str | None = None
-    limit: int = 5
+    top_k: int = 5
 
 
 @dataclass(slots=True)
