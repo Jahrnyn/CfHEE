@@ -14,6 +14,10 @@ $RepoRoot = Split-Path -Parent $ScriptDir
 $PostgresContainerName = "cfhee-postgres"
 $BackendUrl = "http://127.0.0.1:$BackendPort/health"
 $FrontendUrl = "http://127.0.0.1:$FrontendPort"
+$OllamaBaseUrl = if ($env:OLLAMA_BASE_URL) { $env:OLLAMA_BASE_URL.TrimEnd("/") } else { "http://127.0.0.1:11434" }
+$OllamaTagsUrl = "$OllamaBaseUrl/api/tags"
+$OllamaModel = if ($env:OLLAMA_MODEL) { $env:OLLAMA_MODEL } else { "qwen2.5:7b" }
+$AnswerProviderSelection = if ($env:ANSWER_PROVIDER) { $env:ANSWER_PROVIDER } else { "auto" }
 $hasFailures = $false
 
 function Write-Step {
@@ -33,6 +37,11 @@ function Write-Fail {
     $script:hasFailures = $true
 }
 
+function Write-Warn {
+    param([string]$Message)
+    Write-Host "[WARN] $Message" -ForegroundColor Yellow
+}
+
 function Test-CommandAvailable {
     param([string]$Name)
     return $null -ne (Get-Command $Name -ErrorAction SilentlyContinue)
@@ -43,6 +52,15 @@ function Invoke-EndpointCheck {
 
     try {
         return Invoke-WebRequest -Uri $Url -UseBasicParsing -TimeoutSec 5
+    }
+    catch {
+        return $null
+    }
+}
+
+function Invoke-OllamaTags {
+    try {
+        return Invoke-RestMethod -Uri $OllamaTagsUrl -Method Get -TimeoutSec 5
     }
     catch {
         return $null
@@ -88,6 +106,34 @@ if ($null -ne $frontendResponse) {
 }
 else {
     Write-Fail "Frontend did not respond successfully at $FrontendUrl. Start it with '.\\scripts\\dev-up.ps1' or inspect the frontend PowerShell window."
+}
+
+Write-Step "Checking Ollama reachability"
+$ollamaTags = Invoke-OllamaTags
+if ($null -eq $ollamaTags) {
+    Write-Warn "Ollama is not reachable at $OllamaBaseUrl. The backend should fall back to the deterministic provider."
+}
+else {
+    Write-Ok "Ollama responded from $OllamaBaseUrl."
+
+    $modelNames = @($ollamaTags.models | ForEach-Object { $_.name })
+    if ($modelNames -contains $OllamaModel) {
+        Write-Ok "Configured Ollama model '$OllamaModel' is available locally."
+    }
+    else {
+        Write-Warn "Configured Ollama model '$OllamaModel' is not available locally. Run 'ollama pull $OllamaModel' if you want Ollama-backed answers."
+    }
+}
+
+Write-Step "Checking answer-provider readiness"
+if ($AnswerProviderSelection -eq "deterministic") {
+    Write-Ok "ANSWER_PROVIDER is set to deterministic. Grounded answers should use the deterministic fallback."
+}
+elseif ($null -ne $ollamaTags -and (@($ollamaTags.models | ForEach-Object { $_.name }) -contains $OllamaModel)) {
+    Write-Ok "Ollama-backed answers appear ready for model '$OllamaModel'."
+}
+else {
+    Write-Warn "Ollama-backed answers are not fully ready. The backend should continue using the deterministic fallback."
 }
 
 Write-Host ""

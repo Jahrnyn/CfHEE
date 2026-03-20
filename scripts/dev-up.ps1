@@ -24,6 +24,26 @@ $FrontendNodeModules = Join-Path $FrontendDir "node_modules"
 $FrontendDepsMarker = Join-Path $FrontendNodeModules ".deps-installed"
 $PostgresContainerName = "cfhee-postgres"
 
+function Get-OllamaModelName {
+    if ($env:OLLAMA_MODEL) {
+        return $env:OLLAMA_MODEL
+    }
+
+    return "qwen2.5:7b"
+}
+
+function Get-OllamaBaseUrl {
+    if ($env:OLLAMA_BASE_URL) {
+        return $env:OLLAMA_BASE_URL.TrimEnd("/")
+    }
+
+    return "http://127.0.0.1:11434"
+}
+
+$OllamaBaseUrl = Get-OllamaBaseUrl
+$OllamaTagsUrl = "$OllamaBaseUrl/api/tags"
+$OllamaModel = Get-OllamaModelName
+
 function Write-Step {
     param([string]$Message)
     Write-Host ""
@@ -102,6 +122,20 @@ function Test-HttpEndpoint {
     }
 }
 
+function Invoke-OllamaJson {
+    param(
+        [string]$Url,
+        [int]$TimeoutSeconds = 3
+    )
+
+    try {
+        return Invoke-RestMethod -Uri $Url -Method Get -TimeoutSec $TimeoutSeconds
+    }
+    catch {
+        return $null
+    }
+}
+
 function Wait-ForContainerRunning {
     param(
         [string]$ContainerName,
@@ -130,6 +164,24 @@ function Start-DevWindow {
 
     $windowCommand = "`$Host.UI.RawUI.WindowTitle = '$Title'; Set-Location '$WorkingDirectory'; $Command"
     Start-Process -FilePath "powershell.exe" -WorkingDirectory $WorkingDirectory -ArgumentList @("-NoExit", "-Command", $windowCommand) | Out-Null
+}
+
+function Wait-ForHttpEndpoint {
+    param(
+        [string]$Url,
+        [int]$TimeoutSeconds = 20
+    )
+
+    $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
+    while ((Get-Date) -lt $deadline) {
+        if (Test-HttpEndpoint -Url $Url) {
+            return $true
+        }
+
+        Start-Sleep -Seconds 2
+    }
+
+    return $false
 }
 
 function Start-DockerDesktop {
@@ -250,10 +302,44 @@ else {
     Write-Host "Frontend dependencies look current; skipping install." -ForegroundColor DarkGreen
 }
 
+Write-Step "Checking Ollama availability"
+if (-not (Test-CommandAvailable "ollama")) {
+    Write-Host "Ollama CLI was not found. The backend will fall back to the deterministic answer provider." -ForegroundColor Yellow
+}
+else {
+    $ollamaTags = Invoke-OllamaJson -Url $OllamaTagsUrl
+    if ($null -eq $ollamaTags) {
+        Write-Host "Ollama server is not reachable at $OllamaBaseUrl. Trying to start it in a new PowerShell window..." -ForegroundColor Yellow
+        Start-DevWindow -Title "CFHEE Ollama" -WorkingDirectory $RepoRoot -Command "ollama serve"
+
+        if (Wait-ForHttpEndpoint -Url $OllamaTagsUrl -TimeoutSeconds 20) {
+            Write-Host "Ollama server is reachable." -ForegroundColor Green
+            $ollamaTags = Invoke-OllamaJson -Url $OllamaTagsUrl
+        }
+        else {
+            Write-Host "Ollama did not become reachable automatically. Start it manually with 'ollama serve' or the Ollama desktop app. Answers will fall back to the deterministic provider." -ForegroundColor Yellow
+        }
+    }
+    else {
+        Write-Host "Ollama server is reachable." -ForegroundColor DarkGreen
+    }
+
+    if ($null -ne $ollamaTags) {
+        $modelNames = @($ollamaTags.models | ForEach-Object { $_.name })
+        if ($modelNames -contains $OllamaModel) {
+            Write-Host "Configured Ollama model '$OllamaModel' is available locally." -ForegroundColor Green
+        }
+        else {
+            Write-Host "Configured Ollama model '$OllamaModel' is missing locally. Run 'ollama pull $OllamaModel' to enable Ollama-backed answers. Deterministic fallback remains available." -ForegroundColor Yellow
+        }
+    }
+}
+
 Write-Step "Starting backend and frontend processes"
 $backendUrl = "http://127.0.0.1:$BackendPort"
 $frontendUrl = "http://127.0.0.1:$FrontendPort"
 $healthUrl = "$backendUrl/health"
+$answerUrl = "$backendUrl/answer/query"
 
 if (Test-HttpEndpoint -Url $healthUrl) {
     Write-Host "Backend is already responding at $healthUrl; not starting a second process." -ForegroundColor Yellow
@@ -278,5 +364,7 @@ Write-Host "Frontend:  $frontendUrl" -ForegroundColor White
 Write-Host "Backend:   $backendUrl" -ForegroundColor White
 Write-Host "API docs:  $backendUrl/docs" -ForegroundColor White
 Write-Host "Health:    $healthUrl" -ForegroundColor White
+Write-Host "Answer:    $answerUrl" -ForegroundColor White
+Write-Host "Ollama:    $OllamaBaseUrl" -ForegroundColor White
 Write-Host ""
 Write-Host "Run '.\scripts\dev-check.ps1' in the repo root to verify everything after startup." -ForegroundColor Cyan

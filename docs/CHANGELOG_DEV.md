@@ -41,3 +41,15 @@
 - Docker emitted a user-config warning under PowerShell in this environment; the bootstrap scripts route Docker calls through `cmd.exe` to avoid that issue.
 - Scoped retrieval verification required starting Postgres with escalated Docker access in this environment.
 - `docs/TASKS.md` no longer reflects current implementation status and should be updated later.
+
+## 2026-03-20
+
+- Added the first Ollama-backed grounded answer provider behind the existing answer abstraction.
+- Added minimal answer-provider selection with safe fallback behavior:
+  - `ANSWER_PROVIDER=auto` prefers Ollama and falls back to deterministic
+  - `ANSWER_PROVIDER=ollama` still falls back to deterministic if Ollama is not ready
+  - `ANSWER_PROVIDER=deterministic` forces the local fallback
+- Kept retrieval as the only answer-context source.
+- Updated the Ask page to show the active provider and whether deterministic fallback was used.
+- Updated `scripts/dev-up.ps1` and `scripts/dev-check.ps1` to check Ollama reachability, configured model presence, and answer-provider readiness.
+- Updated `README.md` with local Ollama setup and provider-selection notes.

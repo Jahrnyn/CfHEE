@@ -10,7 +10,9 @@ export interface AnswerQueryResponse {
   grounded: boolean;
   answer_text: string | null;
   message: string | null;
+  requested_provider: string;
   provider: string;
+  fallback_used: boolean;
   provider_error: string | null;
   retrieval_empty: boolean;
   citations: RetrievedChunkMatch[];

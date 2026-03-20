@@ -422,7 +422,6 @@ User query
 
 ## Planned but not necessarily implemented yet
 
-* real local LLM-backed answer provider
 * enrichment pipeline
 * glossary extraction
 * background jobs
@@ -450,12 +449,11 @@ For detailed verified status, use `docs/PROJECT_STATE.md`.
 * Chroma indexing
 * scoped retrieval
 * retrieval hardening
-* grounded answer flow using a deterministic local provider
+* grounded answer flow with Ollama-backed answering plus deterministic fallback
 * Windows-first dev bootstrap scripts
 
 ### Not yet implemented
 
-* real Ollama-backed answer provider
 * enrichment pipeline
 * real scope management UI
 * settings UI beyond placeholders

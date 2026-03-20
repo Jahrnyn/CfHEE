@@ -97,12 +97,18 @@ import {
               </ng-container>
             </p>
           </div>
-          <p class="meta">Provider: {{ lastAnswerResponse.provider }}</p>
+          <p class="meta">
+            Provider: {{ lastAnswerResponse.provider }}
+            <ng-container *ngIf="lastAnswerResponse.fallback_used">
+              (fallback from {{ lastAnswerResponse.requested_provider }})
+            </ng-container>
+          </p>
         </div>
 
         <div *ngIf="lastAnswerResponse.grounded" class="answer-card">
           <p class="answer-label">Short answer</p>
           <p class="answer-text">{{ lastAnswerResponse.answer_text }}</p>
+          <p class="meta" *ngIf="lastAnswerResponse.message">{{ lastAnswerResponse.message }}</p>
         </div>
 
         <div *ngIf="!lastAnswerResponse.grounded" class="empty-state">

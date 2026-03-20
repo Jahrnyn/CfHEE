@@ -58,6 +58,24 @@ python -m uvicorn cfhee_backend.main:app --reload
 The backend also creates a local Chroma index under `apps/backend/data/chroma` by default.
 You can override that location with `CHROMA_PERSIST_DIRECTORY`.
 
+Grounded answers support a small provider-selection mechanism:
+
+- `ANSWER_PROVIDER=auto` (default): use Ollama when it is reachable and the configured model exists locally, otherwise fall back to the deterministic provider
+- `ANSWER_PROVIDER=ollama`: prefer Ollama, but still fall back to deterministic if Ollama is unavailable
+- `ANSWER_PROVIDER=deterministic`: always use the deterministic local fallback
+
+Ollama defaults:
+
+- `OLLAMA_BASE_URL=http://127.0.0.1:11434`
+- `OLLAMA_MODEL=qwen2.5:7b`
+
+If you want Ollama-backed answers, make sure Ollama is installed, running, and the model exists locally:
+
+```powershell
+ollama pull qwen2.5:7b
+ollama serve
+```
+
 The API starts on `http://127.0.0.1:8000` and exposes:
 
 - `GET /`
@@ -96,6 +114,7 @@ For a Windows-first local setup, use the PowerShell scripts in `scripts/` from t
 ```
 
 `dev-up.ps1` checks Docker availability, starts Postgres with `docker compose`, creates `apps/backend/.venv` if needed, installs backend and frontend dependencies only when their manifest files changed, and opens backend plus frontend in separate PowerShell windows.
+It also checks whether Ollama is reachable, tries to start `ollama serve` in a new PowerShell window when practical, and warns clearly when the configured local model is missing.
 
 If your PowerShell execution policy blocks local scripts, run them with:
 
@@ -114,3 +133,6 @@ After the services are up, run:
 - the `cfhee-postgres` container is running
 - the backend responds on `http://127.0.0.1:8000/health`
 - the frontend responds on `http://127.0.0.1:4200`
+- whether Ollama is reachable at the configured local URL
+- whether the configured local Ollama model is present
+- whether Ollama-backed answers appear ready or the deterministic fallback is expected

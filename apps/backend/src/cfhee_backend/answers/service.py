@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 
 def query_answer(payload: AnswerQueryRequest) -> AnswerQueryResponse:
     retrieval_response = query_retrieval(payload)
+    requested_provider, provider, fallback_used, fallback_message = get_answer_provider()
 
     if retrieval_response.empty:
         return AnswerQueryResponse(
@@ -20,13 +21,14 @@ def query_answer(payload: AnswerQueryRequest) -> AnswerQueryResponse:
             grounded=False,
             answer_text=None,
             message="Not enough evidence in retrieved context.",
-            provider="deterministic-local",
+            requested_provider=requested_provider,
+            provider=getattr(provider, "provider_name", provider.__class__.__name__),
+            fallback_used=fallback_used,
             provider_error=None,
             retrieval_empty=True,
             citations=[],
         )
 
-    provider = get_answer_provider()
     provider_name = getattr(provider, "provider_name", provider.__class__.__name__)
     try:
         provider_result = provider.generate_answer(
@@ -44,20 +46,28 @@ def query_answer(payload: AnswerQueryRequest) -> AnswerQueryResponse:
             grounded=False,
             answer_text=None,
             message="Answer provider failed to produce a grounded answer.",
+            requested_provider=requested_provider,
             provider=provider_name,
+            fallback_used=fallback_used,
             provider_error=str(exc),
             retrieval_empty=False,
             citations=retrieval_response.results,
         )
 
     grounded = provider_result.answer_text is not None
+    response_message = provider_result.message
+    if fallback_message:
+        response_message = f"{fallback_message} {response_message}".strip() if response_message else fallback_message
+
     return AnswerQueryResponse(
         query_text=payload.query_text,
         active_scope=retrieval_response.active_scope,
         grounded=grounded,
         answer_text=provider_result.answer_text,
-        message=provider_result.message,
+        message=response_message,
+        requested_provider=requested_provider,
         provider=provider_result.provider,
+        fallback_used=fallback_used,
         provider_error=None,
         retrieval_empty=False,
         citations=retrieval_response.results,

@@ -31,7 +31,7 @@ Verified by code inspection:
 - document listing and chunk inspection are implemented in backend and frontend code
 - scoped retrieval is implemented in backend and frontend code
 - retrieval responses now include explicit scope, chunk/document identifiers, distance, and similarity score
-- source-grounded answers are implemented on top of retrieval using a deterministic local provider
+- source-grounded answers are implemented on top of retrieval using provider selection with Ollama plus deterministic fallback
 - vector-store abstraction exists and is currently backed by Chroma
 - embedding abstraction exists and is currently backed by a local hash embedding service
 
@@ -42,10 +42,12 @@ Verified in the local environment during the latest check:
 - backend source compiles with `python -m compileall`
 - retrieval endpoint accepts `top_k`, returns explicit empty results, logs query/scope/result count, and rejects missing scope with a clear validation error when exercised against local Postgres + Chroma
 - answer endpoint returns a grounded short answer with cited chunks for matching scope, returns an explicit no-evidence state for empty retrieval, and rejects missing scope with the same scoped validation
+- Ollama is reachable locally at the default local URL and `qwen2.5:7b` is present locally in this environment
+- answer provider selection uses Ollama successfully when the model is available and falls back to the deterministic provider when the configured Ollama model is unavailable
+- `dev-check.ps1` now reports Ollama reachability, configured model presence, and answer-provider readiness
 
 Not implemented yet:
 
-- Ollama integration
 - real scope management UI
 - settings UI beyond placeholder copy
 
@@ -68,4 +70,4 @@ Already present:
 Still missing from the broader architecture direction:
 
 - enrichment
-- provider-backed LLM answer layer beyond the current deterministic local provider
+- broader provider routing beyond the current minimal Ollama-or-deterministic selection

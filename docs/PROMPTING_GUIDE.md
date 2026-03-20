@@ -30,5 +30,5 @@ Use this repo with a thin-slice mindset.
 
 - Windows-first local development is the active path.
 - Frontend API calls are currently pointed at `http://127.0.0.1:8000`.
-- `Ask Copilot`, `Scope Manager`, and `Settings` are placeholder pages today.
+- `Ask Copilot` is implemented; `Scope Manager` and `Settings` are still placeholder pages.
 - Retrieval and answers should remain scoped by default when implemented.

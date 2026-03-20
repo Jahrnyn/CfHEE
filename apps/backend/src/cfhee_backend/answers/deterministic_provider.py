@@ -12,6 +12,9 @@ TOKEN_PATTERN = re.compile(r"\w+", re.UNICODE)
 class DeterministicLocalAnswerProvider(GroundedAnswerProvider):
     provider_name = "deterministic-local"
 
+    def is_available(self) -> tuple[bool, str | None]:
+        return True, None
+
     def generate_answer(self, answer_input: GroundedAnswerInput) -> GroundedAnswerResult:
         snippets = self._select_supporting_snippets(answer_input)
         if not snippets:

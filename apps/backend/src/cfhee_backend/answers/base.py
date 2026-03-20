@@ -21,5 +21,10 @@ class GroundedAnswerResult:
 
 
 class GroundedAnswerProvider(Protocol):
+    provider_name: str
+
+    def is_available(self) -> tuple[bool, str | None]:
+        """Return whether the provider is locally usable right now."""
+
     def generate_answer(self, answer_input: GroundedAnswerInput) -> GroundedAnswerResult:
         """Return a grounded answer built only from retrieved citations."""

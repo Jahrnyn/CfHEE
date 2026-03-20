@@ -2,20 +2,20 @@
 
 ## Recommended next development step
 
-Add a real local LLM-backed answer provider behind the current answer abstraction.
+Tighten Ollama prompt/citation behavior and make the grounded answer output more consistent.
 
 Why this is next:
 
-- the project now supports grounded answers backed by retrieved chunks
-- the current provider is deterministic and local, but not yet Ollama-backed
-- the main remaining gap in the answer layer is real local model generation behind the same grounded flow
+- the project now has a real local Ollama-backed provider behind the answer abstraction
+- the next quality gap is answer consistency and citation presentation, not provider plumbing
+- the current slice is functional but intentionally minimal
 
 ## Suggested narrow scope
 
-1. Add an Ollama-backed provider that implements the existing answer-provider interface.
-2. Keep retrieval as the only context source.
+1. Tighten the Ollama prompt so answers stay short and citation-friendly.
+2. Improve answer response formatting while keeping retrieval as the only context source.
 3. Preserve the current no-evidence behavior when retrieval is empty.
-4. Keep the deterministic provider available as a local fallback until Ollama setup is reliable.
+4. Keep the deterministic provider available as a fallback for local setup issues.
 
 ## Keep out of scope for that step
 
@@ -26,4 +26,4 @@ Why this is next:
 
 ## After that
 
-Once the local LLM provider works, tighten citation formatting and answer prompting.
+Once answer formatting is steadier, improve manual verification coverage for the full Ask page flow.
