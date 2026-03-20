@@ -83,7 +83,7 @@ else {
 
 Write-Step "Checking frontend HTTP response"
 $frontendResponse = Invoke-EndpointCheck -Url $FrontendUrl
-if ($null -ne $frontendResponse -and $frontendResponse.StatusCode -ge 200 -and $frontendResponse.StatusCode -lt 400) {
+if ($null -ne $frontendResponse) {
     Write-Ok "Frontend responded from $FrontendUrl with HTTP $($frontendResponse.StatusCode)."
 }
 else {

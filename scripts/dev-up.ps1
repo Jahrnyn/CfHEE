@@ -132,6 +132,33 @@ function Start-DevWindow {
     Start-Process -FilePath "powershell.exe" -WorkingDirectory $WorkingDirectory -ArgumentList @("-NoExit", "-Command", $windowCommand) | Out-Null
 }
 
+function Start-DockerDesktop {
+    $dockerDesktopPath = @(
+        "$env:ProgramFiles\Docker\Docker\Docker Desktop.exe",
+        "$env:LOCALAPPDATA\Programs\Docker\Docker\Docker Desktop.exe"
+    ) | Where-Object { Test-Path $_ } | Select-Object -First 1
+
+    if (-not $dockerDesktopPath) {
+        Fail "Docker Desktop executable not found. Make sure Docker Desktop is installed."
+    }
+
+    Write-Host "Starting Docker Desktop..." -ForegroundColor Yellow
+    Start-Process -FilePath $dockerDesktopPath
+
+    $deadline = (Get-Date).AddSeconds(60)
+    while ((Get-Date) -lt $deadline) {
+        Start-Sleep -Seconds 3
+        cmd.exe /c "docker info >nul 2>&1"
+        if ($LASTEXITCODE -eq 0) {
+            Write-Host "Docker Desktop is ready." -ForegroundColor Green
+            return
+        }
+        Write-Host "  Still waiting for Docker Desktop..." -ForegroundColor DarkGray
+    }
+
+    Fail "Docker Desktop did not become available within 60 seconds. Try starting it manually."
+}
+
 Write-Step "Checking required tools"
 if (-not (Test-CommandAvailable "docker")) {
     Fail "Docker CLI was not found. Install Docker Desktop and reopen PowerShell."
@@ -143,9 +170,13 @@ if (-not (Test-CommandAvailable "npm.cmd") -and -not (Test-CommandAvailable "npm
 
 $pythonLauncher = Get-PythonLauncher
 
+Write-Step "Checking Docker Desktop status"
 cmd.exe /c "docker info >nul 2>&1"
 if ($LASTEXITCODE -ne 0) {
-    Fail "Docker is installed but not available right now. Start Docker Desktop, wait for it to finish booting, then rerun this script."
+    Start-DockerDesktop
+}
+else {
+    Write-Host "Docker Desktop is already running." -ForegroundColor DarkGreen
 }
 
 Write-Step "Starting Postgres with docker compose"
@@ -248,4 +279,4 @@ Write-Host "Backend:   $backendUrl" -ForegroundColor White
 Write-Host "API docs:  $backendUrl/docs" -ForegroundColor White
 Write-Host "Health:    $healthUrl" -ForegroundColor White
 Write-Host ""
-Write-Host "Run '.\\scripts\\dev-check.ps1' in the repo root to verify everything after startup." -ForegroundColor Cyan
+Write-Host "Run '.\scripts\dev-check.ps1' in the repo root to verify everything after startup." -ForegroundColor Cyan
