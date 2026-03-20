@@ -7,6 +7,9 @@ This file explains the role of each documentation file in the repository.
 ### `docs/ARCHITECTURE.md`
 High-level architecture overview of the system.
 Use this to understand layers, modules, and long-term structure.
+This document describes the intended system architecture and long-term structure.
+It is not the authoritative source for current implementation status.
+For verified current state, use docs/PROJECT_STATE.md.
 
 ### `docs/MVP.md`
 Defines the intended MVP scope and what is explicitly out of scope.
