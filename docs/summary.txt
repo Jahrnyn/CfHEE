@@ -208,12 +208,32 @@ A multi-workspace, domain-aware, local-first knowledge copilot that:
 - Added Windows-first local bootstrap scripts:
   - `scripts/dev-up.ps1`
   - `scripts/dev-check.ps1`
+- Added the first scoped retrieval vertical slice:
+  - backend retrieval request/response models
+  - backend retrieval service
+  - `POST /retrieval/query`
+  - Chroma scoped query support through the existing vector-store layer
+  - `Ask Copilot` UI for scoped retrieval-only queries
+- Hardened the retrieval slice:
+  - added `top_k` support while keeping retrieval scoped by default
+  - added explicit missing-scope validation
+  - added similarity score plus explicit chunk/document identifiers in results
+  - added retrieval service logging for query text, scope, and returned result count
+  - added clearer loading and empty states on the Ask page
+- Added the first grounded answer vertical slice:
+  - backend answer service reusing the existing retrieval flow
+  - minimal answer-provider abstraction
+  - deterministic local answer provider
+  - `POST /answer/query`
+  - Ask page support for grounded answer requests and cited supporting chunks
 - Updated `README.md` with a short local development bootstrap section.
 - Confirmed the repo currently contains:
   - manual document ingest UI
   - document list UI
   - chunk inspection UI
+  - scoped retrieval UI
   - FastAPI document endpoints
+  - FastAPI retrieval endpoint
   - Postgres persistence
   - paragraph-based chunking
   - Chroma indexing with local hash embeddings
@@ -222,7 +242,7 @@ A multi-workspace, domain-aware, local-first knowledge copilot that:
 
 - Direct `.\scripts\*.ps1` execution can be blocked by PowerShell execution policy in this environment.
 - Docker emitted a user-config warning under PowerShell in this environment; the bootstrap scripts route Docker calls through `cmd.exe` to avoid that issue.
-- The latest local check found that Postgres, backend, and frontend were not running at the time of verification.
+- Scoped retrieval verification required starting Postgres with escalated Docker access in this environment.
 - `docs/TASKS.md` no longer reflects current implementation status and should be updated later.
 # Architectural Decisions
 
@@ -389,34 +409,34 @@ Deliver the smallest useful version of the system:
 
 ## Recommended next development step
 
-Implement the first scoped retrieval vertical slice.
+Add a real local LLM-backed answer provider behind the current answer abstraction.
 
 Why this is next:
 
-- the project already stores documents, chunks, and Chroma vectors
-- `Ask Copilot` is still an explicit placeholder
-- retrieval is the next core MVP capability after ingestion and listing
+- the project now supports grounded answers backed by retrieved chunks
+- the current provider is deterministic and local, but not yet Ollama-backed
+- the main remaining gap in the answer layer is real local model generation behind the same grounded flow
 
 ## Suggested narrow scope
 
-1. Add a backend retrieval service that queries Chroma with explicit scope filters.
-2. Add a minimal `POST /ask` or `POST /retrieval/query` endpoint.
-3. Return matching chunks with source metadata only at first.
-4. Wire the `Ask Copilot` page to submit a scoped query and render retrieved chunks.
+1. Add an Ollama-backed provider that implements the existing answer-provider interface.
+2. Keep retrieval as the only context source.
+3. Preserve the current no-evidence behavior when retrieval is empty.
+4. Keep the deterministic provider available as a local fallback until Ollama setup is reliable.
 
 ## Keep out of scope for that step
 
-- free-form answer synthesis
+- broad answer orchestration beyond a small cited response
 - agent workflows
 - external connectors
 - complex ranking or orchestration
 
 ## After that
 
-Once scoped retrieval works, add the first source-grounded answer composer on top of retrieved chunks.
+Once the local LLM provider works, tighten citation formatting and answer prompting.
 # Project State
 
-Last reviewed: 2026-03-19
+Last reviewed: 2026-03-20
 
 ## Current slice in repo
 
@@ -424,7 +444,9 @@ Implemented in code:
 
 - Angular frontend shell with routes for `Overview`, `Inbox / Capture`, `Documents`, `Ask Copilot`, `Scope Manager`, and `Settings`
 - Working frontend views for manual ingest and document listing
-- FastAPI backend with `GET /`, `GET /health`, `POST /documents`, `GET /documents`, and `GET /documents/{id}/chunks`
+- Working frontend view for scoped retrieval in `Ask Copilot`
+- Working frontend `Ask Copilot` flow for grounded answers plus retrieval-only inspection
+- FastAPI backend with `GET /`, `GET /health`, `POST /documents`, `GET /documents`, `GET /documents/{id}/chunks`, `POST /retrieval/query`, and `POST /answer/query`
 - Postgres schema for workspaces, domains, projects, clients, modules, documents, and chunks
 - Document ingest flow that:
   - validates required scope and hierarchy
@@ -443,18 +465,22 @@ Verified by code inspection:
 
 - manual ingest is implemented end to end in backend and frontend code
 - document listing and chunk inspection are implemented in backend and frontend code
+- scoped retrieval is implemented in backend and frontend code
+- retrieval responses now include explicit scope, chunk/document identifiers, distance, and similarity score
+- source-grounded answers are implemented on top of retrieval using a deterministic local provider
 - vector-store abstraction exists and is currently backed by Chroma
 - embedding abstraction exists and is currently backed by a local hash embedding service
 
 Verified in the local environment during the latest check:
 
 - `dev-check.ps1` runs successfully when invoked with `powershell.exe -ExecutionPolicy Bypass -File ...`
-- Postgres, backend, and frontend were not running at the time of the latest check
+- frontend production build succeeds with `npm.cmd run build`
+- backend source compiles with `python -m compileall`
+- retrieval endpoint accepts `top_k`, returns explicit empty results, logs query/scope/result count, and rejects missing scope with a clear validation error when exercised against local Postgres + Chroma
+- answer endpoint returns a grounded short answer with cited chunks for matching scope, returns an explicit no-evidence state for empty retrieval, and rejects missing scope with the same scoped validation
 
 Not implemented yet:
 
-- scoped retrieval endpoint
-- answer generation / source-grounded answer composer
 - Ollama integration
 - real scope management UI
 - settings UI beyond placeholder copy
@@ -468,6 +494,8 @@ Already present:
 - Postgres schema
 - manual ingest form
 - document list
+- scoped retrieval UI
+- grounded answer UI
 - workspace/domain/project/client/module metadata
 - raw text storage
 - basic chunking
@@ -475,10 +503,8 @@ Already present:
 
 Still missing from the broader architecture direction:
 
-- scoped retrieval
-- ask flow with sources
 - enrichment
-- provider-backed LLM answer layer
+- provider-backed LLM answer layer beyond the current deterministic local provider
 # Prompting Guide
 
 Use this repo with a thin-slice mindset.

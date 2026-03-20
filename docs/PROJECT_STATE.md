@@ -1,6 +1,6 @@
 # Project State
 
-Last reviewed: 2026-03-19
+Last reviewed: 2026-03-20
 
 ## Current slice in repo
 
@@ -9,7 +9,8 @@ Implemented in code:
 - Angular frontend shell with routes for `Overview`, `Inbox / Capture`, `Documents`, `Ask Copilot`, `Scope Manager`, and `Settings`
 - Working frontend views for manual ingest and document listing
 - Working frontend view for scoped retrieval in `Ask Copilot`
-- FastAPI backend with `GET /`, `GET /health`, `POST /documents`, `GET /documents`, `GET /documents/{id}/chunks`, and `POST /retrieval/query`
+- Working frontend `Ask Copilot` flow for grounded answers plus retrieval-only inspection
+- FastAPI backend with `GET /`, `GET /health`, `POST /documents`, `GET /documents`, `GET /documents/{id}/chunks`, `POST /retrieval/query`, and `POST /answer/query`
 - Postgres schema for workspaces, domains, projects, clients, modules, documents, and chunks
 - Document ingest flow that:
   - validates required scope and hierarchy
@@ -30,6 +31,7 @@ Verified by code inspection:
 - document listing and chunk inspection are implemented in backend and frontend code
 - scoped retrieval is implemented in backend and frontend code
 - retrieval responses now include explicit scope, chunk/document identifiers, distance, and similarity score
+- source-grounded answers are implemented on top of retrieval using a deterministic local provider
 - vector-store abstraction exists and is currently backed by Chroma
 - embedding abstraction exists and is currently backed by a local hash embedding service
 
@@ -39,10 +41,10 @@ Verified in the local environment during the latest check:
 - frontend production build succeeds with `npm.cmd run build`
 - backend source compiles with `python -m compileall`
 - retrieval endpoint accepts `top_k`, returns explicit empty results, logs query/scope/result count, and rejects missing scope with a clear validation error when exercised against local Postgres + Chroma
+- answer endpoint returns a grounded short answer with cited chunks for matching scope, returns an explicit no-evidence state for empty retrieval, and rejects missing scope with the same scoped validation
 
 Not implemented yet:
 
-- answer generation / source-grounded answer composer
 - Ollama integration
 - real scope management UI
 - settings UI beyond placeholder copy
@@ -57,6 +59,7 @@ Already present:
 - manual ingest form
 - document list
 - scoped retrieval UI
+- grounded answer UI
 - workspace/domain/project/client/module metadata
 - raw text storage
 - basic chunking
@@ -64,6 +67,5 @@ Already present:
 
 Still missing from the broader architecture direction:
 
-- source-grounded prose answers
 - enrichment
-- provider-backed LLM answer layer
+- provider-backed LLM answer layer beyond the current deterministic local provider

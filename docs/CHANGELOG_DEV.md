@@ -17,6 +17,12 @@
   - added similarity score plus explicit chunk/document identifiers in results
   - added retrieval service logging for query text, scope, and returned result count
   - added clearer loading and empty states on the Ask page
+- Added the first grounded answer vertical slice:
+  - backend answer service reusing the existing retrieval flow
+  - minimal answer-provider abstraction
+  - deterministic local answer provider
+  - `POST /answer/query`
+  - Ask page support for grounded answer requests and cited supporting chunks
 - Updated `README.md` with a short local development bootstrap section.
 - Confirmed the repo currently contains:
   - manual document ingest UI

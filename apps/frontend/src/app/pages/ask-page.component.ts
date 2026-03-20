@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
+import { AnswerApiService, AnswerQueryResponse } from '../answer-api.service';
 import {
   RetrievalApiService,
   RetrievalQueryPayload,
@@ -17,8 +18,8 @@ import {
       <p class="label">Scoped retrieval</p>
       <h2>Ask Copilot</h2>
       <p class="intro">
-        This first slice is retrieval-only. Workspace and domain are required so results stay
-        scoped by default and do not mix unrelated content.
+        Grounded answers reuse scoped retrieval only. Workspace and domain are required so results
+        stay scoped by default, and no answer is produced without retrieved evidence.
       </p>
 
       <div class="scope-summary">
@@ -65,13 +66,79 @@ import {
 
         <div class="actions">
           <button type="submit" [disabled]="isSubmitting || queryForm.invalid">
-            {{ isSubmitting ? 'Retrieving...' : 'Retrieve chunks' }}
+            {{ isSubmitting && activeAction === 'answer' ? 'Generating answer...' : 'Generate grounded answer' }}
+          </button>
+          <button type="button" class="secondary-button" (click)="retrieveOnly()" [disabled]="isSubmitting || queryForm.invalid">
+            {{ isSubmitting && activeAction === 'retrieval' ? 'Retrieving...' : 'Retrieve chunks only' }}
           </button>
         </div>
       </form>
 
       <p *ngIf="errorMessage" class="error">{{ errorMessage }}</p>
-      <p *ngIf="isSubmitting" class="status">Searching scoped chunks...</p>
+      <p *ngIf="isSubmitting" class="status">
+        {{ activeAction === 'answer' ? 'Generating grounded answer from retrieved chunks...' : 'Searching scoped chunks...' }}
+      </p>
+
+      <section class="answer-section" *ngIf="lastAnswerResponse">
+        <div class="results-header">
+          <div>
+            <h3>Grounded answer</h3>
+            <p class="meta">
+              Active scope:
+              {{ lastAnswerResponse.active_scope.workspace }} / {{ lastAnswerResponse.active_scope.domain }}
+              <ng-container *ngIf="lastAnswerResponse.active_scope.project">
+                / {{ lastAnswerResponse.active_scope.project }}
+              </ng-container>
+              <ng-container *ngIf="lastAnswerResponse.active_scope.client">
+                / {{ lastAnswerResponse.active_scope.client }}
+              </ng-container>
+              <ng-container *ngIf="lastAnswerResponse.active_scope.module">
+                / {{ lastAnswerResponse.active_scope.module }}
+              </ng-container>
+            </p>
+          </div>
+          <p class="meta">Provider: {{ lastAnswerResponse.provider }}</p>
+        </div>
+
+        <div *ngIf="lastAnswerResponse.grounded" class="answer-card">
+          <p class="answer-label">Short answer</p>
+          <p class="answer-text">{{ lastAnswerResponse.answer_text }}</p>
+        </div>
+
+        <div *ngIf="!lastAnswerResponse.grounded" class="empty-state">
+          <p class="empty-title">No grounded answer</p>
+          <p class="empty">{{ lastAnswerResponse.message ?? 'Not enough evidence in retrieved context.' }}</p>
+          <p class="meta" *ngIf="lastAnswerResponse.provider_error">
+            <strong>Provider error:</strong> {{ lastAnswerResponse.provider_error }}
+          </p>
+        </div>
+
+        <div class="citations" *ngIf="lastAnswerResponse.citations.length > 0">
+          <h4>Cited support</h4>
+
+          <article class="result-card" *ngFor="let citation of lastAnswerResponse.citations">
+            <div class="card-header">
+              <h4>#{{ citation.rank }} - {{ citation.document.title }}</h4>
+              <p *ngIf="citation.similarity_score !== null">
+                Similarity: {{ citation.similarity_score | number: '1.3-3' }}
+              </p>
+            </div>
+
+            <p class="meta">
+              <strong>Scope:</strong>
+              {{ citation.scope.workspace }} / {{ citation.scope.domain }}
+              <ng-container *ngIf="citation.scope.project"> / {{ citation.scope.project }}</ng-container>
+              <ng-container *ngIf="citation.scope.client"> / {{ citation.scope.client }}</ng-container>
+              <ng-container *ngIf="citation.scope.module"> / {{ citation.scope.module }}</ng-container>
+            </p>
+            <p class="meta"><strong>Document ID:</strong> {{ citation.document_id }}</p>
+            <p class="meta"><strong>Chunk ID:</strong> {{ citation.chunk_id }}</p>
+            <p class="meta"><strong>Chunk:</strong> {{ citation.chunk_index + 1 }} ({{ citation.char_count }} chars)</p>
+            <p class="meta" *ngIf="citation.document.source_ref"><strong>Source ref:</strong> {{ citation.document.source_ref }}</p>
+            <p class="chunk-text">{{ citation.text }}</p>
+          </article>
+        </div>
+      </section>
 
       <section class="results" *ngIf="lastResponse">
         <div class="results-header">
@@ -233,6 +300,12 @@ import {
         opacity: 0.7;
       }
 
+      .secondary-button {
+        color: #18181b;
+        border: 1px solid #d4d4d8;
+        background: #fff;
+      }
+
       .error {
         margin: 16px 0 0;
         padding: 12px 14px;
@@ -247,6 +320,12 @@ import {
       }
 
       .results {
+        margin-top: 24px;
+        display: grid;
+        gap: 16px;
+      }
+
+      .answer-section {
         margin-top: 24px;
         display: grid;
         gap: 16px;
@@ -278,6 +357,28 @@ import {
         margin: 8px 0 0;
       }
 
+      .answer-card {
+        padding: 18px;
+        border: 1px solid #d1fae5;
+        border-radius: 18px;
+        background: #ecfdf5;
+      }
+
+      .answer-label {
+        margin: 0 0 8px;
+        color: #065f46;
+        font-size: 0.85rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .answer-text {
+        margin: 0;
+        color: #064e3b;
+        line-height: 1.7;
+      }
+
       .empty-state {
         border: 1px dashed #d4d4d8;
         background: #fafafa;
@@ -287,6 +388,15 @@ import {
         margin: 0 0 8px;
         color: #18181b;
         font-weight: 700;
+      }
+
+      .citations {
+        display: grid;
+        gap: 16px;
+      }
+
+      .citations h4 {
+        margin: 0;
       }
 
       .chunk-text {
@@ -300,10 +410,13 @@ import {
   ]
 })
 export class AskPageComponent {
+  private readonly answerApi = inject(AnswerApiService);
   private readonly retrievalApi = inject(RetrievalApiService);
 
   protected isSubmitting = false;
+  protected activeAction: 'answer' | 'retrieval' | null = null;
   protected errorMessage = '';
+  protected lastAnswerResponse: AnswerQueryResponse | null = null;
   protected lastResponse: RetrievalQueryResponse | null = null;
   protected form = {
     queryText: '',
@@ -316,18 +429,47 @@ export class AskPageComponent {
   };
 
   protected submit(): void {
+    this.generateAnswer();
+  }
+
+  protected retrieveOnly(): void {
     this.isSubmitting = true;
+    this.activeAction = 'retrieval';
     this.errorMessage = '';
+    this.lastAnswerResponse = null;
     this.lastResponse = null;
 
     this.retrievalApi.query(this.buildPayload()).subscribe({
       next: (response) => {
         this.lastResponse = response;
         this.isSubmitting = false;
+        this.activeAction = null;
       },
       error: (error) => {
         this.errorMessage = this.formatError(error);
         this.isSubmitting = false;
+        this.activeAction = null;
+      }
+    });
+  }
+
+  private generateAnswer(): void {
+    this.isSubmitting = true;
+    this.activeAction = 'answer';
+    this.errorMessage = '';
+    this.lastAnswerResponse = null;
+    this.lastResponse = null;
+
+    this.answerApi.query(this.buildPayload()).subscribe({
+      next: (response) => {
+        this.lastAnswerResponse = response;
+        this.isSubmitting = false;
+        this.activeAction = null;
+      },
+      error: (error) => {
+        this.errorMessage = this.formatError(error);
+        this.isSubmitting = false;
+        this.activeAction = null;
       }
     });
   }
@@ -392,6 +534,6 @@ export class AskPageComponent {
         .join(' ');
     }
 
-    return 'Unable to retrieve chunks for this scoped query.';
+    return 'Unable to complete this Ask Copilot request.';
   }
 }

@@ -62,6 +62,7 @@ The API starts on `http://127.0.0.1:8000` and exposes:
 
 - `GET /`
 - `GET /health`
+- `POST /answer/query`
 - `POST /documents`
 - `GET /documents`
 - `GET /documents/{document_id}/chunks`
@@ -84,7 +85,7 @@ The current vertical slices are available at:
 
 - `Inbox / Capture` for manual document ingestion
 - `Documents` for listing stored documents and inspecting generated chunks
-- `Ask Copilot` for scoped retrieval of matching chunks and source metadata; workspace and domain are required so global retrieval is never implicit
+- `Ask Copilot` for grounded answers backed only by scoped retrieval results, plus a retrieval-only view for raw matching chunks
 
 ## Local Dev Bootstrap
 
