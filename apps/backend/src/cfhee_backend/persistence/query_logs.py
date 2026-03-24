@@ -1,0 +1,188 @@
+from __future__ import annotations
+
+from dataclasses import dataclass
+from datetime import datetime
+
+from psycopg.types.json import Jsonb
+
+from cfhee_backend.persistence.database import get_connection
+
+
+@dataclass(slots=True)
+class QueryLogCreate:
+    query_text: str
+    workspace: str
+    domain: str
+    project: str | None
+    client: str | None
+    module: str | None
+    top_k: int | None
+    result_count: int
+    empty_result: bool
+    retrieved_chunk_ids: list[int]
+    retrieved_document_ids: list[int]
+    answer_text: str | None
+    provider_used: str
+    fallback_used: bool
+
+
+@dataclass(slots=True)
+class QueryLogRow:
+    id: int
+    created_at: datetime
+    query_text: str
+    workspace: str
+    domain: str
+    project: str | None
+    client: str | None
+    module: str | None
+    top_k: int | None
+    result_count: int
+    empty_result: bool
+    retrieved_chunk_ids: list[int]
+    retrieved_document_ids: list[int]
+    answer_text: str | None
+    provider_used: str
+    fallback_used: bool
+
+
+def insert_query_log(entry: QueryLogCreate) -> int:
+    with get_connection() as connection:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """
+                INSERT INTO query_logs (
+                  query_text,
+                  workspace,
+                  domain,
+                  project,
+                  client,
+                  module,
+                  top_k,
+                  result_count,
+                  empty_result,
+                  retrieved_chunk_ids,
+                  retrieved_document_ids,
+                  answer_text,
+                  provider_used,
+                  fallback_used
+                )
+                VALUES (
+                  %(query_text)s,
+                  %(workspace)s,
+                  %(domain)s,
+                  %(project)s,
+                  %(client)s,
+                  %(module)s,
+                  %(top_k)s,
+                  %(result_count)s,
+                  %(empty_result)s,
+                  %(retrieved_chunk_ids)s,
+                  %(retrieved_document_ids)s,
+                  %(answer_text)s,
+                  %(provider_used)s,
+                  %(fallback_used)s
+                )
+                RETURNING id
+                """,
+                {
+                    "query_text": entry.query_text,
+                    "workspace": entry.workspace,
+                    "domain": entry.domain,
+                    "project": entry.project,
+                    "client": entry.client,
+                    "module": entry.module,
+                    "top_k": entry.top_k,
+                    "result_count": entry.result_count,
+                    "empty_result": entry.empty_result,
+                    "retrieved_chunk_ids": Jsonb(entry.retrieved_chunk_ids),
+                    "retrieved_document_ids": Jsonb(entry.retrieved_document_ids),
+                    "answer_text": entry.answer_text,
+                    "provider_used": entry.provider_used,
+                    "fallback_used": entry.fallback_used,
+                },
+            )
+            row = cursor.fetchone()
+        connection.commit()
+
+    return int(row["id"])
+
+
+def update_query_log_answer(
+    query_log_id: int,
+    answer_text: str | None,
+    provider_used: str,
+    fallback_used: bool,
+) -> None:
+    with get_connection() as connection:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """
+                UPDATE query_logs
+                SET
+                  answer_text = %(answer_text)s,
+                  provider_used = %(provider_used)s,
+                  fallback_used = %(fallback_used)s
+                WHERE id = %(query_log_id)s
+                """,
+                {
+                    "query_log_id": query_log_id,
+                    "answer_text": answer_text,
+                    "provider_used": provider_used,
+                    "fallback_used": fallback_used,
+                },
+            )
+        connection.commit()
+
+
+def list_query_logs(limit: int = 20) -> list[QueryLogRow]:
+    with get_connection() as connection:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT
+                  id,
+                  created_at,
+                  query_text,
+                  workspace,
+                  domain,
+                  project,
+                  client,
+                  module,
+                  top_k,
+                  result_count,
+                  empty_result,
+                  retrieved_chunk_ids,
+                  retrieved_document_ids,
+                  answer_text,
+                  provider_used,
+                  fallback_used
+                FROM query_logs
+                ORDER BY created_at DESC, id DESC
+                LIMIT %(limit)s
+                """,
+                {"limit": limit},
+            )
+            rows = cursor.fetchall()
+
+    return [
+        QueryLogRow(
+            id=row["id"],
+            created_at=row["created_at"],
+            query_text=row["query_text"],
+            workspace=row["workspace"],
+            domain=row["domain"],
+            project=row["project"],
+            client=row["client"],
+            module=row["module"],
+            top_k=row["top_k"],
+            result_count=row["result_count"],
+            empty_result=row["empty_result"],
+            retrieved_chunk_ids=list(row["retrieved_chunk_ids"]),
+            retrieved_document_ids=list(row["retrieved_document_ids"]),
+            answer_text=row["answer_text"],
+            provider_used=row["provider_used"],
+            fallback_used=row["fallback_used"],
+        )
+        for row in rows
+    ]

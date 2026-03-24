@@ -1,0 +1,56 @@
+from __future__ import annotations
+
+from datetime import datetime
+
+from fastapi import APIRouter, Query
+from pydantic import BaseModel
+
+from cfhee_backend.persistence.query_logs import QueryLogRow, list_query_logs
+
+router = APIRouter(prefix="/query-logs", tags=["query-logs"])
+
+
+class QueryLogResponse(BaseModel):
+    id: int
+    created_at: datetime
+    query_text: str
+    workspace: str
+    domain: str
+    project: str | None
+    client: str | None
+    module: str | None
+    top_k: int | None
+    result_count: int
+    empty_result: bool
+    retrieved_chunk_ids: list[int]
+    retrieved_document_ids: list[int]
+    answer_text: str | None
+    provider_used: str
+    fallback_used: bool
+
+
+@router.get("", response_model=list[QueryLogResponse])
+def list_query_logs_endpoint(limit: int = Query(default=20, ge=1, le=100)) -> list[QueryLogResponse]:
+    rows = list_query_logs(limit=limit)
+    return [QueryLogResponse.model_validate(_row_to_dict(row)) for row in rows]
+
+
+def _row_to_dict(row: QueryLogRow) -> dict[str, object]:
+    return {
+        "id": row.id,
+        "created_at": row.created_at,
+        "query_text": row.query_text,
+        "workspace": row.workspace,
+        "domain": row.domain,
+        "project": row.project,
+        "client": row.client,
+        "module": row.module,
+        "top_k": row.top_k,
+        "result_count": row.result_count,
+        "empty_result": row.empty_result,
+        "retrieved_chunk_ids": row.retrieved_chunk_ids,
+        "retrieved_document_ids": row.retrieved_document_ids,
+        "answer_text": row.answer_text,
+        "provider_used": row.provider_used,
+        "fallback_used": row.fallback_used,
+    }

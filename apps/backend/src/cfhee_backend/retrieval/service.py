@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import logging
+from dataclasses import dataclass
 from typing import Any
 
 from cfhee_backend.embeddings import get_embedding_service
 from cfhee_backend.persistence.database import get_connection
+from cfhee_backend.persistence.query_logs import QueryLogCreate, insert_query_log
 from cfhee_backend.retrieval.models import (
     RetrievalQueryRequest,
     RetrievalQueryResponse,
@@ -18,7 +20,20 @@ from cfhee_backend.vector_store.base import VectorQuery
 logger = logging.getLogger(__name__)
 
 
+@dataclass(slots=True)
+class RetrievalExecution:
+    response: RetrievalQueryResponse
+    chunk_ids: list[int]
+    document_ids: list[int]
+
+
 def query_retrieval(payload: RetrievalQueryRequest) -> RetrievalQueryResponse:
+    execution = execute_retrieval(payload)
+    _safe_insert_query_log(payload=payload, execution=execution)
+    return execution.response
+
+
+def execute_retrieval(payload: RetrievalQueryRequest) -> RetrievalExecution:
     active_scope = RetrievalScope(
         workspace=payload.workspace,
         domain=payload.domain,
@@ -102,13 +117,18 @@ def query_retrieval(payload: RetrievalQueryRequest) -> RetrievalQueryResponse:
         active_scope.model_dump(),
     )
 
-    return RetrievalQueryResponse(
+    response = RetrievalQueryResponse(
         query_text=payload.query_text,
         active_scope=active_scope,
         top_k=payload.top_k,
         returned_results=len(results),
         empty=len(results) == 0,
         results=results,
+    )
+    return RetrievalExecution(
+        response=response,
+        chunk_ids=[result.chunk_id for result in results],
+        document_ids=_unique_document_ids(results),
     )
 
 
@@ -161,3 +181,41 @@ def _calculate_similarity_score(distance: float | None) -> float | None:
         return 1.0
 
     return 1.0 / (1.0 + distance)
+
+
+def _safe_insert_query_log(payload: RetrievalQueryRequest, execution: RetrievalExecution) -> None:
+    try:
+        insert_query_log(
+            QueryLogCreate(
+                query_text=payload.query_text,
+                workspace=payload.workspace,
+                domain=payload.domain,
+                project=payload.project,
+                client=payload.client,
+                module=payload.module,
+                top_k=payload.top_k,
+                result_count=execution.response.returned_results,
+                empty_result=execution.response.empty,
+                retrieved_chunk_ids=execution.chunk_ids,
+                retrieved_document_ids=execution.document_ids,
+                answer_text=None,
+                provider_used="retrieval-only",
+                fallback_used=False,
+            )
+        )
+    except Exception as exc:
+        logger.warning("Query log insert failed for retrieval query %r: %s", payload.query_text, exc)
+
+
+def _unique_document_ids(results: list[RetrievedChunkMatch]) -> list[int]:
+    seen: set[int] = set()
+    ordered_ids: list[int] = []
+
+    for result in results:
+        if result.document_id in seen:
+            continue
+
+        seen.add(result.document_id)
+        ordered_ids.append(result.document_id)
+
+    return ordered_ids

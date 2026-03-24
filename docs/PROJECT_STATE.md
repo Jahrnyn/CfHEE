@@ -1,6 +1,6 @@
 # Project State
 
-Last reviewed: 2026-03-20
+Last reviewed: 2026-03-24
 
 ## Current slice in repo
 
@@ -10,7 +10,7 @@ Implemented in code:
 - Working frontend views for manual ingest and document listing
 - Working frontend view for scoped retrieval in `Ask Copilot`
 - Working frontend `Ask Copilot` flow for grounded answers plus retrieval-only inspection
-- FastAPI backend with `GET /`, `GET /health`, `POST /documents`, `GET /documents`, `GET /documents/{id}/chunks`, `POST /retrieval/query`, and `POST /answer/query`
+- FastAPI backend with `GET /`, `GET /health`, `POST /documents`, `GET /documents`, `GET /documents/{id}/chunks`, `POST /retrieval/query`, `POST /answer/query`, and `GET /query-logs`
 - Postgres schema for workspaces, domains, projects, clients, modules, documents, and chunks
 - Document ingest flow that:
   - validates required scope and hierarchy
@@ -34,6 +34,7 @@ Verified by code inspection:
 - source-grounded answers are implemented on top of retrieval using provider selection with Ollama plus deterministic fallback
 - vector-store abstraction exists and is currently backed by Chroma
 - embedding abstraction exists and is currently backed by a local hash embedding service
+- query logging is implemented for retrieval-only and answer queries, including scope, result identifiers, answer text, provider used, and fallback usage
 
 Verified in the local environment during the latest check:
 
@@ -45,6 +46,7 @@ Verified in the local environment during the latest check:
 - Ollama is reachable locally at the default local URL and `qwen2.5:7b` is present locally in this environment
 - answer provider selection uses Ollama successfully when the model is available and falls back to the deterministic provider when the configured Ollama model is unavailable
 - `dev-check.ps1` now reports Ollama reachability, configured model presence, and answer-provider readiness
+- retrieval-only queries and answer queries now persist inspectable `query_logs`, and `GET /query-logs` returns recent traces with provider and fallback information when exercised locally
 
 Not implemented yet:
 

@@ -7,6 +7,7 @@ Tighten Ollama prompt/citation behavior and make the grounded answer output more
 Why this is next:
 
 - the project now has a real local Ollama-backed provider behind the answer abstraction
+- retrieval and answer traceability are now persisted through `query_logs`
 - the next quality gap is answer consistency and citation presentation, not provider plumbing
 - the current slice is functional but intentionally minimal
 

@@ -53,3 +53,18 @@
 - Updated the Ask page to show the active provider and whether deterministic fallback was used.
 - Updated `scripts/dev-up.ps1` and `scripts/dev-check.ps1` to check Ollama reachability, configured model presence, and answer-provider readiness.
 - Updated `README.md` with local Ollama setup and provider-selection notes.
+
+## 2026-03-24
+
+- Added a minimal `query_logs` table in Postgres for retrieval and answer traceability.
+- Added explicit query-log persistence for:
+  - query text
+  - active scope
+  - `top_k`
+  - retrieved chunk and document identifiers
+  - result count and empty-result state
+  - answer text
+  - provider used
+  - fallback usage
+- Integrated logging into retrieval-only queries and grounded answer queries while keeping logging failures non-blocking.
+- Added a minimal `GET /query-logs` endpoint for inspecting recent traces.

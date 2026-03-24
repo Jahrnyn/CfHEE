@@ -65,3 +65,22 @@ CREATE TABLE IF NOT EXISTS chunks (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   UNIQUE (document_id, chunk_index)
 );
+
+CREATE TABLE IF NOT EXISTS query_logs (
+  id BIGSERIAL PRIMARY KEY,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  query_text TEXT NOT NULL,
+  workspace TEXT NOT NULL,
+  domain TEXT NOT NULL,
+  project TEXT,
+  client TEXT,
+  module TEXT,
+  top_k INTEGER,
+  result_count INTEGER NOT NULL,
+  empty_result BOOLEAN NOT NULL,
+  retrieved_chunk_ids JSONB NOT NULL,
+  retrieved_document_ids JSONB NOT NULL,
+  answer_text TEXT,
+  provider_used TEXT NOT NULL,
+  fallback_used BOOLEAN NOT NULL DEFAULT FALSE
+);
