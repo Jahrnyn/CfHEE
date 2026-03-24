@@ -8,6 +8,7 @@ Why this is next:
 
 - the project now has a real local Ollama-backed provider behind the answer abstraction
 - retrieval and answer traceability are now persisted through `query_logs`
+- answer-context building is now explicit, so the next quality gap is prompt/citation behavior rather than raw context handoff
 - the next quality gap is answer consistency and citation presentation, not provider plumbing
 - the current slice is functional but intentionally minimal
 

@@ -11,6 +11,8 @@ class GroundedAnswerInput:
     query_text: str
     active_scope: RetrievalScope
     citations: list[RetrievedChunkMatch]
+    retrieval_top_k: int
+    context_limit: int
 
 
 @dataclass(slots=True)

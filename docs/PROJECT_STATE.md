@@ -11,6 +11,7 @@ Implemented in code:
 - Working frontend view for scoped retrieval in `Ask Copilot`
 - Working frontend `Ask Copilot` flow for grounded answers plus retrieval-only inspection
 - FastAPI backend with `GET /`, `GET /health`, `POST /documents`, `GET /documents`, `GET /documents/{id}/chunks`, `POST /retrieval/query`, `POST /answer/query`, and `GET /query-logs`
+- Retrieval-to-answer handoff now uses an explicit context builder with deterministic ordering, conservative dedupe, and an answer-context limit
 - Postgres schema for workspaces, domains, projects, clients, modules, documents, and chunks
 - Document ingest flow that:
   - validates required scope and hierarchy
@@ -35,6 +36,7 @@ Verified by code inspection:
 - vector-store abstraction exists and is currently backed by Chroma
 - embedding abstraction exists and is currently backed by a local hash embedding service
 - query logging is implemented for retrieval-only and answer queries, including scope, result identifiers, answer text, provider used, and fallback usage
+- answer context selection is now explicit and traceable, including selected and dropped chunk IDs in `query_logs`
 
 Verified in the local environment during the latest check:
 
@@ -47,6 +49,7 @@ Verified in the local environment during the latest check:
 - answer provider selection uses Ollama successfully when the model is available and falls back to the deterministic provider when the configured Ollama model is unavailable
 - `dev-check.ps1` now reports Ollama reachability, configured model presence, and answer-provider readiness
 - retrieval-only queries and answer queries now persist inspectable `query_logs`, and `GET /query-logs` returns recent traces with provider and fallback information when exercised locally
+- answer queries now enforce a bounded final context and persist selected vs. dropped context chunk IDs when exercised locally
 
 Not implemented yet:
 

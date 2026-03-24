@@ -68,3 +68,6 @@
   - fallback usage
 - Integrated logging into retrieval-only queries and grounded answer queries while keeping logging failures non-blocking.
 - Added a minimal `GET /query-logs` endpoint for inspecting recent traces.
+- Added a minimal context builder between retrieval and grounded answer generation.
+- Added deterministic answer-context ordering, conservative duplicate-text filtering, and an explicit answer-context limit.
+- Extended query-log traceability with selected and dropped context chunk IDs for answer queries.

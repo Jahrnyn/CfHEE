@@ -198,6 +198,8 @@ def _safe_insert_query_log(payload: RetrievalQueryRequest, execution: RetrievalE
                 empty_result=execution.response.empty,
                 retrieved_chunk_ids=execution.chunk_ids,
                 retrieved_document_ids=execution.document_ids,
+                selected_context_chunk_ids=None,
+                dropped_context_chunk_ids=None,
                 answer_text=None,
                 provider_used="retrieval-only",
                 fallback_used=False,

@@ -21,6 +21,8 @@ class QueryLogCreate:
     empty_result: bool
     retrieved_chunk_ids: list[int]
     retrieved_document_ids: list[int]
+    selected_context_chunk_ids: list[int] | None
+    dropped_context_chunk_ids: list[int] | None
     answer_text: str | None
     provider_used: str
     fallback_used: bool
@@ -41,6 +43,8 @@ class QueryLogRow:
     empty_result: bool
     retrieved_chunk_ids: list[int]
     retrieved_document_ids: list[int]
+    selected_context_chunk_ids: list[int] | None
+    dropped_context_chunk_ids: list[int] | None
     answer_text: str | None
     provider_used: str
     fallback_used: bool
@@ -63,6 +67,8 @@ def insert_query_log(entry: QueryLogCreate) -> int:
                   empty_result,
                   retrieved_chunk_ids,
                   retrieved_document_ids,
+                  selected_context_chunk_ids,
+                  dropped_context_chunk_ids,
                   answer_text,
                   provider_used,
                   fallback_used
@@ -79,6 +85,8 @@ def insert_query_log(entry: QueryLogCreate) -> int:
                   %(empty_result)s,
                   %(retrieved_chunk_ids)s,
                   %(retrieved_document_ids)s,
+                  %(selected_context_chunk_ids)s,
+                  %(dropped_context_chunk_ids)s,
                   %(answer_text)s,
                   %(provider_used)s,
                   %(fallback_used)s
@@ -97,6 +105,12 @@ def insert_query_log(entry: QueryLogCreate) -> int:
                     "empty_result": entry.empty_result,
                     "retrieved_chunk_ids": Jsonb(entry.retrieved_chunk_ids),
                     "retrieved_document_ids": Jsonb(entry.retrieved_document_ids),
+                    "selected_context_chunk_ids": Jsonb(entry.selected_context_chunk_ids)
+                    if entry.selected_context_chunk_ids is not None
+                    else None,
+                    "dropped_context_chunk_ids": Jsonb(entry.dropped_context_chunk_ids)
+                    if entry.dropped_context_chunk_ids is not None
+                    else None,
                     "answer_text": entry.answer_text,
                     "provider_used": entry.provider_used,
                     "fallback_used": entry.fallback_used,
@@ -113,6 +127,8 @@ def update_query_log_answer(
     answer_text: str | None,
     provider_used: str,
     fallback_used: bool,
+    selected_context_chunk_ids: list[int] | None,
+    dropped_context_chunk_ids: list[int] | None,
 ) -> None:
     with get_connection() as connection:
         with connection.cursor() as cursor:
@@ -122,7 +138,9 @@ def update_query_log_answer(
                 SET
                   answer_text = %(answer_text)s,
                   provider_used = %(provider_used)s,
-                  fallback_used = %(fallback_used)s
+                  fallback_used = %(fallback_used)s,
+                  selected_context_chunk_ids = %(selected_context_chunk_ids)s,
+                  dropped_context_chunk_ids = %(dropped_context_chunk_ids)s
                 WHERE id = %(query_log_id)s
                 """,
                 {
@@ -130,6 +148,12 @@ def update_query_log_answer(
                     "answer_text": answer_text,
                     "provider_used": provider_used,
                     "fallback_used": fallback_used,
+                    "selected_context_chunk_ids": Jsonb(selected_context_chunk_ids)
+                    if selected_context_chunk_ids is not None
+                    else None,
+                    "dropped_context_chunk_ids": Jsonb(dropped_context_chunk_ids)
+                    if dropped_context_chunk_ids is not None
+                    else None,
                 },
             )
         connection.commit()
@@ -154,6 +178,8 @@ def list_query_logs(limit: int = 20) -> list[QueryLogRow]:
                   empty_result,
                   retrieved_chunk_ids,
                   retrieved_document_ids,
+                  selected_context_chunk_ids,
+                  dropped_context_chunk_ids,
                   answer_text,
                   provider_used,
                   fallback_used
@@ -180,6 +206,12 @@ def list_query_logs(limit: int = 20) -> list[QueryLogRow]:
             empty_result=row["empty_result"],
             retrieved_chunk_ids=list(row["retrieved_chunk_ids"]),
             retrieved_document_ids=list(row["retrieved_document_ids"]),
+            selected_context_chunk_ids=list(row["selected_context_chunk_ids"])
+            if row["selected_context_chunk_ids"] is not None
+            else None,
+            dropped_context_chunk_ids=list(row["dropped_context_chunk_ids"])
+            if row["dropped_context_chunk_ids"] is not None
+            else None,
             answer_text=row["answer_text"],
             provider_used=row["provider_used"],
             fallback_used=row["fallback_used"],

@@ -24,6 +24,8 @@ class QueryLogResponse(BaseModel):
     empty_result: bool
     retrieved_chunk_ids: list[int]
     retrieved_document_ids: list[int]
+    selected_context_chunk_ids: list[int] | None
+    dropped_context_chunk_ids: list[int] | None
     answer_text: str | None
     provider_used: str
     fallback_used: bool
@@ -50,6 +52,8 @@ def _row_to_dict(row: QueryLogRow) -> dict[str, object]:
         "empty_result": row.empty_result,
         "retrieved_chunk_ids": row.retrieved_chunk_ids,
         "retrieved_document_ids": row.retrieved_document_ids,
+        "selected_context_chunk_ids": row.selected_context_chunk_ids,
+        "dropped_context_chunk_ids": row.dropped_context_chunk_ids,
         "answer_text": row.answer_text,
         "provider_used": row.provider_used,
         "fallback_used": row.fallback_used,

@@ -80,7 +80,15 @@ CREATE TABLE IF NOT EXISTS query_logs (
   empty_result BOOLEAN NOT NULL,
   retrieved_chunk_ids JSONB NOT NULL,
   retrieved_document_ids JSONB NOT NULL,
+  selected_context_chunk_ids JSONB,
+  dropped_context_chunk_ids JSONB,
   answer_text TEXT,
   provider_used TEXT NOT NULL,
   fallback_used BOOLEAN NOT NULL DEFAULT FALSE
 );
+
+ALTER TABLE query_logs
+ADD COLUMN IF NOT EXISTS selected_context_chunk_ids JSONB;
+
+ALTER TABLE query_logs
+ADD COLUMN IF NOT EXISTS dropped_context_chunk_ids JSONB;
