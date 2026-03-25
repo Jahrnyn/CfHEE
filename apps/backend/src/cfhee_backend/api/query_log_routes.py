@@ -27,6 +27,10 @@ class QueryLogResponse(BaseModel):
     selected_context_chunk_ids: list[int] | None
     dropped_context_chunk_ids: list[int] | None
     answer_text: str | None
+    has_evidence: bool | None
+    context_used_count: int | None
+    answer_length: int | None
+    grounded_flag: str | None
     provider_used: str
     fallback_used: bool
 
@@ -55,6 +59,10 @@ def _row_to_dict(row: QueryLogRow) -> dict[str, object]:
         "selected_context_chunk_ids": row.selected_context_chunk_ids,
         "dropped_context_chunk_ids": row.dropped_context_chunk_ids,
         "answer_text": row.answer_text,
+        "has_evidence": row.has_evidence,
+        "context_used_count": row.context_used_count,
+        "answer_length": row.answer_length,
+        "grounded_flag": row.grounded_flag,
         "provider_used": row.provider_used,
         "fallback_used": row.fallback_used,
     }

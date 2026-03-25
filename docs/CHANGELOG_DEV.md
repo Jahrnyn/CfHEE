@@ -71,3 +71,10 @@
 - Added a minimal context builder between retrieval and grounded answer generation.
 - Added deterministic answer-context ordering, conservative duplicate-text filtering, and an explicit answer-context limit.
 - Extended query-log traceability with selected and dropped context chunk IDs for answer queries.
+- Added a minimal deterministic evaluation layer for answer queries.
+- Extended `query_logs` with simple inspectable evaluation fields:
+  - `has_evidence`
+  - `context_used_count`
+  - `answer_length`
+  - `grounded_flag`
+- Integrated evaluation into the answer flow while keeping evaluation failures non-blocking.

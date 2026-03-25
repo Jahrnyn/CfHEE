@@ -24,6 +24,10 @@ class QueryLogCreate:
     selected_context_chunk_ids: list[int] | None
     dropped_context_chunk_ids: list[int] | None
     answer_text: str | None
+    has_evidence: bool | None
+    context_used_count: int | None
+    answer_length: int | None
+    grounded_flag: str | None
     provider_used: str
     fallback_used: bool
 
@@ -46,6 +50,10 @@ class QueryLogRow:
     selected_context_chunk_ids: list[int] | None
     dropped_context_chunk_ids: list[int] | None
     answer_text: str | None
+    has_evidence: bool | None
+    context_used_count: int | None
+    answer_length: int | None
+    grounded_flag: str | None
     provider_used: str
     fallback_used: bool
 
@@ -70,6 +78,10 @@ def insert_query_log(entry: QueryLogCreate) -> int:
                   selected_context_chunk_ids,
                   dropped_context_chunk_ids,
                   answer_text,
+                  has_evidence,
+                  context_used_count,
+                  answer_length,
+                  grounded_flag,
                   provider_used,
                   fallback_used
                 )
@@ -88,6 +100,10 @@ def insert_query_log(entry: QueryLogCreate) -> int:
                   %(selected_context_chunk_ids)s,
                   %(dropped_context_chunk_ids)s,
                   %(answer_text)s,
+                  %(has_evidence)s,
+                  %(context_used_count)s,
+                  %(answer_length)s,
+                  %(grounded_flag)s,
                   %(provider_used)s,
                   %(fallback_used)s
                 )
@@ -112,6 +128,10 @@ def insert_query_log(entry: QueryLogCreate) -> int:
                     if entry.dropped_context_chunk_ids is not None
                     else None,
                     "answer_text": entry.answer_text,
+                    "has_evidence": entry.has_evidence,
+                    "context_used_count": entry.context_used_count,
+                    "answer_length": entry.answer_length,
+                    "grounded_flag": entry.grounded_flag,
                     "provider_used": entry.provider_used,
                     "fallback_used": entry.fallback_used,
                 },
@@ -159,6 +179,36 @@ def update_query_log_answer(
         connection.commit()
 
 
+def update_query_log_evaluation(
+    query_log_id: int,
+    has_evidence: bool,
+    context_used_count: int,
+    answer_length: int,
+    grounded_flag: str,
+) -> None:
+    with get_connection() as connection:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """
+                UPDATE query_logs
+                SET
+                  has_evidence = %(has_evidence)s,
+                  context_used_count = %(context_used_count)s,
+                  answer_length = %(answer_length)s,
+                  grounded_flag = %(grounded_flag)s
+                WHERE id = %(query_log_id)s
+                """,
+                {
+                    "query_log_id": query_log_id,
+                    "has_evidence": has_evidence,
+                    "context_used_count": context_used_count,
+                    "answer_length": answer_length,
+                    "grounded_flag": grounded_flag,
+                },
+            )
+        connection.commit()
+
+
 def list_query_logs(limit: int = 20) -> list[QueryLogRow]:
     with get_connection() as connection:
         with connection.cursor() as cursor:
@@ -181,6 +231,10 @@ def list_query_logs(limit: int = 20) -> list[QueryLogRow]:
                   selected_context_chunk_ids,
                   dropped_context_chunk_ids,
                   answer_text,
+                  has_evidence,
+                  context_used_count,
+                  answer_length,
+                  grounded_flag,
                   provider_used,
                   fallback_used
                 FROM query_logs
@@ -213,6 +267,10 @@ def list_query_logs(limit: int = 20) -> list[QueryLogRow]:
             if row["dropped_context_chunk_ids"] is not None
             else None,
             answer_text=row["answer_text"],
+            has_evidence=row["has_evidence"],
+            context_used_count=row["context_used_count"],
+            answer_length=row["answer_length"],
+            grounded_flag=row["grounded_flag"],
             provider_used=row["provider_used"],
             fallback_used=row["fallback_used"],
         )

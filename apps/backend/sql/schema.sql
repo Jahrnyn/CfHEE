@@ -83,6 +83,10 @@ CREATE TABLE IF NOT EXISTS query_logs (
   selected_context_chunk_ids JSONB,
   dropped_context_chunk_ids JSONB,
   answer_text TEXT,
+  has_evidence BOOLEAN,
+  context_used_count INTEGER,
+  answer_length INTEGER,
+  grounded_flag TEXT,
   provider_used TEXT NOT NULL,
   fallback_used BOOLEAN NOT NULL DEFAULT FALSE
 );
@@ -92,3 +96,15 @@ ADD COLUMN IF NOT EXISTS selected_context_chunk_ids JSONB;
 
 ALTER TABLE query_logs
 ADD COLUMN IF NOT EXISTS dropped_context_chunk_ids JSONB;
+
+ALTER TABLE query_logs
+ADD COLUMN IF NOT EXISTS has_evidence BOOLEAN;
+
+ALTER TABLE query_logs
+ADD COLUMN IF NOT EXISTS context_used_count INTEGER;
+
+ALTER TABLE query_logs
+ADD COLUMN IF NOT EXISTS answer_length INTEGER;
+
+ALTER TABLE query_logs
+ADD COLUMN IF NOT EXISTS grounded_flag TEXT;

@@ -201,6 +201,10 @@ def _safe_insert_query_log(payload: RetrievalQueryRequest, execution: RetrievalE
                 selected_context_chunk_ids=None,
                 dropped_context_chunk_ids=None,
                 answer_text=None,
+                has_evidence=None,
+                context_used_count=None,
+                answer_length=None,
+                grounded_flag=None,
                 provider_used="retrieval-only",
                 fallback_used=False,
             )

@@ -6,7 +6,13 @@ from cfhee_backend.answers import get_answer_provider
 from cfhee_backend.answers.base import GroundedAnswerInput
 from cfhee_backend.answers.context_builder import build_answer_context
 from cfhee_backend.answers.models import AnswerQueryRequest, AnswerQueryResponse
-from cfhee_backend.persistence.query_logs import QueryLogCreate, insert_query_log, update_query_log_answer
+from cfhee_backend.evaluation import EvaluationResult, evaluate_answer_trace
+from cfhee_backend.persistence.query_logs import (
+    QueryLogCreate,
+    insert_query_log,
+    update_query_log_answer,
+    update_query_log_evaluation,
+)
 from cfhee_backend.retrieval.service import execute_retrieval
 
 logger = logging.getLogger(__name__)
@@ -51,6 +57,14 @@ def query_answer(payload: AnswerQueryRequest) -> AnswerQueryResponse:
             selected_context_chunk_ids=answer_context.selected_chunk_ids,
             dropped_context_chunk_ids=[item.chunk_id for item in answer_context.dropped_chunks],
         )
+        _safe_update_query_log_evaluation(
+            query_log_id=query_log_id,
+            evaluation=_build_evaluation_result(
+                answer_text=response.answer_text,
+                selected_context_chunk_ids=answer_context.selected_chunk_ids,
+                result_count=retrieval_response.returned_results,
+            ),
+        )
         return response
 
     provider_name = getattr(provider, "provider_name", provider.__class__.__name__)
@@ -87,6 +101,14 @@ def query_answer(payload: AnswerQueryRequest) -> AnswerQueryResponse:
             selected_context_chunk_ids=answer_context.selected_chunk_ids,
             dropped_context_chunk_ids=[item.chunk_id for item in answer_context.dropped_chunks],
         )
+        _safe_update_query_log_evaluation(
+            query_log_id=query_log_id,
+            evaluation=_build_evaluation_result(
+                answer_text=response.answer_text,
+                selected_context_chunk_ids=answer_context.selected_chunk_ids,
+                result_count=retrieval_response.returned_results,
+            ),
+        )
         return response
 
     grounded = provider_result.answer_text is not None
@@ -115,6 +137,14 @@ def query_answer(payload: AnswerQueryRequest) -> AnswerQueryResponse:
         selected_context_chunk_ids=answer_context.selected_chunk_ids,
         dropped_context_chunk_ids=[item.chunk_id for item in answer_context.dropped_chunks],
     )
+    _safe_update_query_log_evaluation(
+        query_log_id=query_log_id,
+        evaluation=_build_evaluation_result(
+            answer_text=response.answer_text,
+            selected_context_chunk_ids=answer_context.selected_chunk_ids,
+            result_count=retrieval_response.returned_results,
+        ),
+    )
     return response
 
 
@@ -136,6 +166,10 @@ def _safe_insert_answer_query_log(payload: AnswerQueryRequest, retrieval_executi
                 selected_context_chunk_ids=None,
                 dropped_context_chunk_ids=None,
                 answer_text=None,
+                has_evidence=None,
+                context_used_count=None,
+                answer_length=None,
+                grounded_flag=None,
                 provider_used="pending-answer",
                 fallback_used=False,
             )
@@ -167,3 +201,34 @@ def _safe_update_query_log_answer(
         )
     except Exception as exc:
         logger.warning("Query log update failed for query_log_id=%s: %s", query_log_id, exc)
+
+
+def _build_evaluation_result(
+    answer_text: str | None,
+    selected_context_chunk_ids: list[int],
+    result_count: int,
+) -> EvaluationResult:
+    return evaluate_answer_trace(
+        answer_text=answer_text,
+        selected_context_chunk_ids=selected_context_chunk_ids,
+        result_count=result_count,
+    )
+
+
+def _safe_update_query_log_evaluation(
+    query_log_id: int | None,
+    evaluation: EvaluationResult,
+) -> None:
+    if query_log_id is None:
+        return
+
+    try:
+        update_query_log_evaluation(
+            query_log_id=query_log_id,
+            has_evidence=evaluation.has_evidence,
+            context_used_count=evaluation.context_used_count,
+            answer_length=evaluation.answer_length,
+            grounded_flag=evaluation.grounded_flag,
+        )
+    except Exception as exc:
+        logger.warning("Query log evaluation update failed for query_log_id=%s: %s", query_log_id, exc)
