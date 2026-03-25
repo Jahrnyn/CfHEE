@@ -78,3 +78,10 @@
   - `answer_length`
   - `grounded_flag`
 - Integrated evaluation into the answer flow while keeping evaluation failures non-blocking.
+- Added an explicit grounded-answer prompt builder for Ollama-backed answers.
+- Switched prompt construction from inline string concatenation to a small readable module with:
+  - conservative grounding instructions
+  - explicit active-scope formatting
+  - deterministic retrieved-context formatting
+  - short-answer and no-speculation response rules
+- Added minimal prompt-version traceability through provider logging.

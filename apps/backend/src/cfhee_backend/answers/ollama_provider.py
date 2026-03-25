@@ -2,13 +2,16 @@ from __future__ import annotations
 
 import json
 import os
+import logging
 from urllib import error, request
 
 from cfhee_backend.answers.base import GroundedAnswerInput, GroundedAnswerProvider, GroundedAnswerResult
+from cfhee_backend.answers.prompt_builder import build_grounded_answer_prompt
 
 
 DEFAULT_OLLAMA_BASE_URL = "http://127.0.0.1:11434"
 DEFAULT_OLLAMA_MODEL = "qwen2.5:7b"
+logger = logging.getLogger("uvicorn.error")
 
 
 class OllamaGroundedAnswerProvider(GroundedAnswerProvider):
@@ -37,13 +40,14 @@ class OllamaGroundedAnswerProvider(GroundedAnswerProvider):
         return True, None
 
     def generate_answer(self, answer_input: GroundedAnswerInput) -> GroundedAnswerResult:
-        prompt = self._build_prompt(answer_input)
+        prompt = build_grounded_answer_prompt(answer_input)
+        logger.info("Generating grounded answer with provider=%s prompt_version=%s", self.provider_name, prompt.version)
         response = self._request_json(
             "POST",
             "/api/generate",
             {
                 "model": self.model,
-                "prompt": prompt,
+                "prompt": prompt.text,
                 "stream": False,
                 "options": {
                     "temperature": 0,
@@ -62,37 +66,6 @@ class OllamaGroundedAnswerProvider(GroundedAnswerProvider):
         return GroundedAnswerResult(
             provider=self.provider_name,
             answer_text=self._truncate(answer_text, 420),
-        )
-
-    def _build_prompt(self, answer_input: GroundedAnswerInput) -> str:
-        citation_lines: list[str] = []
-        for citation in answer_input.citations:
-            citation_lines.append(
-                "\n".join(
-                    [
-                        f"[Citation {citation.rank}] document_id={citation.document_id} chunk_id={citation.chunk_id} chunk_index={citation.chunk_index}",
-                        f"Title: {citation.document.title}",
-                        f"Scope: {citation.scope.workspace} / {citation.scope.domain}"
-                        + (f" / {citation.scope.project}" if citation.scope.project else "")
-                        + (f" / {citation.scope.client}" if citation.scope.client else "")
-                        + (f" / {citation.scope.module}" if citation.scope.module else ""),
-                        "Chunk text:",
-                        citation.text,
-                    ]
-                )
-            )
-
-        return "\n\n".join(
-            [
-                "You are answering only from retrieved context.",
-                "Use only the provided citations.",
-                "Keep the answer short and conservative.",
-                "If the evidence is insufficient, answer exactly: Not enough evidence in retrieved context.",
-                "Do not mention facts that are not present in the citations.",
-                f"Query: {answer_input.query_text}",
-                "Retrieved citations:",
-                "\n\n".join(citation_lines),
-            ]
         )
 
     def _request_json(self, method: str, path: str, payload: dict[str, object] | None = None) -> dict[str, object]:

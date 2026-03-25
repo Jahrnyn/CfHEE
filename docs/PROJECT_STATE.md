@@ -33,6 +33,7 @@ Verified by code inspection:
 - scoped retrieval is implemented in backend and frontend code
 - retrieval responses now include explicit scope, chunk/document identifiers, distance, and similarity score
 - source-grounded answers are implemented on top of retrieval using provider selection with Ollama plus deterministic fallback
+- Ollama grounded-answer prompting is now built through an explicit prompt builder with conservative instructions and deterministic context formatting
 - vector-store abstraction exists and is currently backed by Chroma
 - embedding abstraction exists and is currently backed by a local hash embedding service
 - query logging is implemented for retrieval-only and answer queries, including scope, result identifiers, answer text, provider used, and fallback usage
@@ -52,6 +53,7 @@ Verified in the local environment during the latest check:
 - retrieval-only queries and answer queries now persist inspectable `query_logs`, and `GET /query-logs` returns recent traces with provider and fallback information when exercised locally
 - answer queries now enforce a bounded final context and persist selected vs. dropped context chunk IDs when exercised locally
 - answer queries now populate simple evaluation fields in `query_logs`, and `GET /query-logs` returns those fields when exercised locally
+- Ollama grounded answers now run through the explicit prompt builder, and local checks show shorter scope-bound answers with the same retrieved citations
 
 Not implemented yet:
 
