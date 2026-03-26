@@ -47,6 +47,9 @@ Use this before writing or refining prompts.
 Reusable template for future Codex prompts.
 Use this to keep prompts consistent and complete.
 
+### `docs/API_V1.md` 
+Initial design for a compact, stable, reusable module API
+
 ## Suggested reading order for AI assistants
 
 For most implementation tasks, read in this order:
@@ -57,7 +60,8 @@ For most implementation tasks, read in this order:
 5. `docs/DECISIONS.md`
 6. `docs/DOMAIN_MODEL.md`
 7. `docs/PROMPTING_GUIDE.md`
-8. `docs/CHANGELOG_DEV.md` if the task relates to recent work
+8. `docs/API_V1.md` 
+9. `docs/CHANGELOG_DEV.md` if the task relates to recent work
 
 ## Human usage note
 
