@@ -1,5 +1,67 @@
 # CfHEE External API v1
 
+## API v1 Code Freeze (Contract Stabilization)
+
+CfHEE external API v1 is now in **API v1 Code Freeze (Contract Stabilization)**.
+
+This is a freeze of the public API contract only.
+It is not a full project freeze.
+
+### Frozen now
+
+- all implemented `/api/v1/...` endpoints
+- request and response shapes
+- the shared scope model and scope rules
+- document contract behavior
+- retrieval contract behavior
+- query-log list contract behavior
+
+### Not frozen
+
+- frontend workbench behavior
+- internal implementation details
+- internal refactoring without contract change
+- performance improvements
+- containerization and runtime setup
+- developer tooling
+
+### Allowed after freeze
+
+- bugfixes that preserve the public contract
+- internal refactoring that does not change request or response contracts
+- non-breaking additions only if they are strictly necessary
+
+### Not allowed after freeze
+
+- breaking API changes
+- silent contract changes
+- scope model changes
+- changing response semantics
+
+### Module responsibility during freeze
+
+CfHEE API v1 is frozen as a contract for:
+
+- scoped knowledge storage
+- scoped retrieval
+- inspection
+- observability
+
+CfHEE API v1 is not frozen as a contract for:
+
+- answer generation as a core responsibility
+- workflow orchestration
+
+### Next focus after freeze
+
+- frontend improvements
+- containerization
+- first external consumer integrations
+
+Not the next focus:
+
+- expanding the API surface
+
 ## Goal
 
 The purpose of CfHEE API v1 is to:

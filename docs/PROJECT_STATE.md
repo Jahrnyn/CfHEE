@@ -17,6 +17,40 @@ Its architectural core is:
 The built-in grounded-answer capability exists as a convenience consumer on top of retrieval.
 The frontend should be understood primarily as a lightweight developer workbench, not as the core identity of the system.
 
+## API v1 Code Freeze (Contract Stabilization)
+
+CfHEE external API v1 is now in **API v1 Code Freeze (Contract Stabilization)**.
+
+Frozen now:
+
+- implemented `/api/v1/...` endpoints
+- request and response shapes
+- shared scope model and scope rules
+- document contract behavior
+- retrieval contract behavior
+- query-log list contract behavior
+
+Not frozen:
+
+- frontend
+- internal implementation
+- performance improvements
+- containerization and runtime setup
+- developer tooling
+
+Allowed during freeze:
+
+- bugfixes without contract change
+- internal refactoring without contract change
+- non-breaking additions only if strictly necessary
+
+Not allowed during freeze:
+
+- breaking API changes
+- silent contract changes
+- scope model changes
+- response semantic changes
+
 ## Current slice in repo
 
 Implemented in code:
@@ -122,8 +156,9 @@ What currently exists should be read as:
 
 Future growth should prefer:
 
-- API stabilization
-- external integration
+- frontend improvements around the frozen API
+- containerization and runtime portability
+- first external consumer integrations
 - keeping workflow-specific logic outside the module
 
-rather than expanding the built-in UI and answer layer into a broader application identity.
+rather than expanding the API surface or turning the module into a broader application identity.

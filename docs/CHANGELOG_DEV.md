@@ -202,3 +202,22 @@
   - existing unversioned `GET /query-logs` remains active
   - no query-log schema or persistence behavior was changed
   - query-log detail remains out of scope
+
+- Declared **API v1 Code Freeze (Contract Stabilization)** in docs.
+- Clarified the freeze boundary:
+  - frozen: implemented `/api/v1/...` endpoints, request/response shapes, scope model and rules, document and retrieval contract behavior, query-log list contract behavior
+  - not frozen: frontend, internal implementation, performance work, containerization/runtime setup, developer tooling
+- Clarified allowed changes after freeze:
+  - bugfixes
+  - internal refactoring without contract change
+  - non-breaking additions only if strictly necessary
+- Clarified not allowed after freeze:
+  - breaking API changes
+  - silent contract changes
+  - scope model changes
+  - response semantic changes
+- Shifted the documented next focus toward:
+  - frontend improvements
+  - containerization
+  - first external consumer integrations
+  - not expanding the API surface

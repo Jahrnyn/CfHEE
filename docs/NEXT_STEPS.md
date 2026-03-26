@@ -1,8 +1,40 @@
 # Next Steps
 
+## API v1 Code Freeze (Contract Stabilization)
+
+CfHEE external API v1 is now in **API v1 Code Freeze (Contract Stabilization)**.
+
+Frozen now:
+
+- implemented `/api/v1/...` endpoints
+- request and response shapes
+- shared scope model and scope rules
+- retrieval and document contract behavior
+
+Allowed after freeze:
+
+- bugfixes
+- internal refactoring without contract change
+- non-breaking additions only if strictly necessary
+
+Not allowed after freeze:
+
+- breaking API changes
+- silent contract changes
+- scope model changes
+- changing response semantics
+
+Not frozen:
+
+- frontend
+- internal implementation
+- performance improvements
+- containerization and runtime setup
+- developer tooling
+
 ## Recommended next development step
 
-Extend the new `/api/v1` shell beyond the initial ingest helpers into a small but usable external integration surface for CfHEE so that external scripts, services, and applications can use the module without modifying the core codebase.
+Keep the API surface stable and shift the next development focus away from new public endpoint work.
 
 Why this is next:
 
@@ -10,28 +42,15 @@ Why this is next:
 - manual ingest, chunk persistence, scoped retrieval, grounded answer access, and query logging already exist
 - the built-in frontend is useful as a developer workbench, but it should not become the main expansion surface
 - the newly clarified architectural direction treats higher-level workflows and automation as external consumers
-- the first public versioned routing shell now includes basic system, scope-values, document-ingest, retrieval, document-inspection, and query-log list endpoints, so the next leverage comes from extending that shell carefully rather than adding more internal UI or copilot-style behavior
+- the first public versioned routing shell now exists and is frozen for contract stabilization
+- the next leverage comes from using that stable surface, not expanding it further right now
 
 ## Suggested narrow scope
 
-1. Extend the first stable integration-oriented API surface from the existing `/api/v1` shell:
-   - grounded answer access as a convenience endpoint
-   - query-log detail where useful
-2. Tighten the new public ingest-retrieval-inspection contract where useful:
-   - keep the nested scope shape consistent across later `/api/v1` endpoints
-   - decide when metadata persistence should become real instead of request-only acceptance
-   - keep optional retrieval diagnostics developer-oriented and explicit
-   - keep document-list scope requirements conservative and explicit
-3. Make the API contract clearer for external callers:
-   - request and response shapes
-   - explicit scope expectations
-   - validation behavior
-   - empty-result behavior
-   - keeping optional fields omitted unless explicitly requested
-   - keeping translation-layer validation failures at the request boundary
-   - keeping query-log inspection explicitly developer-oriented and conservative
-4. Keep the current frontend working as a lightweight local workbench, but do not expand it into a richer product layer.
-5. Document the module boundary clearly in README and docs so future development does not drift back into an app-centric model.
+1. Improve the frontend against the frozen API surface.
+2. Containerize and harden runtime setup without changing the public contract.
+3. Build or validate first external consumer integrations against the frozen API.
+4. Keep workflow-specific logic outside CfHEE.
 
 ## Keep out of scope for that step
 
@@ -39,13 +58,14 @@ Why this is next:
 - agent loops inside CfHEE
 - proposal-generation logic inside CfHEE
 - pentest automation logic inside CfHEE
+- expanding the `/api/v1` API surface during the freeze
 - broad connector ecosystems
 - complex file-import subsystems unless an immediate integration need forces it
 - cross-environment packaging work before the API boundary is stable
 
 ## After that step
 
-Once the API boundary is stable and the module feels reusable, the next long-term infrastructure target is deployment portability:
+Once the frozen API surface has been exercised by real consumers, the next long-term infrastructure target is deployment portability:
 
 - containerize the system
 - reduce dependence on the current Windows-heavy localhost development setup
