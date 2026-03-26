@@ -173,6 +173,67 @@ def list_documents() -> list[DocumentSummary]:
     return [DocumentSummary.model_validate(row) for row in rows]
 
 
+def list_documents_filtered(
+    workspace: str,
+    domain: str,
+    project: str | None = None,
+    client: str | None = None,
+    module: str | None = None,
+    source_type: str | None = None,
+    title_contains: str | None = None,
+    limit: int = 50,
+    offset: int = 0,
+) -> list[DocumentSummary]:
+    where_clauses = [
+        "w.name = %(workspace)s",
+        "dm.name = %(domain)s",
+    ]
+    params: dict[str, Any] = {
+        "workspace": workspace,
+        "domain": domain,
+        "limit": limit,
+        "offset": offset,
+    }
+
+    if project is not None:
+        where_clauses.append("p.name = %(project)s")
+        params["project"] = project
+
+    if client is not None:
+        where_clauses.append("c.name = %(client)s")
+        params["client"] = client
+
+    if module is not None:
+        where_clauses.append("m.name = %(module)s")
+        params["module"] = module
+
+    if source_type is not None:
+        where_clauses.append("d.source_type = %(source_type)s")
+        params["source_type"] = source_type
+
+    if title_contains is not None:
+        where_clauses.append("d.title ILIKE %(title_contains)s")
+        params["title_contains"] = f"%{title_contains}%"
+
+    where_sql = " AND ".join(where_clauses)
+
+    with get_connection() as connection:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                f"""
+                {_document_select()}
+                WHERE {where_sql}
+                ORDER BY d.created_at DESC, d.id DESC
+                LIMIT %(limit)s
+                OFFSET %(offset)s
+                """,
+                params,
+            )
+            rows = cursor.fetchall()
+
+    return [DocumentSummary.model_validate(row) for row in rows]
+
+
 def get_document(document_id: int) -> DocumentSummary:
     with get_connection() as connection:
         with connection.cursor() as cursor:
@@ -195,6 +256,22 @@ def list_document_chunks(document_id: int) -> list[ChunkSummary]:
             rows = cursor.fetchall()
 
     return [ChunkSummary.model_validate(row) for row in rows]
+
+
+def get_document_chunk_count(document_id: int) -> int:
+    with get_connection() as connection:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT COUNT(*) AS chunk_count
+                FROM chunks
+                WHERE document_id = %(document_id)s
+                """,
+                {"document_id": document_id},
+            )
+            row = cursor.fetchone()
+
+    return int(row["chunk_count"])
 
 
 def _upsert_scope(

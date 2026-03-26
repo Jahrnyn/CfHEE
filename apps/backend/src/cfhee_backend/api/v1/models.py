@@ -71,6 +71,52 @@ class DocumentCreateResponseV1(BaseModel):
     indexed: bool
 
 
+class DocumentListItemV1(BaseModel):
+    document_id: int
+    title: str
+    source_type: str
+    language: str | None
+    source_ref: str | None
+    scope: ScopeRef
+    raw_text_preview: str
+    created_at: str
+
+
+class PagingInfoV1(BaseModel):
+    limit: int
+    offset: int
+    returned: int
+
+
+class DocumentListResponseV1(BaseModel):
+    items: list[DocumentListItemV1]
+    paging: PagingInfoV1
+
+
+class DocumentDetailResponseV1(BaseModel):
+    document_id: int
+    title: str
+    source_type: str
+    language: str | None
+    source_ref: str | None
+    scope: ScopeRef
+    raw_text_preview: str
+    chunk_count: int
+    created_at: str
+
+
+class ChunkItemV1(BaseModel):
+    chunk_id: int
+    chunk_index: int
+    text: str
+    char_count: int
+
+
+class DocumentChunksResponseV1(BaseModel):
+    document_id: int
+    chunks: list[ChunkItemV1]
+
+
 class RetrievalQueryRequestV1(BaseModel):
     query: str
     scope: ScopeRef

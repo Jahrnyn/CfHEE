@@ -10,18 +10,18 @@ Why this is next:
 - manual ingest, chunk persistence, scoped retrieval, grounded answer access, and query logging already exist
 - the built-in frontend is useful as a developer workbench, but it should not become the main expansion surface
 - the newly clarified architectural direction treats higher-level workflows and automation as external consumers
-- the first public versioned routing shell now includes basic system, scope-values, document-ingest, and retrieval endpoints, so the next leverage comes from extending that shell carefully rather than adding more internal UI or copilot-style behavior
+- the first public versioned routing shell now includes basic system, scope-values, document-ingest, retrieval, and document-inspection endpoints, so the next leverage comes from extending that shell carefully rather than adding more internal UI or copilot-style behavior
 
 ## Suggested narrow scope
 
 1. Extend the first stable integration-oriented API surface from the existing `/api/v1` shell:
-   - document listing and inspection
    - grounded answer access as a convenience endpoint
    - query-log inspection where useful
-2. Tighten the new public ingest-and-retrieval-facing contract where useful:
+2. Tighten the new public ingest-retrieval-inspection contract where useful:
    - keep the nested scope shape consistent across later `/api/v1` endpoints
    - decide when metadata persistence should become real instead of request-only acceptance
    - keep optional retrieval diagnostics developer-oriented and explicit
+   - keep document-list scope requirements conservative and explicit
 3. Make the API contract clearer for external callers:
    - request and response shapes
    - explicit scope expectations

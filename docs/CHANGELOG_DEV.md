@@ -178,3 +178,17 @@
   - current `GET /api/v1/scopes/values` query params
   - current `POST /api/v1/documents` metadata handling
   - omission of retrieval diagnostics unless explicitly requested
+## 2026-03-27
+
+- Extended the `/api/v1` shell with the first document-inspection translation endpoints:
+  - `GET /api/v1/documents`
+  - `GET /api/v1/documents/{document_id}`
+  - `GET /api/v1/documents/{document_id}/chunks`
+- Added a scoped public document-list envelope for `/api/v1/documents`:
+  - requires `workspace` and `domain`
+  - supports optional `project`, `client`, `module`, `source_type`, `title_contains`, `limit`, and `offset`
+- Added factual public detail and chunk-envelope responses on top of the existing document and chunk storage behavior.
+- Kept the slice intentionally conservative:
+  - existing unversioned document routes remain active
+  - the public list endpoint is scope-filtered rather than globally listing all documents
+  - no ingest, retrieval, answer, or query-log behavior was changed

@@ -1,8 +1,24 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
 
-from cfhee_backend.api.v1.models import DocumentCreateRequestV1, DocumentCreateResponseV1, ScopeRef
+from cfhee_backend.api.v1.models import (
+    ChunkItemV1,
+    DocumentChunksResponseV1,
+    DocumentCreateRequestV1,
+    DocumentCreateResponseV1,
+    DocumentDetailResponseV1,
+    DocumentListItemV1,
+    DocumentListResponseV1,
+    PagingInfoV1,
+    ScopeRef,
+)
 from cfhee_backend.ingestion.models import DocumentCreate
-from cfhee_backend.ingestion.service import create_document, list_document_chunks
+from cfhee_backend.ingestion.service import (
+    create_document,
+    get_document,
+    get_document_chunk_count,
+    list_document_chunks,
+    list_documents_filtered,
+)
 
 router = APIRouter(tags=["api-v1-documents"])
 
@@ -36,4 +52,105 @@ def create_document_v1(payload: DocumentCreateRequestV1) -> DocumentCreateRespon
         ),
         chunk_count=chunk_count,
         indexed=chunk_count > 0,
+    )
+
+
+@router.get("/documents", response_model=DocumentListResponseV1, tags=["documents"])
+def list_documents_v1(
+    workspace: str,
+    domain: str,
+    project: str | None = None,
+    client: str | None = None,
+    module: str | None = None,
+    source_type: str | None = None,
+    title_contains: str | None = None,
+    limit: int = Query(default=50, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
+) -> DocumentListResponseV1:
+    scope = ScopeRef(
+        workspace=workspace,
+        domain=domain,
+        project=project,
+        client=client,
+        module=module,
+    )
+    documents = list_documents_filtered(
+        workspace=scope.workspace,
+        domain=scope.domain,
+        project=scope.project,
+        client=scope.client,
+        module=scope.module,
+        source_type=source_type,
+        title_contains=title_contains,
+        limit=limit,
+        offset=offset,
+    )
+
+    return DocumentListResponseV1(
+        items=[
+            DocumentListItemV1(
+                document_id=document.id,
+                title=document.title,
+                source_type=document.source_type,
+                language=document.language,
+                source_ref=document.source_ref,
+                scope=ScopeRef(
+                    workspace=document.workspace,
+                    domain=document.domain,
+                    project=document.project,
+                    client=document.client,
+                    module=document.module,
+                ),
+                raw_text_preview=document.raw_text_preview,
+                created_at=document.created_at.isoformat(),
+            )
+            for document in documents
+        ],
+        paging=PagingInfoV1(
+            limit=limit,
+            offset=offset,
+            returned=len(documents),
+        ),
+    )
+
+
+@router.get("/documents/{document_id}", response_model=DocumentDetailResponseV1, tags=["documents"])
+def get_document_v1(document_id: int) -> DocumentDetailResponseV1:
+    document = get_document(document_id)
+    chunk_count = get_document_chunk_count(document_id)
+
+    return DocumentDetailResponseV1(
+        document_id=document.id,
+        title=document.title,
+        source_type=document.source_type,
+        language=document.language,
+        source_ref=document.source_ref,
+        scope=ScopeRef(
+            workspace=document.workspace,
+            domain=document.domain,
+            project=document.project,
+            client=document.client,
+            module=document.module,
+        ),
+        raw_text_preview=document.raw_text_preview,
+        chunk_count=chunk_count,
+        created_at=document.created_at.isoformat(),
+    )
+
+
+@router.get("/documents/{document_id}/chunks", response_model=DocumentChunksResponseV1, tags=["documents"])
+def list_document_chunks_v1(document_id: int) -> DocumentChunksResponseV1:
+    chunks = list_document_chunks(document_id)
+
+    return DocumentChunksResponseV1(
+        document_id=document_id,
+        chunks=[
+            ChunkItemV1(
+                chunk_id=chunk.id,
+                chunk_index=chunk.chunk_index,
+                text=chunk.text,
+                char_count=chunk.char_count,
+            )
+            for chunk in chunks
+        ],
     )
