@@ -1,3 +1,5 @@
+from typing import Literal
+
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 from cfhee_backend.scope_registry.models import normalize_scope_value
@@ -151,3 +153,24 @@ class RetrievalQueryResponseV1(BaseModel):
     results: list[RetrievalResultV1]
     result_count: int
     diagnostics: RetrievalDiagnosticsV1 | None = None
+
+
+class QueryLogListItemV1(BaseModel):
+    query_log_id: int
+    type: Literal["retrieval", "answer"]
+    query: str
+    created_at: str
+    active_scope: ScopeRef
+    result_count: int
+    provider_used: str
+    fallback_used: bool
+
+
+class QueryLogPagingV1(BaseModel):
+    limit: int
+    returned: int
+
+
+class QueryLogListResponseV1(BaseModel):
+    items: list[QueryLogListItemV1]
+    paging: QueryLogPagingV1

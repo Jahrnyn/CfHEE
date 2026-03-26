@@ -428,7 +428,11 @@ Useful for regression checks, debugging, workflow audit trails, and answering "w
 
 #### GET /api/v1/query-logs
 
-**Query params**: `type` (`retrieval` | `answer`), `workspace`, `domain`, `project`, `client`, `module`, `limit`
+This endpoint is explicitly developer-oriented and intended for inspectability rather than end-user output.
+
+**Query params**: `limit`, `type` (`retrieval` | `answer`), `workspace`, `domain`, `project`, `client`, `module`
+
+When scope filtering is used, `workspace` and `domain` should be provided together.
 
 **Response**
 
@@ -448,7 +452,11 @@ Useful for regression checks, debugging, workflow audit trails, and answering "w
       "provider_used": "ollama",
       "fallback_used": false
     }
-  ]
+  ],
+  "paging": {
+    "limit": 20,
+    "returned": 1
+  }
 }
 ```
 

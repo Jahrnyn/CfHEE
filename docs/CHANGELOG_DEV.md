@@ -192,3 +192,13 @@
   - existing unversioned document routes remain active
   - the public list endpoint is scope-filtered rather than globally listing all documents
   - no ingest, retrieval, answer, or query-log behavior was changed
+- Extended the `/api/v1` shell with the first query-log observability endpoint:
+  - `GET /api/v1/query-logs`
+- Added a conservative developer-oriented query-log list envelope:
+  - returns `items` plus `paging`
+  - supports `limit`, `type`, and scope filters mapped directly onto persisted query-log fields
+- Tightened the v1 query-log route so partial scope-filter input now fails with request validation instead of reaching a server-side error path.
+- Kept the slice intentionally conservative:
+  - existing unversioned `GET /query-logs` remains active
+  - no query-log schema or persistence behavior was changed
+  - query-log detail remains out of scope

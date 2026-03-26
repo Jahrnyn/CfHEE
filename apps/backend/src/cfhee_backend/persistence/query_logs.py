@@ -253,6 +253,50 @@ def update_query_log_evaluation(
 
 
 def list_query_logs(limit: int = 20) -> list[QueryLogRow]:
+    return list_query_logs_filtered(limit=limit)
+
+
+def list_query_logs_filtered(
+    limit: int = 20,
+    query_type: str | None = None,
+    workspace: str | None = None,
+    domain: str | None = None,
+    project: str | None = None,
+    client: str | None = None,
+    module: str | None = None,
+) -> list[QueryLogRow]:
+    where_clauses: list[str] = []
+    params: dict[str, object] = {"limit": limit}
+
+    if query_type == "retrieval":
+        where_clauses.append("provider_used = 'retrieval-only'")
+    elif query_type == "answer":
+        where_clauses.append("provider_used <> 'retrieval-only'")
+
+    if workspace is not None:
+        where_clauses.append("workspace = %(workspace)s")
+        params["workspace"] = workspace
+
+    if domain is not None:
+        where_clauses.append("domain = %(domain)s")
+        params["domain"] = domain
+
+    if project is not None:
+        where_clauses.append("project = %(project)s")
+        params["project"] = project
+
+    if client is not None:
+        where_clauses.append("client = %(client)s")
+        params["client"] = client
+
+    if module is not None:
+        where_clauses.append("module = %(module)s")
+        params["module"] = module
+
+    where_sql = ""
+    if where_clauses:
+        where_sql = "WHERE " + " AND ".join(where_clauses)
+
     with get_connection() as connection:
         with connection.cursor() as cursor:
             cursor.execute(
@@ -288,10 +332,13 @@ def list_query_logs(limit: int = 20) -> list[QueryLogRow]:
                   provider_used,
                   fallback_used
                 FROM query_logs
+                """
+                + where_sql
+                + """
                 ORDER BY created_at DESC, id DESC
                 LIMIT %(limit)s
                 """,
-                {"limit": limit},
+                params,
             )
             rows = cursor.fetchall()
 
