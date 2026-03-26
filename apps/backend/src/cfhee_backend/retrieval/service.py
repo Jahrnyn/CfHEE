@@ -14,6 +14,7 @@ from cfhee_backend.retrieval.models import (
     RetrievedChunkMatch,
     RetrievedDocumentSummary,
 )
+from cfhee_backend.retrieval.rescoring import rescore_retrieved_chunks
 from cfhee_backend.vector_store import get_vector_store
 from cfhee_backend.vector_store.base import VectorQuery
 
@@ -29,6 +30,9 @@ class RetrievalExecution:
     top_k_limit_hit: bool
     returned_distance_values: list[float]
     returned_document_distribution: dict[str, int]
+    original_ranked_chunk_ids: list[int]
+    reranked_chunk_ids: list[int]
+    reranking_applied: bool
 
 
 def query_retrieval(payload: RetrievalQueryRequest) -> RetrievalQueryResponse:
@@ -55,6 +59,7 @@ def execute_retrieval(payload: RetrievalQueryRequest) -> RetrievalExecution:
     embedding_service = get_embedding_service()
     query_embedding = embedding_service.embed_texts([payload.query_text])[0]
     vector_store = get_vector_store()
+    candidate_top_k = _candidate_top_k(payload.top_k)
     vector_matches = vector_store.query_chunks(
         VectorQuery(
             text=payload.query_text,
@@ -64,7 +69,7 @@ def execute_retrieval(payload: RetrievalQueryRequest) -> RetrievalExecution:
             project=payload.project,
             client=payload.client,
             module=payload.module,
-            top_k=payload.top_k,
+            top_k=candidate_top_k,
         )
     )
     vector_matches = sorted(
@@ -89,6 +94,7 @@ def execute_retrieval(payload: RetrievalQueryRequest) -> RetrievalExecution:
         results.append(
             RetrievedChunkMatch(
                 rank=len(results) + 1,
+                original_rank=len(results) + 1,
                 chunk_id=row["chunk_id"],
                 document_id=row["document_id"],
                 chunk_index=row["chunk_index"],
@@ -96,6 +102,9 @@ def execute_retrieval(payload: RetrievalQueryRequest) -> RetrievalExecution:
                 char_count=row["char_count"],
                 similarity_score=_calculate_similarity_score(match.distance),
                 distance=match.distance,
+                vector_score=_calculate_similarity_score(match.distance),
+                lexical_score=0.0,
+                final_score=_calculate_similarity_score(match.distance),
                 created_at=row["chunk_created_at"],
                 document=RetrievedDocumentSummary(
                     id=row["document_id"],
@@ -115,32 +124,47 @@ def execute_retrieval(payload: RetrievalQueryRequest) -> RetrievalExecution:
             )
         )
 
+    original_ranked_chunk_ids = [result.chunk_id for result in results]
+    reranked_results = rescore_retrieved_chunks(
+        query_text=payload.query_text,
+        matches=results,
+        top_k=payload.top_k,
+    )
+    reranked_chunk_ids = [result.chunk_id for result in reranked_results]
+    reranking_applied = reranked_chunk_ids != original_ranked_chunk_ids[: len(reranked_chunk_ids)]
+
     logger.info(
-        "Retrieval returned %s result(s) scope=%s candidates=%s top_k_limit_hit=%s distances=%s document_distribution=%s",
-        len(results),
+        "Retrieval returned %s result(s) scope=%s candidates=%s top_k_limit_hit=%s reranking_applied=%s original_chunk_order=%s reranked_chunk_order=%s distances=%s document_distribution=%s",
+        len(reranked_results),
         active_scope.model_dump(),
         len(vector_matches),
-        len(vector_matches) >= payload.top_k,
-        _returned_distance_values(results),
-        _document_distribution(results),
+        len(results) > payload.top_k,
+        reranking_applied,
+        original_ranked_chunk_ids,
+        reranked_chunk_ids,
+        _returned_distance_values(reranked_results),
+        _document_distribution(reranked_results),
     )
 
     response = RetrievalQueryResponse(
         query_text=payload.query_text,
         active_scope=active_scope,
         top_k=payload.top_k,
-        returned_results=len(results),
-        empty=len(results) == 0,
-        results=results,
+        returned_results=len(reranked_results),
+        empty=len(reranked_results) == 0,
+        results=reranked_results,
     )
     return RetrievalExecution(
         response=response,
-        chunk_ids=[result.chunk_id for result in results],
-        document_ids=_unique_document_ids(results),
+        chunk_ids=[result.chunk_id for result in reranked_results],
+        document_ids=_unique_document_ids(reranked_results),
         candidate_count=len(vector_matches),
-        top_k_limit_hit=len(vector_matches) >= payload.top_k,
-        returned_distance_values=_returned_distance_values(results),
-        returned_document_distribution=_document_distribution(results),
+        top_k_limit_hit=len(results) > payload.top_k,
+        returned_distance_values=_returned_distance_values(reranked_results),
+        returned_document_distribution=_document_distribution(reranked_results),
+        original_ranked_chunk_ids=original_ranked_chunk_ids,
+        reranked_chunk_ids=reranked_chunk_ids,
+        reranking_applied=reranking_applied,
     )
 
 
@@ -221,6 +245,9 @@ def _safe_insert_query_log(payload: RetrievalQueryRequest, execution: RetrievalE
                 top_k_limit_hit=execution.top_k_limit_hit,
                 returned_distance_values=execution.returned_distance_values,
                 returned_document_distribution=execution.returned_document_distribution,
+                original_ranked_chunk_ids=execution.original_ranked_chunk_ids,
+                reranked_chunk_ids=execution.reranked_chunk_ids,
+                reranking_applied=execution.reranking_applied,
                 provider_used="retrieval-only",
                 fallback_used=False,
             )
@@ -241,6 +268,10 @@ def _unique_document_ids(results: list[RetrievedChunkMatch]) -> list[int]:
         ordered_ids.append(result.document_id)
 
     return ordered_ids
+
+
+def _candidate_top_k(top_k: int) -> int:
+    return min(max(top_k + 3, top_k * 3), 20)
 
 
 def _returned_distance_values(results: list[RetrievedChunkMatch]) -> list[float]:

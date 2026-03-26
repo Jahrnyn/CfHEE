@@ -176,6 +176,9 @@ def _safe_insert_answer_query_log(payload: AnswerQueryRequest, retrieval_executi
                 top_k_limit_hit=retrieval_execution.top_k_limit_hit,
                 returned_distance_values=retrieval_execution.returned_distance_values,
                 returned_document_distribution=retrieval_execution.returned_document_distribution,
+                original_ranked_chunk_ids=retrieval_execution.original_ranked_chunk_ids,
+                reranked_chunk_ids=retrieval_execution.reranked_chunk_ids,
+                reranking_applied=retrieval_execution.reranking_applied,
                 provider_used="pending-answer",
                 fallback_used=False,
             )

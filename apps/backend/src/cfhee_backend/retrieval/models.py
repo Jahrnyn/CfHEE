@@ -77,6 +77,7 @@ class RetrievedDocumentSummary(BaseModel):
 
 class RetrievedChunkMatch(BaseModel):
     rank: int
+    original_rank: int | None = None
     chunk_id: int
     document_id: int
     chunk_index: int
@@ -84,6 +85,9 @@ class RetrievedChunkMatch(BaseModel):
     char_count: int
     similarity_score: float | None
     distance: float | None
+    vector_score: float | None = None
+    lexical_score: float | None = None
+    final_score: float | None = None
     created_at: datetime
     document: RetrievedDocumentSummary
     scope: RetrievalScope

@@ -33,6 +33,7 @@ Verified by code inspection:
 - document listing and chunk inspection are implemented in backend and frontend code
 - scoped retrieval is implemented in backend and frontend code
 - retrieval responses now include explicit scope, chunk/document identifiers, distance, and similarity score
+- retrieval now applies a small explicit lexical rescoring step after vector candidate retrieval while preserving original vector signals
 - source-grounded answers are implemented on top of retrieval using provider selection with Ollama plus deterministic fallback
 - Ollama grounded-answer prompting is now built through an explicit prompt builder with conservative instructions and deterministic context formatting
 - vector-store abstraction exists and is currently backed by Chroma
@@ -41,6 +42,7 @@ Verified by code inspection:
 - answer context selection is now explicit and traceable, including selected and dropped chunk IDs in `query_logs`
 - answer queries now persist simple deterministic evaluation fields in `query_logs`: `has_evidence`, `context_used_count`, `answer_length`, and `grounded_flag`
 - query logs now also persist small retrieval diagnostics such as candidate count, top-k limit hit, returned distance values, and returned document distribution
+- query logs now also preserve original vs. reranked chunk order plus whether reranking changed the final order
 
 Verified in the local environment during the latest check:
 
@@ -58,6 +60,7 @@ Verified in the local environment during the latest check:
 - Ollama grounded answers now run through the explicit prompt builder, and local checks show shorter scope-bound answers with the same retrieved citations
 - the Ask page keeps the core scoped query, retrieval, and grounded-answer flow without exposing debug panels in the main UI
 - grounded answers now follow the query language more explicitly for Hungarian and English queries in local checks, and `GET /query-logs` exposes richer retrieval diagnostics for inspection
+- targeted local checks now show exact identifier queries surfacing more reliable top-ranked chunks in at least the tested cases, without any Ask-page debug UI changes
 
 Not implemented yet:
 

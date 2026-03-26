@@ -32,6 +32,9 @@ class QueryLogCreate:
     top_k_limit_hit: bool | None
     returned_distance_values: list[float] | None
     returned_document_distribution: dict[str, int] | None
+    original_ranked_chunk_ids: list[int] | None
+    reranked_chunk_ids: list[int] | None
+    reranking_applied: bool | None
     provider_used: str
     fallback_used: bool
 
@@ -62,6 +65,9 @@ class QueryLogRow:
     top_k_limit_hit: bool | None
     returned_distance_values: list[float] | None
     returned_document_distribution: dict[str, int] | None
+    original_ranked_chunk_ids: list[int] | None
+    reranked_chunk_ids: list[int] | None
+    reranking_applied: bool | None
     provider_used: str
     fallback_used: bool
 
@@ -94,6 +100,9 @@ def insert_query_log(entry: QueryLogCreate) -> int:
                   top_k_limit_hit,
                   returned_distance_values,
                   returned_document_distribution,
+                  original_ranked_chunk_ids,
+                  reranked_chunk_ids,
+                  reranking_applied,
                   provider_used,
                   fallback_used
                 )
@@ -120,6 +129,9 @@ def insert_query_log(entry: QueryLogCreate) -> int:
                   %(top_k_limit_hit)s,
                   %(returned_distance_values)s,
                   %(returned_document_distribution)s,
+                  %(original_ranked_chunk_ids)s,
+                  %(reranked_chunk_ids)s,
+                  %(reranking_applied)s,
                   %(provider_used)s,
                   %(fallback_used)s
                 )
@@ -156,6 +168,13 @@ def insert_query_log(entry: QueryLogCreate) -> int:
                     "returned_document_distribution": Jsonb(entry.returned_document_distribution)
                     if entry.returned_document_distribution is not None
                     else None,
+                    "original_ranked_chunk_ids": Jsonb(entry.original_ranked_chunk_ids)
+                    if entry.original_ranked_chunk_ids is not None
+                    else None,
+                    "reranked_chunk_ids": Jsonb(entry.reranked_chunk_ids)
+                    if entry.reranked_chunk_ids is not None
+                    else None,
+                    "reranking_applied": entry.reranking_applied,
                     "provider_used": entry.provider_used,
                     "fallback_used": entry.fallback_used,
                 },
@@ -263,6 +282,9 @@ def list_query_logs(limit: int = 20) -> list[QueryLogRow]:
                   top_k_limit_hit,
                   returned_distance_values,
                   returned_document_distribution,
+                  original_ranked_chunk_ids,
+                  reranked_chunk_ids,
+                  reranking_applied,
                   provider_used,
                   fallback_used
                 FROM query_logs
@@ -307,6 +329,13 @@ def list_query_logs(limit: int = 20) -> list[QueryLogRow]:
             returned_document_distribution=dict(row["returned_document_distribution"])
             if row["returned_document_distribution"] is not None
             else None,
+            original_ranked_chunk_ids=list(row["original_ranked_chunk_ids"])
+            if row["original_ranked_chunk_ids"] is not None
+            else None,
+            reranked_chunk_ids=list(row["reranked_chunk_ids"])
+            if row["reranked_chunk_ids"] is not None
+            else None,
+            reranking_applied=row["reranking_applied"],
             provider_used=row["provider_used"],
             fallback_used=row["fallback_used"],
         )

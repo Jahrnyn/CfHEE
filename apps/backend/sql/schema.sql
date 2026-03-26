@@ -91,6 +91,9 @@ CREATE TABLE IF NOT EXISTS query_logs (
   top_k_limit_hit BOOLEAN,
   returned_distance_values JSONB,
   returned_document_distribution JSONB,
+  original_ranked_chunk_ids JSONB,
+  reranked_chunk_ids JSONB,
+  reranking_applied BOOLEAN,
   provider_used TEXT NOT NULL,
   fallback_used BOOLEAN NOT NULL DEFAULT FALSE
 );
@@ -124,3 +127,12 @@ ADD COLUMN IF NOT EXISTS returned_distance_values JSONB;
 
 ALTER TABLE query_logs
 ADD COLUMN IF NOT EXISTS returned_document_distribution JSONB;
+
+ALTER TABLE query_logs
+ADD COLUMN IF NOT EXISTS original_ranked_chunk_ids JSONB;
+
+ALTER TABLE query_logs
+ADD COLUMN IF NOT EXISTS reranked_chunk_ids JSONB;
+
+ALTER TABLE query_logs
+ADD COLUMN IF NOT EXISTS reranking_applied BOOLEAN;

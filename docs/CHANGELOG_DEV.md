@@ -95,3 +95,12 @@
   - `returned_distance_values`
   - `returned_document_distribution`
 - Extended `GET /query-logs` to expose those diagnostics for backend inspection without adding new Ask-page debug panels.
+- Added a small post-retrieval lexical rescoring step on top of scoped vector candidates.
+- The rescoring conservatively rewards:
+  - exact identifier hits such as ticket-like terms
+  - exact query-term matches in chunk text
+  - title overlap for explicit technical terms
+- Kept original vector distance/similarity intact and exposed reranking diagnostics through:
+  - `original_ranked_chunk_ids`
+  - `reranked_chunk_ids`
+  - `reranking_applied`
