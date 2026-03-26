@@ -1,29 +1,30 @@
 # TASKS
 
 ## Now
-- Manual inspection of Ask Copilot flow
-  - Goal: understand real retrieval + context + answer behavior
-  - Status: in progress
-  - Notes: use new verification UI
+- Validate rescored retrieval on real developer documentation
+  - Goal: confirm chunk-level precision is acceptable for MVP
+  - Status: mostly validated
+  - Notes: exact identifiers and explicit technical terms now rank better
 
 ## Next
-- Define minimal retrieval evaluation checklist
-  - Goal: make retrieval quality testable and repeatable
+- Add a small repeatable retrieval check set
+  - Goal: avoid future regressions in ranking quality
   - Status: planned
-  - Notes: based on manual observations
+  - Notes: use a few real BC/AL document queries as a lightweight regression pack
 
 ## Later
-- Build a better test dataset (non-trivial size, heterogeneous)
-  - Goal: enable meaningful retrieval evaluation
-  - Status: planned
-  - Notes: current 3-chunk dataset is insufficient
+- Improve retrieval quality further if justified
+  - Goal: reduce remaining cross-document noise in top results
+  - Status: deferred
+  - Notes: only if observed on real usage
 
-- Retrieval tuning (only if justified)
-  - Goal: improve precision
-  - Status: conditional
-  - Notes: only after evaluation proves an issue
+- Revisit embedding quality
+  - Goal: improve base semantic separation
+  - Status: deferred
+  - Notes: not necessary for current MVP
 
 ## Frozen
-- Hybrid search
-- Reranking frameworks
-- Multi-model validation
+- Hybrid retrieval
+- Full BM25 integration
+- Second-model reranking
+- Retrieval UI dashboards

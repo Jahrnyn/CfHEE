@@ -104,3 +104,12 @@
   - `original_ranked_chunk_ids`
   - `reranked_chunk_ids`
   - `reranking_applied`
+- Added a tiny retrieval regression pack for rerunning a few real Business Central developer-document queries locally.
+- Added:
+  - `apps/backend/fixtures/retrieval_regression_cases.json`
+  - `apps/backend/scripts/retrieval_regression_check.py`
+- The regression pack is intentionally small and checks only a few high-signal cases such as:
+  - exact identifier retrieval
+  - specific function-name lookup
+  - explicit temp-table lookup
+- The runner prints plain pass/fail output plus the returned top results and reranking diagnostics.

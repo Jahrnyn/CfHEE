@@ -1,0 +1,38 @@
+[
+  {
+    "name": "exact-identifier-eclsbc-1028",
+    "query_text": "ECLSBC-1028",
+    "workspace": "Business Central",
+    "domain": "AL",
+    "top_k": 5,
+    "expected_primary_title_substring": "ECLSBC-1028"
+  },
+  {
+    "name": "summary-question-eclsbc-1028",
+    "query_text": "Mi az ECLSBC-1028 fejlesztés összefoglalója?",
+    "workspace": "Business Central",
+    "domain": "AL",
+    "top_k": 5,
+    "expected_primary_title_substring": "ECLSBC-1028"
+  },
+  {
+    "name": "function-name-suggestvendorpayments",
+    "query_text": "SuggestVendorPayments",
+    "workspace": "Business Central",
+    "domain": "AL",
+    "top_k": 5,
+    "expected_top_title_substring": "ECLSBC-1028",
+    "expected_text_substring": "SuggestVendorPayments",
+    "match_within_top_n": 3
+  },
+  {
+    "name": "temp-table-an-08m-tax-report",
+    "query_text": "AN_08MTaxReportTempTable",
+    "workspace": "Business Central",
+    "domain": "AL",
+    "top_k": 5,
+    "expected_top_title_substring": "ECLSBC-899",
+    "expected_text_substring": "AN_08MTaxReportTempTable",
+    "match_within_top_n": 3
+  }
+]

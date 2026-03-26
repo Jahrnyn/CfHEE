@@ -2,7 +2,7 @@
 
 ## Recommended next development step
 
-Run a few more real-document retrieval checks before considering any larger search changes.
+Run the small retrieval regression pack after future retrieval changes, then add only the next highest-signal failing case if needed.
 
 Why this is next:
 
@@ -12,13 +12,14 @@ Why this is next:
 - grounded answer language is now more explicitly tied to the query language
 - a small lexical reranking step now sits on top of vector candidates, so the next gap is measuring where it helps and where it still misses
 - the current slice is functional but intentionally minimal
+- the repo now has a tiny regression guardrail for a few real developer-document queries, but coverage is still intentionally narrow
 
 ## Suggested narrow scope
 
-1. Run a few real identifier and table/template-name queries against the Hungarian Business Central material.
-2. Inspect original vs. reranked chunk order in `GET /query-logs` to see where lexical boosting helped.
-3. Keep the current no-evidence behavior when retrieval is empty.
-4. Keep the deterministic provider available as a fallback for local setup issues.
+1. Run `apps/backend/scripts/retrieval_regression_check.py` after retrieval changes.
+2. Inspect original vs. reranked chunk order in `GET /query-logs` when a regression case fails or looks noisy.
+3. Add only a few more high-signal cases if a real failure mode is observed again.
+4. Keep the current no-evidence behavior when retrieval is empty.
 
 ## Keep out of scope for that step
 
@@ -26,7 +27,3 @@ Why this is next:
 - agent workflows
 - external connectors
 - complex ranking or orchestration
-
-## After that
-
-Once answer formatting is steadier, improve manual verification coverage for the full Ask page flow.

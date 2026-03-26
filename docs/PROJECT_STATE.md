@@ -24,6 +24,9 @@ Implemented in code:
 - Windows-first local bootstrap scripts:
   - `scripts/dev-up.ps1`
   - `scripts/dev-check.ps1`
+- Retrieval regression guardrail:
+  - fixture: `apps/backend/fixtures/retrieval_regression_cases.json`
+  - runner: `apps/backend/scripts/retrieval_regression_check.py`
 
 ## Verified status
 
@@ -43,6 +46,7 @@ Verified by code inspection:
 - answer queries now persist simple deterministic evaluation fields in `query_logs`: `has_evidence`, `context_used_count`, `answer_length`, and `grounded_flag`
 - query logs now also persist small retrieval diagnostics such as candidate count, top-k limit hit, returned distance values, and returned document distribution
 - query logs now also preserve original vs. reranked chunk order plus whether reranking changed the final order
+- a tiny backend-side retrieval regression pack now exists for rerunning a few high-signal real-document queries after retrieval changes
 
 Verified in the local environment during the latest check:
 
@@ -61,6 +65,9 @@ Verified in the local environment during the latest check:
 - the Ask page keeps the core scoped query, retrieval, and grounded-answer flow without exposing debug panels in the main UI
 - grounded answers now follow the query language more explicitly for Hungarian and English queries in local checks, and `GET /query-logs` exposes richer retrieval diagnostics for inspection
 - targeted local checks now show exact identifier queries surfacing more reliable top-ranked chunks in at least the tested cases, without any Ask-page debug UI changes
+- the retrieval regression pack can now be run locally against the existing Postgres + Chroma data to re-check a few exact-identifier and explicit-term cases with plain pass/fail output
+- local run command for that guardrail is:
+  - `$env:PYTHONPATH="$PWD\apps\backend\src;$PWD\apps\backend\.packages"; python apps/backend/scripts/retrieval_regression_check.py`
 
 Not implemented yet:
 
