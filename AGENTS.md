@@ -1,29 +1,61 @@
 # AGENTS.md
 
 ## Project
-Copilot for Hostile Enterprise Environment
+CfHEE (Copilot for Hostile Enterprise Environment)
 
-Local-first, multi-workspace, domain-aware knowledge retrieval and reasoning platform.
+A local-first, scoped knowledge storage and retrieval module.
 
 ## Mission
-Build a personal AI workbench that ingests heterogeneous technical and enterprise documents,
-stores them with explicit scope metadata, indexes them, and answers questions with source-grounded responses.
+Build a reusable knowledge infrastructure that:
+
+- ingests heterogeneous technical and enterprise documents
+- stores them with explicit hierarchical scope metadata
+- preserves raw inputs and traceability
+- enables fast, reliable, scoped retrieval
+
+The system is designed to act as a **backend module** for higher-level workflows, agents, and applications.
 
 ## Core principles
 - Local-first by default
 - Retrieval-first, not agent-first
-- Source-grounded answers only
+- Source-grounded data access only
 - Scoped isolation by default
 - User-defined top-level metadata is authoritative
+- Preserve raw inputs
 - Keep implementation simple and modular
 - Favor thin vertical slices over broad unfinished scaffolding
 
+## What this system is
+
+CfHEE is a:
+
+> **Knowledge Infrastructure Module**
+
+It provides:
+
+- ingestion
+- structured storage
+- scoped retrieval
+- traceable data access
+
+## What this system is NOT
+
+Do not treat CfHEE as:
+
+- an AI assistant product
+- an agent framework
+- a workflow engine
+- an automation platform
+- a business logic container
+
+Higher-level systems must be built **outside** this module.
+
 ## Tech stack
-- Frontend: Angular
+- Frontend: Angular (developer workbench)
 - Backend: Python + FastAPI
 - Database: Postgres
-- Vector store: Chroma first, abstracted behind adapter
-- LLM runtime: Ollama local
+- Vector store: Chroma (abstracted)
+- LLM runtime: Ollama (optional, local)
 - Raw file storage: local filesystem
 
 ## Domain model
@@ -37,36 +69,47 @@ Hierarchy:
 - Document
 - Chunk
 
-Every document must belong to a workspace and domain at minimum.
-The system must avoid cross-contamination across scopes.
+Rules:
+- Every document must belong to at least a workspace and domain
+- Scope isolation must be strictly enforced
+- Cross-scope retrieval must be explicit
 
 ## Architectural rules
-- Never couple business logic directly to a specific vector DB implementation.
-- Never couple business logic directly to a specific LLM provider.
-- Preserve raw source input.
-- Enrichment must not overwrite user-provided top-level scope.
-- Prefer async enrichment where possible.
-- Default retrieval must be scoped.
-- Global search must be explicit, never implicit.
+- Never couple business logic to a specific vector DB
+- Never couple business logic to a specific LLM provider
+- Preserve raw source input
+- Enrichment must not override user-defined scope
+- Retrieval must be scoped by default
+- Global search must be explicit, never implicit
 
-## MVP target
-The first usable MVP must support:
-1. Manual document ingestion
-2. Explicit scope metadata assignment
-3. Persistence in Postgres
-4. Document listing
-5. Basic chunking
-6. Embedding + vector indexing
-7. Scoped retrieval
-8. Source-grounded answers
+## System boundary
 
-## Coding rules
-- Prefer readable, boring code over clever abstractions
-- Strong typing where practical
-- Small services with explicit responsibilities
-- Avoid framework magic when simple code is enough
-- Keep functions short and names literal
-- Add docstrings/comments only where they clarify intent
+CfHEE ends at:
+
+- ingestion
+- storage
+- retrieval
+- grounded data access
+
+It must NOT contain:
+
+- multi-step workflows
+- agent loops
+- orchestration logic
+- domain-specific automation
+
+## Answer layer
+
+The answer layer is a:
+
+> **built-in convenience consumer**
+
+Purpose:
+- quick manual querying
+- debugging retrieval
+- validating stored knowledge
+
+It is not a core responsibility and should not be expanded into a full assistant system.
 
 ## Backend structure
 Expected modules:
@@ -84,25 +127,30 @@ Expected modules:
 - persistence
 
 ## Frontend structure
+
+The frontend acts as a:
+
+> **developer workbench**
+
 Expected views:
-- Inbox / Capture
-- Documents
-- Ask Copilot
-- Scope Manager
-- Settings
+- Inbox / Capture (manual ingest)
+- Documents (inspection)
+- Ask (retrieval + answer convenience)
+- Scope Manager (future)
+- Settings (future)
 
 ## Working style for Codex
 When implementing:
-1. Read docs/ARCHITECTURE.md and docs/MVP.md first
-2. Propose the smallest viable change
-3. Implement incrementally
-4. Keep diffs narrow
-5. Explain tradeoffs briefly
-6. Do not introduce speculative complexity unless required
+1. Read docs/ARCHITECTURE.md first
+2. Align with current project definition (knowledge module, not copilot)
+3. Propose the smallest viable change
+4. Implement incrementally
+5. Keep diffs narrow
+6. Avoid speculative abstractions
 
-## Do not do yet
-- No autonomous ticket solving
-- No multi-agent orchestration
-- No external connectors
-- No complex auth system
-- No cloud model dependency by default
+## Do not do
+- Do not implement agent workflows inside this module
+- Do not embed business-specific logic
+- Do not add orchestration layers
+- Do not introduce external connectors prematurely
+- Do not assume cloud dependencies

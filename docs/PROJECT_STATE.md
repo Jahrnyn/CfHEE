@@ -2,6 +2,21 @@
 
 Last reviewed: 2026-03-26
 
+## Current project identity
+
+CfHEE is currently defined as a local-first, scoped knowledge storage and retrieval module.
+
+Its architectural core is:
+
+- scoped ingest
+- persistent storage
+- chunking and indexing
+- scoped retrieval
+- traceability
+
+The built-in grounded-answer capability exists as a convenience consumer on top of retrieval.
+The frontend should be understood primarily as a lightweight developer workbench, not as the core identity of the system.
+
 ## Current slice in repo
 
 Implemented in code:
@@ -38,7 +53,7 @@ Verified by code inspection:
 - manual ingest is implemented end to end in backend and frontend code
 - document listing and chunk inspection are implemented in backend and frontend code
 - scoped retrieval is implemented in backend and frontend code
-- retrieval responses now include explicit scope, chunk/document identifiers, distance, and similarity score
+- retrieval responses now include explicit scope, chunk and document identifiers, distance, and similarity score
 - retrieval now applies a small explicit lexical rescoring step after vector candidate retrieval while preserving original vector signals
 - source-grounded answers are implemented on top of retrieval using provider selection with Ollama plus deterministic fallback
 - Ollama grounded-answer prompting is now built through an explicit prompt builder with conservative instructions and deterministic context formatting
@@ -57,7 +72,7 @@ Verified in the local environment during the latest check:
 - `dev-check.ps1` runs successfully when invoked with `powershell.exe -ExecutionPolicy Bypass -File ...`
 - frontend production build succeeds with `npm.cmd run build`
 - backend source compiles with `python -m compileall`
-- retrieval endpoint accepts `top_k`, returns explicit empty results, logs query/scope/result count, and rejects missing scope with a clear validation error when exercised against local Postgres + Chroma
+- retrieval endpoint accepts `top_k`, returns explicit empty results, logs query, scope, and result count, and rejects missing scope with a clear validation error when exercised against local Postgres and Chroma
 - answer endpoint returns a grounded short answer with cited chunks for matching scope, returns an explicit no-evidence state for empty retrieval, and rejects missing scope with the same scoped validation
 - Ollama is reachable locally at the default local URL and `qwen2.5:7b` is present locally in this environment
 - answer provider selection uses Ollama successfully when the model is available and falls back to the deterministic provider when the configured Ollama model is unavailable
@@ -69,34 +84,34 @@ Verified in the local environment during the latest check:
 - the Ask page keeps the core scoped query, retrieval, and grounded-answer flow without exposing debug panels in the main UI
 - grounded answers now follow the query language more explicitly for Hungarian and English queries in local checks, and `GET /query-logs` exposes richer retrieval diagnostics for inspection
 - targeted local checks now show exact identifier queries surfacing more reliable top-ranked chunks in at least the tested cases, without any Ask-page debug UI changes
-- the retrieval regression pack can now be run locally against the existing Postgres + Chroma data to re-check a few exact-identifier and explicit-term cases with plain pass/fail output
+- the retrieval regression pack can now be run locally against the existing Postgres and Chroma data to re-check a few exact-identifier and explicit-term cases with plain pass/fail output
 - local run command for that guardrail is:
   - `$env:PYTHONPATH="$PWD\apps\backend\src;$PWD\apps\backend\.packages"; python apps/backend/scripts/retrieval_regression_check.py`
-- stored scope values can now be queried through `GET /scope-values`, reused in the manual-ingest form, and matched conservatively against trim/casing/spacing variants during document creation when exercised locally
+- stored scope values can now be queried through `GET /scope-values`, reused in the manual-ingest form, and matched conservatively against trim, casing, and spacing variants during document creation when exercised locally
 
-Not implemented yet:
+## Not implemented yet
 
 - real scope management UI
 - settings UI beyond placeholder copy
-- bulk file import / connectors / OCR
+- bulk file import, connectors, and OCR
+- explicit external-integration-oriented API contracts beyond the current app-driven endpoint set
+- containerized cross-environment runtime
 
-## Current alignment with MVP docs
+## Current architectural reading
 
-Already present:
+What currently exists should be read as:
 
-- Angular shell
-- FastAPI backend
-- Postgres schema
-- manual ingest form
-- document list
-- scoped retrieval UI
-- grounded answer UI
-- workspace/domain/project/client/module metadata
-- raw text storage
-- basic chunking
-- vector indexing hook on ingest
+- a working scoped knowledge core with a small built-in developer workbench
+- not a full copilot product
+- not a workflow platform
+- not an orchestration system
 
-Still missing from the broader architecture direction:
+## Immediate architectural implication
 
-- enrichment
-- broader provider routing beyond the current minimal Ollama-or-deterministic selection
+Future growth should prefer:
+
+- API stabilization
+- external integration
+- keeping workflow-specific logic outside the module
+
+rather than expanding the built-in UI and answer layer into a broader application identity.

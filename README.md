@@ -1,10 +1,90 @@
-# Copilot for Hostile Enterprise Environment
+# CfHEE
 
-Initial project skeleton for the Phase 1 foundation described in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) and [docs/MVP.md](docs/MVP.md).
+CfHEE (Copilot for Hostile Enterprise Environment) is a local-first, scoped knowledge storage and retrieval module.
+
+It provides a reusable backend component for storing, organizing, and retrieving domain-specific knowledge with strict scope isolation and full traceability.
+
+---
+
+## What CfHEE does
+
+CfHEE is responsible for:
+
+- ingesting heterogeneous technical and enterprise data
+- assigning explicit hierarchical scope metadata
+- preserving raw inputs
+- chunking and indexing content
+- storing structured knowledge in Postgres
+- enabling fast, scoped retrieval
+- providing traceable, source-grounded access to stored data
+
+---
+
+## What CfHEE is NOT
+
+CfHEE is not:
+
+- an AI assistant product
+- a workflow engine
+- an agent framework
+- an automation platform
+
+Higher-level systems (workflows, agents, automation tools) are expected to be built **on top of CfHEE**, not inside it.
+
+---
+
+## System role
+
+CfHEE acts as a:
+
+> **Knowledge Infrastructure Module**
+
+It is intended to be used by:
+
+- automation scripts
+- workflow systems
+- domain-specific tools
+- agent-based systems
+
+through its API.
+
+---
+
+## Built-in UI
+
+The frontend is a **developer workbench**, not a product UI.
+
+It provides:
+
+- manual document ingestion
+- document and chunk inspection
+- scoped retrieval
+- grounded answer querying (as a convenience layer)
+
+---
+
+## Architecture overview
+
+```text
+External Systems / Workflows
+            ↓
+         CfHEE API
+            ↓
+   Knowledge Core (this project)
+```
+
+Core layers:
+
+- Ingestion
+- Persistence (Postgres + raw storage)
+- Retrieval (scoped)
+- Answer (convenience only)
+
+---
 
 ## Folder structure
 
-```text
+```
 apps/
   backend/
     src/cfhee_backend/
@@ -27,6 +107,8 @@ docs/
 docker-compose.yml
 ```
 
+---
+
 ## Run locally
 
 ### Postgres
@@ -35,15 +117,12 @@ docker-compose.yml
 docker compose up -d postgres
 ```
 
-Postgres will be available on `localhost:5432` with:
+Defaults:
 
 - database: `cfhee`
 - user: `cfhee`
 - password: `cfhee`
-
-The initial schema for `workspaces`, `domains`, `projects`, `clients`, `modules`, `documents`, and `chunks`
-is defined in `apps/backend/sql/schema.sql`. It is mounted into the Postgres container on first database
-initialization, and the backend also runs the same schema on startup with `CREATE TABLE IF NOT EXISTS`.
+- port: `5432`
 
 ### Backend
 
@@ -55,39 +134,7 @@ python -m pip install -e .
 python -m uvicorn cfhee_backend.main:app --reload
 ```
 
-The backend also creates a local Chroma index under `apps/backend/data/chroma` by default.
-You can override that location with `CHROMA_PERSIST_DIRECTORY`.
-
-Grounded answers support a small provider-selection mechanism:
-
-- `ANSWER_PROVIDER=auto` (default): use Ollama when it is reachable and the configured model exists locally, otherwise fall back to the deterministic provider
-- `ANSWER_PROVIDER=ollama`: prefer Ollama, but still fall back to deterministic if Ollama is unavailable
-- `ANSWER_PROVIDER=deterministic`: always use the deterministic local fallback
-
-Ollama defaults:
-
-- `OLLAMA_BASE_URL=http://127.0.0.1:11434`
-- `OLLAMA_MODEL=qwen2.5:7b`
-
-If you want Ollama-backed answers, make sure Ollama is installed, running, and the model exists locally:
-
-```powershell
-ollama pull qwen2.5:7b
-ollama serve
-```
-
-The API starts on `http://127.0.0.1:8000` and exposes:
-
-- `GET /`
-- `GET /health`
-- `POST /answer/query`
-- `POST /documents`
-- `GET /documents`
-- `GET /documents/{document_id}/chunks`
-- `POST /retrieval/query`
-- `GET /docs`
-
-If you need a different Postgres connection, set `DATABASE_URL` before starting the backend.
+API base: `http://127.0.0.1:8000`
 
 ### Frontend
 
@@ -97,42 +144,64 @@ npm install
 npm start
 ```
 
-The Angular app starts on `http://localhost:4200`.
+Frontend: `http://localhost:4200`
 
-The current vertical slices are available at:
+---
 
-- `Inbox / Capture` for manual document ingestion
-- `Documents` for listing stored documents and inspecting generated chunks
-- `Ask Copilot` for grounded answers backed only by scoped retrieval results, plus a retrieval-only view for raw matching chunks
+## API endpoints (current)
 
-## Local Dev Bootstrap
+| Method | Endpoint |
+|--------|----------|
+| `GET` | `/` |
+| `GET` | `/health` |
+| `POST` | `/documents` |
+| `GET` | `/documents` |
+| `GET` | `/documents/{document_id}/chunks` |
+| `POST` | `/retrieval/query` |
+| `POST` | `/answer/query` |
 
-For a Windows-first local setup, use the PowerShell scripts in `scripts/` from the repo root:
+---
 
-```powershell
-.\scripts\dev-up.ps1
-```
+## Answer provider (optional)
 
-`dev-up.ps1` checks Docker availability, starts Postgres with `docker compose`, creates `apps/backend/.venv` if needed, installs backend and frontend dependencies only when their manifest files changed, and opens backend plus frontend in separate PowerShell windows.
-It also checks whether Ollama is reachable, tries to start `ollama serve` in a new PowerShell window when practical, and warns clearly when the configured local model is missing.
+CfHEE supports a minimal answer provider abstraction.
 
-If your PowerShell execution policy blocks local scripts, run them with:
+Environment variables:
 
-```powershell
-powershell.exe -ExecutionPolicy Bypass -File .\scripts\dev-up.ps1
-```
+| Variable | Values |
+|----------|--------|
+| `ANSWER_PROVIDER` | `auto` \| `ollama` \| `deterministic` |
+| `OLLAMA_BASE_URL` | `http://127.0.0.1:11434` |
+| `OLLAMA_MODEL` | `qwen2.5:7b` |
 
-After the services are up, run:
+> Ollama is optional. Retrieval works independently.
 
-```powershell
-.\scripts\dev-check.ps1
-```
+---
 
-`dev-check.ps1` verifies:
+## Development notes
 
-- the `cfhee-postgres` container is running
-- the backend responds on `http://127.0.0.1:8000/health`
-- the frontend responds on `http://127.0.0.1:4200`
-- whether Ollama is reachable at the configured local URL
-- whether the configured local Ollama model is present
-- whether Ollama-backed answers appear ready or the deterministic fallback is expected
+- Retrieval is always scoped by default
+- Scope isolation is critical
+- Raw inputs are preserved
+- Answer layer must not bypass retrieval
+
+---
+
+## Future direction
+
+The next evolution of CfHEE focuses on:
+
+- stable API surface for external integration
+- external workflow and agent systems built on top
+- containerization and cross-platform runtime (Linux support)
+
+---
+
+## Documentation
+
+See:
+
+- `docs/ARCHITECTURE.md`
+- `docs/PROJECT_STATE.md`
+- `docs/NEXT_STEPS.md`
+- `docs/DECISIONS.md`

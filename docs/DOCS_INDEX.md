@@ -6,13 +6,8 @@ This file explains the role of each documentation file in the repository.
 
 ### `docs/ARCHITECTURE.md`
 High-level architecture overview of the system.
-Use this to understand layers, modules, and long-term structure.
-This document describes the intended system architecture and long-term structure.
-It is not the authoritative source for current implementation status.
-For verified current state, use docs/PROJECT_STATE.md.
-
-### `docs/MVP.md`
-Defines the intended MVP scope and what is explicitly out of scope.
+Use this to understand the module boundary, layers, integration direction, and long-term structure.
+This document describes the intended architecture and does not serve as the authoritative source for current implementation status.
 
 ### `docs/DECISIONS.md`
 Architecture decisions that should not be re-debated casually.
@@ -59,11 +54,10 @@ For most implementation tasks, read in this order:
 2. `docs/PROJECT_STATE.md`
 3. `docs/NEXT_STEPS.md`
 4. `docs/ARCHITECTURE.md`
-5. `docs/MVP.md`
-6. `docs/DECISIONS.md`
-7. `docs/DOMAIN_MODEL.md`
-8. `docs/PROMPTING_GUIDE.md`
-9. `docs/CHANGELOG_DEV.md` if the task relates to recent work
+5. `docs/DECISIONS.md`
+6. `docs/DOMAIN_MODEL.md`
+7. `docs/PROMPTING_GUIDE.md`
+8. `docs/CHANGELOG_DEV.md` if the task relates to recent work
 
 ## Human usage note
 
@@ -79,5 +73,9 @@ When documents disagree, prefer:
 2. `docs/NEXT_STEPS.md` for current intended next step
 3. `docs/DECISIONS.md` for fixed technical decisions
 4. `docs/ARCHITECTURE.md` for long-term structure
-5. `docs/MVP.md` for scope boundaries
-6. `docs/CHANGELOG_DEV.md` for recent historical context
+5. `docs/CHANGELOG_DEV.md` for recent historical context
+
+## Notes on removed docs
+
+`docs/MVP.md` is intentionally removed from the active documentation set.
+The project is no longer framed primarily as a copilot-style MVP. The current documentation is organized around a stable module boundary, current verified state, and next integration-oriented steps.

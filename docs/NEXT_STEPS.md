@@ -2,32 +2,47 @@
 
 ## Recommended next development step
 
-Use the improved manual-ingest flow with reused scope values on real developer material, then add only the next smallest ingest or retrieval painkiller that shows up in actual use.
+Define and expose a cleaner API-first integration surface for CfHEE so that external scripts, services, and applications can use the module without modifying the core codebase.
 
 Why this is next:
 
-- the project now has a real local Ollama-backed provider behind the answer abstraction
-- retrieval and answer traceability are now persisted through `query_logs`
-- simple deterministic evaluation signals are now persisted through `query_logs`
-- grounded answer language is now more explicitly tied to the query language
-- a small lexical reranking step now sits on top of vector candidates, and a tiny retrieval regression guardrail already exists for rechecking that behavior
-- manual ingest now reuses stored scope values and normalizes trivial casing/spacing variants, which removes one immediate usability risk before heavier ingest work
-- the current slice is functional but intentionally minimal
-- real scope management UI still does not exist
-- this is still not file-import work and not connector work
+- the core scoped knowledge module is already functional in a narrow local form
+- manual ingest, chunk persistence, scoped retrieval, grounded answer access, and query logging already exist
+- the built-in frontend is useful as a developer workbench, but it should not become the main expansion surface
+- the newly clarified architectural direction treats higher-level workflows and automation as external consumers
+- the next real leverage comes from making the module easier to reuse, not from adding more internal UI or copilot-style behavior
 
 ## Suggested narrow scope
 
-1. Use the manual ingest form against more real developer notes and confirm the existing scope suggestions stay convenient without creating noisy variants.
-2. Run `apps/backend/scripts/retrieval_regression_check.py` after retrieval changes.
-3. Inspect original vs. reranked chunk order in `GET /query-logs` when a regression case fails or looks noisy.
-4. Keep the next slice narrow: no bulk file import, no connectors, no scope-management subsystem unless a concrete need appears.
+1. Define the first stable integration-oriented API surface around the existing capabilities:
+   - document ingest
+   - document listing and inspection
+   - scoped retrieval
+   - grounded answer access
+   - query-log inspection where useful
+2. Make the API contract clearer for external callers:
+   - request and response shapes
+   - explicit scope expectations
+   - validation behavior
+   - empty-result behavior
+3. Keep the current frontend working as a lightweight local workbench, but do not expand it into a richer product layer.
+4. Document the module boundary clearly in README and docs so future development does not drift back into an app-centric model.
 
 ## Keep out of scope for that step
 
-- broad answer orchestration beyond a small cited response
-- bulk file import or parser work
-- agent workflows
-- external connectors
-- complex ranking or orchestration
-- full scope-management UI
+- workflow orchestration inside CfHEE
+- agent loops inside CfHEE
+- proposal-generation logic inside CfHEE
+- pentest automation logic inside CfHEE
+- broad connector ecosystems
+- complex file-import subsystems unless an immediate integration need forces it
+- cross-environment packaging work before the API boundary is stable
+
+## After that step
+
+Once the API boundary is stable and the module feels reusable, the next long-term infrastructure target is deployment portability:
+
+- containerize the system
+- reduce dependence on the current Windows-heavy localhost development setup
+- make the module easier to run on Linux and other environments
+- prepare for production-buildable packaging without changing the core architectural boundary

@@ -10,7 +10,6 @@ Read `AGENTS.md` and the relevant files under `docs/` first.
 
 Before making changes, align with:
 - `docs/ARCHITECTURE.md`
-- `docs/MVP.md`
 - `docs/DECISIONS.md`
 - `docs/DOMAIN_MODEL.md`
 - `docs/PROJECT_STATE.md`
@@ -40,6 +39,7 @@ Implement the following narrow vertical slice:
 - stay aligned with the documented architecture and current verified project state
 - do not claim something is implemented unless it is actually implemented in code
 - do not claim runtime verification unless it was actually verified
+- preserve the module boundary: do not turn CfHEE into an orchestration or workflow engine
 
 ---
 
@@ -60,6 +60,7 @@ Implement the following narrow vertical slice:
 - prefer thin vertical slices
 - keep local-first behavior by default
 - preserve scope isolation rules
+- prefer stable API-oriented design for reusable capabilities
 
 ---
 
