@@ -6,25 +6,45 @@ from cfhee_backend.chunking.service import chunk_document
 from cfhee_backend.embeddings import get_embedding_service
 from cfhee_backend.ingestion.models import ChunkSummary, DocumentCreate, DocumentSummary
 from cfhee_backend.persistence.database import get_connection
+from cfhee_backend.scope_registry.service import resolve_scope_name
 from cfhee_backend.vector_store import get_vector_store
 from cfhee_backend.vector_store.base import VectorChunkRecord
 
 
 def create_document(payload: DocumentCreate) -> DocumentSummary:
     chunk_rows: list[dict[str, Any]] = []
+    canonical_scope = {
+        "workspace": payload.workspace,
+        "domain": payload.domain,
+        "project": payload.project,
+        "client": payload.client,
+        "module": payload.module,
+    }
 
     with get_connection() as connection:
         with connection.cursor() as cursor:
+            canonical_scope["workspace"] = resolve_scope_name(
+                cursor=cursor,
+                table_name="workspaces",
+                name=payload.workspace,
+            )
             workspace_id = _upsert_scope(
                 cursor,
                 table_name="workspaces",
-                name=payload.workspace,
+                name=canonical_scope["workspace"],
                 conflict_target="name",
+            )
+            canonical_scope["domain"] = resolve_scope_name(
+                cursor=cursor,
+                table_name="domains",
+                name=payload.domain,
+                parent_column="workspace_id",
+                parent_id=workspace_id,
             )
             domain_id = _upsert_scope(
                 cursor,
                 table_name="domains",
-                name=payload.domain,
+                name=canonical_scope["domain"],
                 parent_column="workspace_id",
                 parent_id=workspace_id,
                 conflict_target="workspace_id, name",
@@ -32,10 +52,17 @@ def create_document(payload: DocumentCreate) -> DocumentSummary:
 
             project_id = None
             if payload.project:
+                canonical_scope["project"] = resolve_scope_name(
+                    cursor=cursor,
+                    table_name="projects",
+                    name=payload.project,
+                    parent_column="domain_id",
+                    parent_id=domain_id,
+                )
                 project_id = _upsert_scope(
                     cursor,
                     table_name="projects",
-                    name=payload.project,
+                    name=canonical_scope["project"],
                     parent_column="domain_id",
                     parent_id=domain_id,
                     conflict_target="domain_id, name",
@@ -43,10 +70,17 @@ def create_document(payload: DocumentCreate) -> DocumentSummary:
 
             client_id = None
             if payload.client and project_id is not None:
+                canonical_scope["client"] = resolve_scope_name(
+                    cursor=cursor,
+                    table_name="clients",
+                    name=payload.client,
+                    parent_column="project_id",
+                    parent_id=project_id,
+                )
                 client_id = _upsert_scope(
                     cursor,
                     table_name="clients",
-                    name=payload.client,
+                    name=canonical_scope["client"],
                     parent_column="project_id",
                     parent_id=project_id,
                     conflict_target="project_id, name",
@@ -54,10 +88,17 @@ def create_document(payload: DocumentCreate) -> DocumentSummary:
 
             module_id = None
             if payload.module and client_id is not None:
+                canonical_scope["module"] = resolve_scope_name(
+                    cursor=cursor,
+                    table_name="modules",
+                    name=payload.module,
+                    parent_column="client_id",
+                    parent_id=client_id,
+                )
                 module_id = _upsert_scope(
                     cursor,
                     table_name="modules",
-                    name=payload.module,
+                    name=canonical_scope["module"],
                     parent_column="client_id",
                     parent_id=client_id,
                     conflict_target="client_id, name",
@@ -117,7 +158,7 @@ def create_document(payload: DocumentCreate) -> DocumentSummary:
                 raw_text=payload.raw_text,
             )
 
-            _index_chunks(chunk_rows=chunk_rows, payload=payload)
+            _index_chunks(chunk_rows=chunk_rows, payload=payload, canonical_scope=canonical_scope)
         connection.commit()
 
     return get_document(document_id)
@@ -246,7 +287,11 @@ def _insert_chunks(
     return inserted_chunks
 
 
-def _index_chunks(chunk_rows: list[dict[str, Any]], payload: DocumentCreate) -> None:
+def _index_chunks(
+    chunk_rows: list[dict[str, Any]],
+    payload: DocumentCreate,
+    canonical_scope: dict[str, str | None],
+) -> None:
     if not chunk_rows:
         return
 
@@ -262,11 +307,11 @@ def _index_chunks(chunk_rows: list[dict[str, Any]], payload: DocumentCreate) -> 
                 chunk_index=chunk["chunk_index"],
                 text=chunk["text"],
                 embedding=embedding,
-                workspace=payload.workspace,
-                domain=payload.domain,
-                project=payload.project,
-                client=payload.client,
-                module=payload.module,
+                workspace=canonical_scope["workspace"] or payload.workspace,
+                domain=canonical_scope["domain"] or payload.domain,
+                project=canonical_scope["project"],
+                client=canonical_scope["client"],
+                module=canonical_scope["module"],
                 source_type=payload.source_type,
                 language=payload.language,
             )

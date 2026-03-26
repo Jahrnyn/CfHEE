@@ -4,6 +4,8 @@ from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, field_validator, model_validator
 
+from cfhee_backend.scope_registry.models import normalize_scope_value
+
 
 class DocumentCreate(BaseModel):
     workspace: str
@@ -32,11 +34,7 @@ class DocumentCreate(BaseModel):
     )
     @classmethod
     def normalize_text(cls, value: str | None) -> str | None:
-        if value is None:
-            return None
-
-        normalized = value.strip()
-        return normalized or None
+        return normalize_scope_value(value)
 
     @model_validator(mode="after")
     def validate_scope_hierarchy(self) -> "DocumentCreate":

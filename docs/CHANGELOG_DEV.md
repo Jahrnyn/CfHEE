@@ -113,3 +113,17 @@
   - specific function-name lookup
   - explicit temp-table lookup
 - The runner prints plain pass/fail output plus the returned top results and reranking diagnostics.
+- Added a small ingest-usability slice for scope metadata reuse and normalization.
+- Added `GET /scope-values` for reading existing stored scope values for manual-ingest suggestions.
+- Updated the manual-ingest form to:
+  - reuse stored workspace/domain/project/client/module values through lightweight datalist suggestions
+  - still allow entering new values when needed
+  - show a small close-match hint for likely typo-like scope inputs
+- Added conservative scope normalization during document creation:
+  - trim leading/trailing whitespace
+  - collapse repeated internal whitespace
+  - reuse existing scope rows through case-insensitive scope matching
+- Kept this slice intentionally narrow:
+  - no file import
+  - no connectors
+  - no full scope-management subsystem

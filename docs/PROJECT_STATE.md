@@ -1,6 +1,6 @@
 # Project State
 
-Last reviewed: 2026-03-24
+Last reviewed: 2026-03-26
 
 ## Current slice in repo
 
@@ -8,14 +8,17 @@ Implemented in code:
 
 - Angular frontend shell with routes for `Overview`, `Inbox / Capture`, `Documents`, `Ask Copilot`, `Scope Manager`, and `Settings`
 - Working frontend views for manual ingest and document listing
+- Manual ingest now supports reusing stored scope values through lightweight suggestions while still allowing new values
 - Working frontend view for scoped retrieval in `Ask Copilot`
 - Working frontend `Ask Copilot` flow for grounded answers plus retrieval-only inspection
 - `Ask Copilot` keeps a clean minimal user-facing UI for scoped retrieval and grounded answers
 - FastAPI backend with `GET /`, `GET /health`, `POST /documents`, `GET /documents`, `GET /documents/{id}/chunks`, `POST /retrieval/query`, `POST /answer/query`, and `GET /query-logs`
+- FastAPI backend also exposes `GET /scope-values` for lightweight manual-ingest scope reuse
 - Retrieval-to-answer handoff now uses an explicit context builder with deterministic ordering, conservative dedupe, and an answer-context limit
 - Postgres schema for workspaces, domains, projects, clients, modules, documents, and chunks
 - Document ingest flow that:
   - validates required scope and hierarchy
+  - normalizes scope metadata conservatively for trim, collapsed whitespace, and case-insensitive scope matching
   - upserts scope rows
   - stores raw document text in Postgres
   - chunks text by paragraph blocks
@@ -47,6 +50,7 @@ Verified by code inspection:
 - query logs now also persist small retrieval diagnostics such as candidate count, top-k limit hit, returned distance values, and returned document distribution
 - query logs now also preserve original vs. reranked chunk order plus whether reranking changed the final order
 - a tiny backend-side retrieval regression pack now exists for rerunning a few high-signal real-document queries after retrieval changes
+- manual ingest scope suggestions and conservative normalization are implemented as a thin usability slice, not as a full scope-management system
 
 Verified in the local environment during the latest check:
 
@@ -68,11 +72,13 @@ Verified in the local environment during the latest check:
 - the retrieval regression pack can now be run locally against the existing Postgres + Chroma data to re-check a few exact-identifier and explicit-term cases with plain pass/fail output
 - local run command for that guardrail is:
   - `$env:PYTHONPATH="$PWD\apps\backend\src;$PWD\apps\backend\.packages"; python apps/backend/scripts/retrieval_regression_check.py`
+- stored scope values can now be queried through `GET /scope-values`, reused in the manual-ingest form, and matched conservatively against trim/casing/spacing variants during document creation when exercised locally
 
 Not implemented yet:
 
 - real scope management UI
 - settings UI beyond placeholder copy
+- bulk file import / connectors / OCR
 
 ## Current alignment with MVP docs
 
