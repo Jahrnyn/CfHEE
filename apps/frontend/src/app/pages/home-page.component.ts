@@ -5,10 +5,11 @@ import { Component } from '@angular/core';
   standalone: true,
   template: `
     <section class="panel">
-      <h2>Phase 1 foundation</h2>
+      <h2>Developer workbench</h2>
       <p>
-        This shell matches the documented frontend structure and gives the repository a minimal
-        Angular startup path without prematurely implementing ingestion, retrieval, or model features.
+        This frontend is a lightweight workbench for the CfHEE knowledge module. It supports
+        manual ingest, document inspection, scoped retrieval, and grounded-answer checks without
+        reframing the module as an assistant product.
       </p>
     </section>
 
@@ -23,7 +24,7 @@ import { Component } from '@angular/core';
       </article>
       <article class="card">
         <h3>Retrieve</h3>
-        <p>Scoped chunk retrieval is now available, while answer synthesis stays out of scope for now.</p>
+        <p>Scoped chunk retrieval is the core value path, with grounded answers available as a convenience layer.</p>
       </article>
     </section>
   `,

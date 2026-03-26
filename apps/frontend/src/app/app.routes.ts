@@ -25,7 +25,7 @@ export const routes: Routes = [
   {
     path: 'ask',
     component: AskPageComponent,
-    title: 'Ask Copilot'
+    title: 'Ask'
   },
   {
     path: 'scope-manager',

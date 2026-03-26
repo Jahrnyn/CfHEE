@@ -180,6 +180,10 @@
   - omission of retrieval diagnostics unless explicitly requested
 ## 2026-03-27
 
+- Updated visible frontend copy to match the current CfHEE module definition:
+  - renamed the visible `Ask Copilot` label to `Ask`
+  - updated the main frontend title to `CfHEE Knowledge Workbench`
+  - refreshed overview and shell copy so the UI describes CfHEE as a scoped knowledge workbench, with grounded answers framed as a convenience layer
 - Extended the `/api/v1` shell with the first document-inspection translation endpoints:
   - `GET /api/v1/documents`
   - `GET /api/v1/documents/{document_id}`

@@ -55,12 +55,12 @@ Not allowed during freeze:
 
 Implemented in code:
 
-- Angular frontend shell with routes for `Overview`, `Inbox / Capture`, `Documents`, `Ask Copilot`, `Scope Manager`, and `Settings`
+- Angular frontend shell with routes for `Overview`, `Inbox / Capture`, `Documents`, `Ask`, `Scope Manager`, and `Settings`
 - Working frontend views for manual ingest and document listing
 - Manual ingest now supports reusing stored scope values through lightweight suggestions while still allowing new values
-- Working frontend view for scoped retrieval in `Ask Copilot`
-- Working frontend `Ask Copilot` flow for grounded answers plus retrieval-only inspection
-- `Ask Copilot` keeps a clean minimal user-facing UI for scoped retrieval and grounded answers
+- Working frontend view for scoped retrieval in `Ask`
+- Working frontend `Ask` flow for grounded answers plus retrieval-only inspection
+- `Ask` keeps a clean minimal user-facing UI for scoped retrieval and grounded answers
 - FastAPI backend with `GET /`, `GET /health`, `POST /documents`, `GET /documents`, `GET /documents/{id}/chunks`, `POST /retrieval/query`, `POST /answer/query`, and `GET /query-logs`
 - FastAPI backend also exposes `GET /scope-values` for lightweight manual-ingest scope reuse
 - FastAPI backend now also exposes the first versioned external API shell with `GET /api/v1/health`, `GET /api/v1/capabilities`, `GET /api/v1/scopes/values`, `POST /api/v1/documents`, `POST /api/v1/retrieval/query`, `GET /api/v1/documents`, `GET /api/v1/documents/{document_id}`, `GET /api/v1/documents/{document_id}/chunks`, and `GET /api/v1/query-logs`
@@ -148,7 +148,7 @@ Verified in the local environment during the latest check:
 What currently exists should be read as:
 
 - a working scoped knowledge core with a small built-in developer workbench
-- not a full copilot product
+- not a full assistant product
 - not a workflow platform
 - not an orchestration system
 

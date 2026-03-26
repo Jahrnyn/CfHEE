@@ -17,10 +17,10 @@ import {
   template: `
     <section class="panel">
       <p class="label">Scoped retrieval</p>
-      <h2>Ask Copilot</h2>
+      <h2>Ask</h2>
       <p class="intro">
-        Grounded answers reuse scoped retrieval only. Workspace and domain are required so results
-        stay scoped by default, and no answer is produced without retrieved evidence.
+        Retrieval is the core path here. Grounded answers are a built-in convenience layer that
+        reuses scoped retrieval only, and no answer is produced without retrieved evidence.
       </p>
 
       <div class="scope-summary">
@@ -600,6 +600,6 @@ export class AskPageComponent {
         .join(' ');
     }
 
-    return 'Unable to complete this Ask Copilot request.';
+    return 'Unable to complete this Ask request.';
   }
 }
