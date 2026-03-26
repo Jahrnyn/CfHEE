@@ -145,3 +145,15 @@
   - grounded answer
   - query logs
   - scope values
+- Extended the `/api/v1` shell with the first ingest-related translation endpoints:
+  - `GET /api/v1/scopes/values`
+  - `POST /api/v1/documents`
+- Added a shared nested public v1 scope shape for request/response models.
+- Added a v1 document-create request shape that:
+  - accepts nested `scope`
+  - accepts optional `metadata`
+  - translates into the existing internal ingest contract
+- Kept the slice intentionally conservative:
+  - existing unversioned `GET /scope-values` and `POST /documents` remain active
+  - existing ingest behavior remains the backend implementation behind the v1 layer
+  - optional v1 `metadata` is currently accepted and ignored

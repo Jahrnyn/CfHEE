@@ -1,8 +1,12 @@
 from fastapi import APIRouter
 
+from cfhee_backend.api.v1.document_routes import router as document_router_v1
 from cfhee_backend.api.v1.models import ApiV1CapabilitiesResponse, ApiV1HealthResponse, CapabilitiesFlags
+from cfhee_backend.api.v1.scope_routes import router as scope_router_v1
 
 router = APIRouter(prefix="/api/v1", tags=["api-v1"])
+router.include_router(scope_router_v1)
+router.include_router(document_router_v1)
 
 
 @router.get("/health", response_model=ApiV1HealthResponse, tags=["system"])
