@@ -29,6 +29,7 @@ Implemented in code:
 - `Ask Copilot` keeps a clean minimal user-facing UI for scoped retrieval and grounded answers
 - FastAPI backend with `GET /`, `GET /health`, `POST /documents`, `GET /documents`, `GET /documents/{id}/chunks`, `POST /retrieval/query`, `POST /answer/query`, and `GET /query-logs`
 - FastAPI backend also exposes `GET /scope-values` for lightweight manual-ingest scope reuse
+- FastAPI backend now also exposes the first versioned external API shell with `GET /api/v1/health` and `GET /api/v1/capabilities`
 - Retrieval-to-answer handoff now uses an explicit context builder with deterministic ordering, conservative dedupe, and an answer-context limit
 - Postgres schema for workspaces, domains, projects, clients, modules, documents, and chunks
 - Document ingest flow that:
@@ -53,6 +54,7 @@ Verified by code inspection:
 - manual ingest is implemented end to end in backend and frontend code
 - document listing and chunk inspection are implemented in backend and frontend code
 - scoped retrieval is implemented in backend and frontend code
+- the first versioned external API routing shell exists under `/api/v1` with `GET /api/v1/health` and `GET /api/v1/capabilities`
 - retrieval responses now include explicit scope, chunk and document identifiers, distance, and similarity score
 - retrieval now applies a small explicit lexical rescoring step after vector candidate retrieval while preserving original vector signals
 - source-grounded answers are implemented on top of retrieval using provider selection with Ollama plus deterministic fallback
@@ -95,6 +97,7 @@ Verified in the local environment during the latest check:
 - settings UI beyond placeholder copy
 - bulk file import, connectors, and OCR
 - explicit external-integration-oriented API contracts beyond the current app-driven endpoint set
+- versioned `/api/v1` document, retrieval, answer, scope-helper, and query-log endpoints beyond the initial health/capabilities shell
 - containerized cross-environment runtime
 
 ## Current architectural reading

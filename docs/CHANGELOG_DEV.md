@@ -127,3 +127,21 @@
   - no file import
   - no connectors
   - no full scope-management subsystem
+
+## 2026-03-26
+
+- Added the first external API v1 routing shell under `/api/v1`.
+- Added:
+  - `GET /api/v1/health`
+  - `GET /api/v1/capabilities`
+- Kept the slice intentionally narrow:
+  - existing unversioned routes remain active
+  - no other `/api/v1` endpoints were added yet
+  - no ingest, retrieval, answer, or query-log behavior was changed
+- The capabilities response currently reports only backend capabilities that already exist in code:
+  - document ingest
+  - document inspection
+  - scoped retrieval
+  - grounded answer
+  - query logs
+  - scope values

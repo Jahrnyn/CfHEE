@@ -2,7 +2,7 @@
 
 ## Recommended next development step
 
-Define and expose a cleaner API-first integration surface for CfHEE so that external scripts, services, and applications can use the module without modifying the core codebase.
+Extend the new `/api/v1` shell into a small but usable external integration surface for CfHEE so that external scripts, services, and applications can use the module without modifying the core codebase.
 
 Why this is next:
 
@@ -10,15 +10,15 @@ Why this is next:
 - manual ingest, chunk persistence, scoped retrieval, grounded answer access, and query logging already exist
 - the built-in frontend is useful as a developer workbench, but it should not become the main expansion surface
 - the newly clarified architectural direction treats higher-level workflows and automation as external consumers
-- the next real leverage comes from making the module easier to reuse, not from adding more internal UI or copilot-style behavior
+- the first public versioned routing shell now exists, so the next leverage comes from extending that shell carefully rather than adding more internal UI or copilot-style behavior
 
 ## Suggested narrow scope
 
-1. Define the first stable integration-oriented API surface around the existing capabilities:
-   - document ingest
+1. Extend the first stable integration-oriented API surface from the existing `/api/v1` shell:
+   - scope-aware document ingest
    - document listing and inspection
    - scoped retrieval
-   - grounded answer access
+   - grounded answer access as a convenience endpoint
    - query-log inspection where useful
 2. Make the API contract clearer for external callers:
    - request and response shapes
