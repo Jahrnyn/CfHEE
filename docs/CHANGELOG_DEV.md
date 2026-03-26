@@ -169,3 +169,12 @@
 - Kept the slice intentionally conservative:
   - existing unversioned `POST /retrieval/query` remains active
   - existing retrieval execution, reranking, and query logging remain the backend behavior behind the v1 layer
+- Sanity-audited the implemented `/api/v1` slices and corrected one public-contract mismatch:
+  - `POST /api/v1/retrieval/query` now omits `diagnostics` unless `include_diagnostics=true`
+- Tightened the shared public v1 request models so invalid nested scope hierarchy and invalid retrieval `top_k` values now fail at request validation time.
+- Tightened `docs/API_V1.md` for the already implemented slices so it now reflects:
+  - `api_version` in the system payload
+  - the currently reported capabilities fields
+  - current `GET /api/v1/scopes/values` query params
+  - current `POST /api/v1/documents` metadata handling
+  - omission of retrieval diagnostics unless explicitly requested

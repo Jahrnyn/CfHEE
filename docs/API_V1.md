@@ -86,17 +86,14 @@ External clients need a quick bootstrap to check whether the service is alive, w
 {
   "status": "ok",
   "service": "cfhee",
-  "version": "v1",
+  "api_version": "v1",
   "capabilities": {
+    "document_inspection": true,
     "document_ingest": true,
     "scoped_retrieval": true,
     "grounded_answer": true,
-    "query_logs": true
-  },
-  "answer_provider": {
-    "configured": "auto",
-    "active_default": "ollama",
-    "fallback_available": true
+    "query_logs": true,
+    "scope_values": true
   }
 }
 ```
@@ -114,7 +111,7 @@ POST /api/v1/scopes/resolve
 
 Retrieves existing scope values. Useful for autocomplete in external ingest tools.
 
-**Query params** (all optional): `workspace`, `domain`, `project`, `client`, `module`
+**Query params** (all optional): `workspace`, `domain`, `project`, `client`
 
 **Response**
 
@@ -207,7 +204,7 @@ The primary ingest endpoint.
 }
 ```
 
-> `metadata` is optional and loosely structured. In v1, it is stored as a plain JSON blob — no relational model enforced.
+> `metadata` is optional and loosely structured. In the current v1 slice, it is accepted by the public request model but not persisted yet.
 
 **Response**
 
@@ -339,6 +336,8 @@ The most important external endpoint. Retrieval is the core value path.
 **Optional diagnostics** (only when `include_diagnostics: true`)
 
 Retrieval diagnostics already exist in the query logs. In v1, they are not part of the default response.
+
+When `include_diagnostics` is `false`, the `diagnostics` field is omitted from the response.
 
 ```json
 {

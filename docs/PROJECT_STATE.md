@@ -56,9 +56,10 @@ Verified by code inspection:
 - scoped retrieval is implemented in backend and frontend code
 - the first versioned external API ingest and retrieval shell exists under `/api/v1` with `GET /api/v1/health`, `GET /api/v1/capabilities`, `GET /api/v1/scopes/values`, `POST /api/v1/documents`, and `POST /api/v1/retrieval/query`
 - the v1 ingest slice now uses a nested public `scope` object and translates that request into the existing internal document-ingest contract
+- the shared public v1 `scope` model now applies conservative normalization and hierarchy validation before document and retrieval translation handlers run
 - the v1 document-create request accepts an optional `metadata` object, which is currently ignored by the backend translation layer
 - the v1 retrieval slice now uses the same nested public `scope` object and translates that request into the existing internal retrieval contract
-- the v1 retrieval response adapts current retrieval results into a public contract and exposes diagnostics only when explicitly requested
+- the v1 retrieval response adapts current retrieval results into a public contract and omits diagnostics unless they are explicitly requested
 - retrieval responses now include explicit scope, chunk and document identifiers, distance, and similarity score
 - retrieval now applies a small explicit lexical rescoring step after vector candidate retrieval while preserving original vector signals
 - source-grounded answers are implemented on top of retrieval using provider selection with Ollama plus deterministic fallback
@@ -94,6 +95,8 @@ Verified in the local environment during the latest check:
 - local run command for that guardrail is:
   - `$env:PYTHONPATH="$PWD\apps\backend\src;$PWD\apps\backend\.packages"; python apps/backend/scripts/retrieval_regression_check.py`
 - stored scope values can now be queried through `GET /scope-values`, reused in the manual-ingest form, and matched conservatively against trim, casing, and spacing variants during document creation when exercised locally
+- `POST /api/v1/retrieval/query` omits the `diagnostics` field unless `include_diagnostics=true`, while still returning diagnostics when explicitly requested in local in-process checks
+- invalid nested v1 scope shapes and invalid `top_k` values now fail with request validation in local in-process checks instead of reaching retrieval execution
 
 ## Not implemented yet
 

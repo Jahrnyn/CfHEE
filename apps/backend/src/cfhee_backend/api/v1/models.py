@@ -1,4 +1,6 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, field_validator, model_validator
+
+from cfhee_backend.scope_registry.models import normalize_scope_value
 
 
 class CapabilitiesFlags(BaseModel):
@@ -26,6 +28,21 @@ class ScopeRef(BaseModel):
     project: str | None = None
     client: str | None = None
     module: str | None = None
+
+    @field_validator("workspace", "domain", "project", "client", "module", mode="before")
+    @classmethod
+    def normalize_text(cls, value: str | None) -> str | None:
+        return normalize_scope_value(value)
+
+    @model_validator(mode="after")
+    def validate_scope_hierarchy(self) -> "ScopeRef":
+        if self.client and not self.project:
+            raise ValueError("client requires project")
+
+        if self.module and not self.client:
+            raise ValueError("module requires client")
+
+        return self
 
 
 class ScopeValuesResponseV1(BaseModel):
@@ -57,7 +74,7 @@ class DocumentCreateResponseV1(BaseModel):
 class RetrievalQueryRequestV1(BaseModel):
     query: str
     scope: ScopeRef
-    top_k: int = 5
+    top_k: int = Field(default=5, ge=1, le=20)
     include_chunks: bool = True
     include_diagnostics: bool = False
 

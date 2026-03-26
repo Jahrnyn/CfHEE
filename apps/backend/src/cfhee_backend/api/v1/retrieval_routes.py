@@ -13,7 +13,12 @@ from cfhee_backend.retrieval.service import _safe_insert_query_log, execute_retr
 router = APIRouter(tags=["api-v1-retrieval"])
 
 
-@router.post("/retrieval/query", response_model=RetrievalQueryResponseV1, tags=["retrieval"])
+@router.post(
+    "/retrieval/query",
+    response_model=RetrievalQueryResponseV1,
+    response_model_exclude_none=True,
+    tags=["retrieval"],
+)
 def query_retrieval_v1(payload: RetrievalQueryRequestV1) -> RetrievalQueryResponseV1:
     internal_payload = RetrievalQueryRequest(
         query_text=payload.query,

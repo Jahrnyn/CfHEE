@@ -27,6 +27,8 @@ Why this is next:
    - explicit scope expectations
    - validation behavior
    - empty-result behavior
+   - keeping optional fields omitted unless explicitly requested
+   - keeping translation-layer validation failures at the request boundary
 4. Keep the current frontend working as a lightweight local workbench, but do not expand it into a richer product layer.
 5. Document the module boundary clearly in README and docs so future development does not drift back into an app-centric model.
 
