@@ -25,6 +25,10 @@ class RetrievalExecution:
     response: RetrievalQueryResponse
     chunk_ids: list[int]
     document_ids: list[int]
+    candidate_count: int
+    top_k_limit_hit: bool
+    returned_distance_values: list[float]
+    returned_document_distribution: dict[str, int]
 
 
 def query_retrieval(payload: RetrievalQueryRequest) -> RetrievalQueryResponse:
@@ -112,9 +116,13 @@ def execute_retrieval(payload: RetrievalQueryRequest) -> RetrievalExecution:
         )
 
     logger.info(
-        "Retrieval returned %s result(s) scope=%s",
+        "Retrieval returned %s result(s) scope=%s candidates=%s top_k_limit_hit=%s distances=%s document_distribution=%s",
         len(results),
         active_scope.model_dump(),
+        len(vector_matches),
+        len(vector_matches) >= payload.top_k,
+        _returned_distance_values(results),
+        _document_distribution(results),
     )
 
     response = RetrievalQueryResponse(
@@ -129,6 +137,10 @@ def execute_retrieval(payload: RetrievalQueryRequest) -> RetrievalExecution:
         response=response,
         chunk_ids=[result.chunk_id for result in results],
         document_ids=_unique_document_ids(results),
+        candidate_count=len(vector_matches),
+        top_k_limit_hit=len(vector_matches) >= payload.top_k,
+        returned_distance_values=_returned_distance_values(results),
+        returned_document_distribution=_document_distribution(results),
     )
 
 
@@ -205,6 +217,10 @@ def _safe_insert_query_log(payload: RetrievalQueryRequest, execution: RetrievalE
                 context_used_count=None,
                 answer_length=None,
                 grounded_flag=None,
+                candidate_count=execution.candidate_count,
+                top_k_limit_hit=execution.top_k_limit_hit,
+                returned_distance_values=execution.returned_distance_values,
+                returned_document_distribution=execution.returned_document_distribution,
                 provider_used="retrieval-only",
                 fallback_used=False,
             )
@@ -225,3 +241,17 @@ def _unique_document_ids(results: list[RetrievedChunkMatch]) -> list[int]:
         ordered_ids.append(result.document_id)
 
     return ordered_ids
+
+
+def _returned_distance_values(results: list[RetrievedChunkMatch]) -> list[float]:
+    return [result.distance for result in results if result.distance is not None]
+
+
+def _document_distribution(results: list[RetrievedChunkMatch]) -> dict[str, int]:
+    distribution: dict[str, int] = {}
+
+    for result in results:
+        document_id = str(result.document_id)
+        distribution[document_id] = distribution.get(document_id, 0) + 1
+
+    return distribution

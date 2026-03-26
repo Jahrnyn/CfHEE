@@ -5,6 +5,7 @@ import logging
 from cfhee_backend.answers import get_answer_provider
 from cfhee_backend.answers.base import GroundedAnswerInput
 from cfhee_backend.answers.context_builder import build_answer_context
+from cfhee_backend.answers.language import detect_answer_language
 from cfhee_backend.answers.models import AnswerQueryRequest, AnswerQueryResponse
 from cfhee_backend.evaluation import EvaluationResult, evaluate_answer_trace
 from cfhee_backend.persistence.query_logs import (
@@ -19,6 +20,7 @@ logger = logging.getLogger(__name__)
 
 
 def query_answer(payload: AnswerQueryRequest) -> AnswerQueryResponse:
+    answer_language = detect_answer_language(payload.query_text)
     retrieval_execution = execute_retrieval(payload)
     retrieval_response = retrieval_execution.response
     query_log_id = _safe_insert_answer_query_log(payload, retrieval_execution)
@@ -41,7 +43,7 @@ def query_answer(payload: AnswerQueryRequest) -> AnswerQueryResponse:
             active_scope=retrieval_response.active_scope,
             grounded=False,
             answer_text=None,
-            message="Not enough evidence in retrieved context.",
+            message=answer_language.no_evidence_message,
             requested_provider=requested_provider,
             provider=getattr(provider, "provider_name", provider.__class__.__name__),
             fallback_used=fallback_used,
@@ -85,7 +87,7 @@ def query_answer(payload: AnswerQueryRequest) -> AnswerQueryResponse:
             active_scope=retrieval_response.active_scope,
             grounded=False,
             answer_text=None,
-            message="Answer provider failed to produce a grounded answer.",
+            message=answer_language.provider_failure_message,
             requested_provider=requested_provider,
             provider=provider_name,
             fallback_used=fallback_used,
@@ -170,6 +172,10 @@ def _safe_insert_answer_query_log(payload: AnswerQueryRequest, retrieval_executi
                 context_used_count=None,
                 answer_length=None,
                 grounded_flag=None,
+                candidate_count=retrieval_execution.candidate_count,
+                top_k_limit_hit=retrieval_execution.top_k_limit_hit,
+                returned_distance_values=retrieval_execution.returned_distance_values,
+                returned_document_distribution=retrieval_execution.returned_document_distribution,
                 provider_used="pending-answer",
                 fallback_used=False,
             )

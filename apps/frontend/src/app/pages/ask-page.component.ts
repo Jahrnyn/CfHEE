@@ -3,6 +3,7 @@ import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 import { AnswerApiService, AnswerQueryResponse } from '../answer-api.service';
+import { QueryLogApiService, QueryLogEntry } from '../query-log-api.service';
 import {
   RetrievalApiService,
   RetrievalQueryPayload,
@@ -112,8 +113,14 @@ import {
         </div>
 
         <div *ngIf="!lastAnswerResponse.grounded" class="empty-state">
-          <p class="empty-title">No grounded answer</p>
-          <p class="empty">{{ lastAnswerResponse.message ?? 'Not enough evidence in retrieved context.' }}</p>
+          <p class="empty-title">
+            {{
+              lastAnswerResponse.retrieval_empty
+                ? 'No evidence in the selected scope'
+                : 'No grounded answer'
+            }}
+          </p>
+          <p class="empty">{{ lastAnswerNoEvidenceMessage }}</p>
           <p class="meta" *ngIf="lastAnswerResponse.provider_error">
             <strong>Provider error:</strong> {{ lastAnswerResponse.provider_error }}
           </p>
@@ -140,6 +147,8 @@ import {
             <p class="meta"><strong>Document ID:</strong> {{ citation.document_id }}</p>
             <p class="meta"><strong>Chunk ID:</strong> {{ citation.chunk_id }}</p>
             <p class="meta"><strong>Chunk:</strong> {{ citation.chunk_index + 1 }} ({{ citation.char_count }} chars)</p>
+            <p class="meta" *ngIf="citation.distance !== null"><strong>Distance:</strong> {{ citation.distance | number: '1.3-3' }}</p>
+            <p class="meta"><strong>Source type:</strong> {{ citation.document.source_type }}</p>
             <p class="meta" *ngIf="citation.document.source_ref"><strong>Source ref:</strong> {{ citation.document.source_ref }}</p>
             <p class="chunk-text">{{ citation.text }}</p>
           </article>
@@ -417,12 +426,14 @@ import {
 })
 export class AskPageComponent {
   private readonly answerApi = inject(AnswerApiService);
+  private readonly queryLogApi = inject(QueryLogApiService);
   private readonly retrievalApi = inject(RetrievalApiService);
 
   protected isSubmitting = false;
   protected activeAction: 'answer' | 'retrieval' | null = null;
   protected errorMessage = '';
   protected lastAnswerResponse: AnswerQueryResponse | null = null;
+  protected lastQueryLog: QueryLogEntry | null = null;
   protected lastResponse: RetrievalQueryResponse | null = null;
   protected form = {
     queryText: '',
@@ -439,17 +450,20 @@ export class AskPageComponent {
   }
 
   protected retrieveOnly(): void {
+    const payload = this.buildPayload();
     this.isSubmitting = true;
     this.activeAction = 'retrieval';
     this.errorMessage = '';
     this.lastAnswerResponse = null;
+    this.lastQueryLog = null;
     this.lastResponse = null;
 
-    this.retrievalApi.query(this.buildPayload()).subscribe({
+    this.retrievalApi.query(payload).subscribe({
       next: (response) => {
         this.lastResponse = response;
         this.isSubmitting = false;
         this.activeAction = null;
+        this.refreshLatestQueryLog(payload);
       },
       error: (error) => {
         this.errorMessage = this.formatError(error);
@@ -460,17 +474,20 @@ export class AskPageComponent {
   }
 
   private generateAnswer(): void {
+    const payload = this.buildPayload();
     this.isSubmitting = true;
     this.activeAction = 'answer';
     this.errorMessage = '';
     this.lastAnswerResponse = null;
+    this.lastQueryLog = null;
     this.lastResponse = null;
 
-    this.answerApi.query(this.buildPayload()).subscribe({
+    this.answerApi.query(payload).subscribe({
       next: (response) => {
         this.lastAnswerResponse = response;
         this.isSubmitting = false;
         this.activeAction = null;
+        this.refreshLatestQueryLog(payload);
       },
       error: (error) => {
         this.errorMessage = this.formatError(error);
@@ -481,21 +498,41 @@ export class AskPageComponent {
   }
 
   protected get currentScopeSummary(): string {
-    if (!this.form.workspace.trim() || !this.form.domain.trim()) {
+    return this.buildScopeSummary(
+      this.form.workspace,
+      this.form.domain,
+      this.form.project,
+      this.form.client,
+      this.form.module
+    );
+  }
+
+  protected get lastAnswerNoEvidenceMessage(): string {
+    if (!this.lastAnswerResponse) {
+      return 'Not enough evidence in retrieved context.';
+    }
+
+    if (this.lastAnswerResponse.retrieval_empty) {
+      return 'No chunks matched this query inside the selected scope, so no grounded answer was generated.';
+    }
+
+    return this.lastAnswerResponse.message ?? 'Not enough evidence in retrieved context.';
+  }
+
+  private buildScopeSummary(
+    workspace: string,
+    domain: string,
+    project: string,
+    client: string,
+    module: string
+  ): string {
+    if (!workspace.trim() || !domain.trim()) {
       return 'Global retrieval is disabled. Workspace and domain are required.';
     }
 
-    const scopeParts = [
-      this.form.workspace.trim(),
-      this.form.domain.trim(),
-      this.form.project.trim(),
-      this.form.client.trim(),
-      this.form.module.trim(),
-    ].filter((value) => value.length > 0);
-
-    if (scopeParts.length === 0) {
-      return 'Global retrieval is disabled. Workspace and domain are required.';
-    }
+    const scopeParts = [workspace.trim(), domain.trim(), project.trim(), client.trim(), module.trim()].filter(
+      (value) => value.length > 0
+    );
 
     return scopeParts.join(' / ');
   }
@@ -515,6 +552,29 @@ export class AskPageComponent {
   private optionalValue(value: string): string | null {
     const normalized = value.trim();
     return normalized ? normalized : null;
+  }
+
+  private refreshLatestQueryLog(payload: RetrievalQueryPayload): void {
+    this.queryLogApi.list(20).subscribe({
+      next: (rows) => {
+        this.lastQueryLog = rows.find((row) => this.matchesQueryLog(row, payload)) ?? null;
+      },
+      error: () => {
+        this.lastQueryLog = null;
+      }
+    });
+  }
+
+  private matchesQueryLog(row: QueryLogEntry, payload: RetrievalQueryPayload): boolean {
+    return (
+      row.query_text === payload.query_text &&
+      row.workspace === payload.workspace &&
+      row.domain === payload.domain &&
+      row.project === payload.project &&
+      row.client === payload.client &&
+      row.module === payload.module &&
+      row.top_k === payload.top_k
+    );
   }
 
   private formatError(error: { error?: { detail?: unknown } }): string {

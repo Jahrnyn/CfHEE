@@ -85,3 +85,13 @@
   - deterministic retrieved-context formatting
   - short-answer and no-speculation response rules
 - Added minimal prompt-version traceability through provider logging.
+- Removed the recent Ask-page manual-check and verification snapshot panels to restore a cleaner end-user UI.
+- Kept backend query logging, evaluation, and traceability intact while removing direct debug rendering from the main Ask page.
+- Added explicit answer-language guidance for grounded answers so Hungarian queries prefer Hungarian answers and English queries prefer English answers.
+- Applied the same language preference to the deterministic fallback provider and the no-evidence/provider-failure answer messages.
+- Extended `query_logs` with small retrieval diagnostics fields:
+  - `candidate_count`
+  - `top_k_limit_hit`
+  - `returned_distance_values`
+  - `returned_document_distribution`
+- Extended `GET /query-logs` to expose those diagnostics for backend inspection without adding new Ask-page debug panels.

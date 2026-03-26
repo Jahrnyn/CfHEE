@@ -1,29 +1,29 @@
-# MVP Tasks
+# TASKS
 
-## Phase 1 - Foundation
-- [ ] Initialize repo structure
-- [ ] Create Angular frontend app
-- [ ] Create FastAPI backend app
-- [ ] Add Postgres via docker compose
-- [ ] Create initial DB schema
-- [ ] Add AGENTS.md
-- [ ] Add architecture docs
+## Now
+- Manual inspection of Ask Copilot flow
+  - Goal: understand real retrieval + context + answer behavior
+  - Status: in progress
+  - Notes: use new verification UI
 
-## Phase 2 - Ingestion vertical slice
-- [ ] Build manual ingest form
-- [ ] Create POST /documents endpoint
-- [ ] Persist documents with scope metadata
-- [ ] Build documents list endpoint
-- [ ] Build documents list page
+## Next
+- Define minimal retrieval evaluation checklist
+  - Goal: make retrieval quality testable and repeatable
+  - Status: planned
+  - Notes: based on manual observations
 
-## Phase 3 - Retrieval foundation
-- [ ] Add chunking service
-- [ ] Add embedding service abstraction
-- [ ] Add vector store abstraction
-- [ ] Add Chroma adapter
-- [ ] Index chunks on ingest
+## Later
+- Build a better test dataset (non-trivial size, heterogeneous)
+  - Goal: enable meaningful retrieval evaluation
+  - Status: planned
+  - Notes: current 3-chunk dataset is insufficient
 
-## Phase 4 - Query
-- [ ] Build scoped search endpoint
-- [ ] Build Ask Copilot page
-- [ ] Return source-grounded answers
+- Retrieval tuning (only if justified)
+  - Goal: improve precision
+  - Status: conditional
+  - Notes: only after evaluation proves an issue
+
+## Frozen
+- Hybrid search
+- Reranking frameworks
+- Multi-model validation

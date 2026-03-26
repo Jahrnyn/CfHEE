@@ -10,6 +10,7 @@ Implemented in code:
 - Working frontend views for manual ingest and document listing
 - Working frontend view for scoped retrieval in `Ask Copilot`
 - Working frontend `Ask Copilot` flow for grounded answers plus retrieval-only inspection
+- `Ask Copilot` keeps a clean minimal user-facing UI for scoped retrieval and grounded answers
 - FastAPI backend with `GET /`, `GET /health`, `POST /documents`, `GET /documents`, `GET /documents/{id}/chunks`, `POST /retrieval/query`, `POST /answer/query`, and `GET /query-logs`
 - Retrieval-to-answer handoff now uses an explicit context builder with deterministic ordering, conservative dedupe, and an answer-context limit
 - Postgres schema for workspaces, domains, projects, clients, modules, documents, and chunks
@@ -39,6 +40,7 @@ Verified by code inspection:
 - query logging is implemented for retrieval-only and answer queries, including scope, result identifiers, answer text, provider used, and fallback usage
 - answer context selection is now explicit and traceable, including selected and dropped chunk IDs in `query_logs`
 - answer queries now persist simple deterministic evaluation fields in `query_logs`: `has_evidence`, `context_used_count`, `answer_length`, and `grounded_flag`
+- query logs now also persist small retrieval diagnostics such as candidate count, top-k limit hit, returned distance values, and returned document distribution
 
 Verified in the local environment during the latest check:
 
@@ -54,6 +56,8 @@ Verified in the local environment during the latest check:
 - answer queries now enforce a bounded final context and persist selected vs. dropped context chunk IDs when exercised locally
 - answer queries now populate simple evaluation fields in `query_logs`, and `GET /query-logs` returns those fields when exercised locally
 - Ollama grounded answers now run through the explicit prompt builder, and local checks show shorter scope-bound answers with the same retrieved citations
+- the Ask page keeps the core scoped query, retrieval, and grounded-answer flow without exposing debug panels in the main UI
+- grounded answers now follow the query language more explicitly for Hungarian and English queries in local checks, and `GET /query-logs` exposes richer retrieval diagnostics for inspection
 
 Not implemented yet:
 

@@ -31,6 +31,10 @@ class QueryLogResponse(BaseModel):
     context_used_count: int | None
     answer_length: int | None
     grounded_flag: str | None
+    candidate_count: int | None
+    top_k_limit_hit: bool | None
+    returned_distance_values: list[float] | None
+    returned_document_distribution: dict[str, int] | None
     provider_used: str
     fallback_used: bool
 
@@ -63,6 +67,10 @@ def _row_to_dict(row: QueryLogRow) -> dict[str, object]:
         "context_used_count": row.context_used_count,
         "answer_length": row.answer_length,
         "grounded_flag": row.grounded_flag,
+        "candidate_count": row.candidate_count,
+        "top_k_limit_hit": row.top_k_limit_hit,
+        "returned_distance_values": row.returned_distance_values,
+        "returned_document_distribution": row.returned_document_distribution,
         "provider_used": row.provider_used,
         "fallback_used": row.fallback_used,
     }

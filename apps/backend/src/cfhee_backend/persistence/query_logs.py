@@ -28,6 +28,10 @@ class QueryLogCreate:
     context_used_count: int | None
     answer_length: int | None
     grounded_flag: str | None
+    candidate_count: int | None
+    top_k_limit_hit: bool | None
+    returned_distance_values: list[float] | None
+    returned_document_distribution: dict[str, int] | None
     provider_used: str
     fallback_used: bool
 
@@ -54,6 +58,10 @@ class QueryLogRow:
     context_used_count: int | None
     answer_length: int | None
     grounded_flag: str | None
+    candidate_count: int | None
+    top_k_limit_hit: bool | None
+    returned_distance_values: list[float] | None
+    returned_document_distribution: dict[str, int] | None
     provider_used: str
     fallback_used: bool
 
@@ -82,6 +90,10 @@ def insert_query_log(entry: QueryLogCreate) -> int:
                   context_used_count,
                   answer_length,
                   grounded_flag,
+                  candidate_count,
+                  top_k_limit_hit,
+                  returned_distance_values,
+                  returned_document_distribution,
                   provider_used,
                   fallback_used
                 )
@@ -104,6 +116,10 @@ def insert_query_log(entry: QueryLogCreate) -> int:
                   %(context_used_count)s,
                   %(answer_length)s,
                   %(grounded_flag)s,
+                  %(candidate_count)s,
+                  %(top_k_limit_hit)s,
+                  %(returned_distance_values)s,
+                  %(returned_document_distribution)s,
                   %(provider_used)s,
                   %(fallback_used)s
                 )
@@ -132,6 +148,14 @@ def insert_query_log(entry: QueryLogCreate) -> int:
                     "context_used_count": entry.context_used_count,
                     "answer_length": entry.answer_length,
                     "grounded_flag": entry.grounded_flag,
+                    "candidate_count": entry.candidate_count,
+                    "top_k_limit_hit": entry.top_k_limit_hit,
+                    "returned_distance_values": Jsonb(entry.returned_distance_values)
+                    if entry.returned_distance_values is not None
+                    else None,
+                    "returned_document_distribution": Jsonb(entry.returned_document_distribution)
+                    if entry.returned_document_distribution is not None
+                    else None,
                     "provider_used": entry.provider_used,
                     "fallback_used": entry.fallback_used,
                 },
@@ -235,6 +259,10 @@ def list_query_logs(limit: int = 20) -> list[QueryLogRow]:
                   context_used_count,
                   answer_length,
                   grounded_flag,
+                  candidate_count,
+                  top_k_limit_hit,
+                  returned_distance_values,
+                  returned_document_distribution,
                   provider_used,
                   fallback_used
                 FROM query_logs
@@ -271,6 +299,14 @@ def list_query_logs(limit: int = 20) -> list[QueryLogRow]:
             context_used_count=row["context_used_count"],
             answer_length=row["answer_length"],
             grounded_flag=row["grounded_flag"],
+            candidate_count=row["candidate_count"],
+            top_k_limit_hit=row["top_k_limit_hit"],
+            returned_distance_values=list(row["returned_distance_values"])
+            if row["returned_distance_values"] is not None
+            else None,
+            returned_document_distribution=dict(row["returned_document_distribution"])
+            if row["returned_document_distribution"] is not None
+            else None,
             provider_used=row["provider_used"],
             fallback_used=row["fallback_used"],
         )

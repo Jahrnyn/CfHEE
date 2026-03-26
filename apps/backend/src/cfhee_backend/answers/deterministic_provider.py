@@ -3,6 +3,7 @@ from __future__ import annotations
 import re
 
 from cfhee_backend.answers.base import GroundedAnswerInput, GroundedAnswerProvider, GroundedAnswerResult
+from cfhee_backend.answers.language import detect_answer_language
 
 
 SENTENCE_SPLIT_PATTERN = re.compile(r"(?<=[.!?])\s+|\n+")
@@ -16,15 +17,16 @@ class DeterministicLocalAnswerProvider(GroundedAnswerProvider):
         return True, None
 
     def generate_answer(self, answer_input: GroundedAnswerInput) -> GroundedAnswerResult:
+        answer_language = detect_answer_language(answer_input.query_text)
         snippets = self._select_supporting_snippets(answer_input)
         if not snippets:
             return GroundedAnswerResult(
                 provider=self.provider_name,
                 answer_text=None,
-                message="Not enough evidence in retrieved context to produce a grounded answer.",
+                message=answer_language.no_evidence_message,
             )
 
-        answer_text = "Based on the retrieved context, " + " ".join(snippets)
+        answer_text = f"{answer_language.deterministic_prefix} " + " ".join(snippets)
         return GroundedAnswerResult(
             provider=self.provider_name,
             answer_text=self._truncate(answer_text, limit=360),

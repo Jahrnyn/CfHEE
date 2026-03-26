@@ -87,6 +87,10 @@ CREATE TABLE IF NOT EXISTS query_logs (
   context_used_count INTEGER,
   answer_length INTEGER,
   grounded_flag TEXT,
+  candidate_count INTEGER,
+  top_k_limit_hit BOOLEAN,
+  returned_distance_values JSONB,
+  returned_document_distribution JSONB,
   provider_used TEXT NOT NULL,
   fallback_used BOOLEAN NOT NULL DEFAULT FALSE
 );
@@ -108,3 +112,15 @@ ADD COLUMN IF NOT EXISTS answer_length INTEGER;
 
 ALTER TABLE query_logs
 ADD COLUMN IF NOT EXISTS grounded_flag TEXT;
+
+ALTER TABLE query_logs
+ADD COLUMN IF NOT EXISTS candidate_count INTEGER;
+
+ALTER TABLE query_logs
+ADD COLUMN IF NOT EXISTS top_k_limit_hit BOOLEAN;
+
+ALTER TABLE query_logs
+ADD COLUMN IF NOT EXISTS returned_distance_values JSONB;
+
+ALTER TABLE query_logs
+ADD COLUMN IF NOT EXISTS returned_document_distribution JSONB;

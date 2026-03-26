@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from cfhee_backend.answers.base import GroundedAnswerInput
+from cfhee_backend.answers.language import detect_answer_language
 from cfhee_backend.retrieval.models import RetrievedChunkMatch
 
 
@@ -16,12 +17,13 @@ class GroundedAnswerPrompt:
 
 
 def build_grounded_answer_prompt(answer_input: GroundedAnswerInput) -> GroundedAnswerPrompt:
+    answer_language = detect_answer_language(answer_input.query_text)
     sections = [
-        _instruction_block(),
+        _instruction_block(answer_language.response_instruction, answer_language.no_evidence_message),
         _query_block(answer_input),
         _scope_block(answer_input),
         _context_block(answer_input.citations),
-        _response_contract_block(),
+        _response_contract_block(answer_language.no_evidence_message),
     ]
     return GroundedAnswerPrompt(
         version=PROMPT_VERSION,
@@ -29,15 +31,16 @@ def build_grounded_answer_prompt(answer_input: GroundedAnswerInput) -> GroundedA
     )
 
 
-def _instruction_block() -> str:
+def _instruction_block(response_instruction: str, no_evidence_message: str) -> str:
     return "\n".join(
         [
             "You are a conservative grounded-answer assistant.",
             "Answer only from the retrieved context below.",
             "Use only the provided scope and chunk context.",
+            response_instruction,
             "Keep the answer short, direct, and factual.",
             "Do not speculate or fill gaps from prior knowledge.",
-            "If the evidence is not enough, answer exactly: Not enough evidence in retrieved context.",
+            f"If the evidence is not enough, answer exactly: {no_evidence_message}",
             "Do not repeat raw chunk text unless it is necessary.",
             "Do not mention sources that are not included in the provided context.",
         ]
@@ -102,13 +105,13 @@ def _format_scope_path(citation: RetrievedChunkMatch) -> str:
     return " / ".join(scope_parts)
 
 
-def _response_contract_block() -> str:
+def _response_contract_block(no_evidence_message: str) -> str:
     return "\n".join(
         [
             "## Response Rules",
             "- Answer in 1 to 3 short sentences.",
             "- Base every claim on the retrieved context.",
             "- Prefer synthesis over quotation.",
-            "- If the context does not support the answer, return exactly: Not enough evidence in retrieved context.",
+            f"- If the context does not support the answer, return exactly: {no_evidence_message}",
         ]
     )
