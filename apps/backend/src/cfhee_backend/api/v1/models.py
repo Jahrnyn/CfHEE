@@ -52,3 +52,39 @@ class DocumentCreateResponseV1(BaseModel):
     scope: ScopeRef
     chunk_count: int
     indexed: bool
+
+
+class RetrievalQueryRequestV1(BaseModel):
+    query: str
+    scope: ScopeRef
+    top_k: int = 5
+    include_chunks: bool = True
+    include_diagnostics: bool = False
+
+
+class RetrievalResultV1(BaseModel):
+    document_id: int
+    chunk_id: int
+    chunk_index: int
+    title: str
+    source_type: str
+    similarity_score: float | None
+    distance: float | None
+    text: str | None = None
+
+
+class RetrievalDiagnosticsV1(BaseModel):
+    candidate_count: int
+    top_k_limit_hit: bool
+    reranking_applied: bool
+    original_ranked_chunk_ids: list[int]
+    reranked_chunk_ids: list[int]
+
+
+class RetrievalQueryResponseV1(BaseModel):
+    status: str
+    query: str
+    active_scope: ScopeRef
+    results: list[RetrievalResultV1]
+    result_count: int
+    diagnostics: RetrievalDiagnosticsV1 | None = None

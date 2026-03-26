@@ -29,7 +29,7 @@ Implemented in code:
 - `Ask Copilot` keeps a clean minimal user-facing UI for scoped retrieval and grounded answers
 - FastAPI backend with `GET /`, `GET /health`, `POST /documents`, `GET /documents`, `GET /documents/{id}/chunks`, `POST /retrieval/query`, `POST /answer/query`, and `GET /query-logs`
 - FastAPI backend also exposes `GET /scope-values` for lightweight manual-ingest scope reuse
-- FastAPI backend now also exposes the first versioned external API shell with `GET /api/v1/health`, `GET /api/v1/capabilities`, `GET /api/v1/scopes/values`, and `POST /api/v1/documents`
+- FastAPI backend now also exposes the first versioned external API shell with `GET /api/v1/health`, `GET /api/v1/capabilities`, `GET /api/v1/scopes/values`, `POST /api/v1/documents`, and `POST /api/v1/retrieval/query`
 - Retrieval-to-answer handoff now uses an explicit context builder with deterministic ordering, conservative dedupe, and an answer-context limit
 - Postgres schema for workspaces, domains, projects, clients, modules, documents, and chunks
 - Document ingest flow that:
@@ -54,9 +54,11 @@ Verified by code inspection:
 - manual ingest is implemented end to end in backend and frontend code
 - document listing and chunk inspection are implemented in backend and frontend code
 - scoped retrieval is implemented in backend and frontend code
-- the first versioned external API ingest shell exists under `/api/v1` with `GET /api/v1/health`, `GET /api/v1/capabilities`, `GET /api/v1/scopes/values`, and `POST /api/v1/documents`
+- the first versioned external API ingest and retrieval shell exists under `/api/v1` with `GET /api/v1/health`, `GET /api/v1/capabilities`, `GET /api/v1/scopes/values`, `POST /api/v1/documents`, and `POST /api/v1/retrieval/query`
 - the v1 ingest slice now uses a nested public `scope` object and translates that request into the existing internal document-ingest contract
 - the v1 document-create request accepts an optional `metadata` object, which is currently ignored by the backend translation layer
+- the v1 retrieval slice now uses the same nested public `scope` object and translates that request into the existing internal retrieval contract
+- the v1 retrieval response adapts current retrieval results into a public contract and exposes diagnostics only when explicitly requested
 - retrieval responses now include explicit scope, chunk and document identifiers, distance, and similarity score
 - retrieval now applies a small explicit lexical rescoring step after vector candidate retrieval while preserving original vector signals
 - source-grounded answers are implemented on top of retrieval using provider selection with Ollama plus deterministic fallback
@@ -99,7 +101,7 @@ Verified in the local environment during the latest check:
 - settings UI beyond placeholder copy
 - bulk file import, connectors, and OCR
 - explicit external-integration-oriented API contracts beyond the current app-driven endpoint set
-- versioned `/api/v1` document inspection, retrieval, answer, additional scope-helper, and query-log endpoints beyond the current health/capabilities/ingest shell
+- versioned `/api/v1` document inspection, answer, additional scope-helper, and query-log endpoints beyond the current health/capabilities/ingest/retrieval shell
 - containerized cross-environment runtime
 
 ## Current architectural reading

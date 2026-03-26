@@ -157,3 +157,15 @@
   - existing unversioned `GET /scope-values` and `POST /documents` remain active
   - existing ingest behavior remains the backend implementation behind the v1 layer
   - optional v1 `metadata` is currently accepted and ignored
+- Extended the `/api/v1` shell with the first retrieval translation endpoint:
+  - `POST /api/v1/retrieval/query`
+- Added a v1 retrieval request shape that:
+  - accepts nested `scope`
+  - accepts `query`, `top_k`, `include_chunks`, and `include_diagnostics`
+  - translates into the existing internal retrieval contract
+- Added a v1 retrieval response shape that:
+  - returns `status`, `query`, `active_scope`, `results`, and `result_count`
+  - includes retrieval diagnostics only when explicitly requested
+- Kept the slice intentionally conservative:
+  - existing unversioned `POST /retrieval/query` remains active
+  - existing retrieval execution, reranking, and query logging remain the backend behavior behind the v1 layer
