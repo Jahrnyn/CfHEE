@@ -48,7 +48,7 @@ Why this is next:
 ## Suggested narrow scope
 
 1. Improve the frontend against the frozen API surface.
-2. Containerize and harden runtime setup without changing the public contract.
+2. Define the portable runtime packaging model clearly in docs first, then containerize and harden runtime setup without changing the public contract.
 3. Build or validate first external consumer integrations against the frozen API.
 4. Keep workflow-specific logic outside CfHEE.
 
@@ -56,6 +56,7 @@ Runtime portability note:
 
 - the first narrow portability slice is now in place through configurable frontend API base URL and configurable backend CORS origins
 - the API surface now also includes a narrow provider-free context-build endpoint on top of existing retrieval behavior
+- the portable-instance design baseline is now documented in `docs/PORTABLE_RUNTIME.md`
 - full containerized local/dev runtime is still not implemented
 
 ## Keep out of scope for that step
@@ -73,7 +74,9 @@ Runtime portability note:
 
 Once the frozen API surface has been exercised by real consumers, the next long-term infrastructure target is deployment portability:
 
+- keep the portable-instance model fixed before implementation drift starts
 - containerize the system
+- separate packaged runtime from persistent instance data
 - reduce dependence on the current Windows-heavy localhost development setup
 - make the module easier to run on Linux and other environments
 - prepare for production-buildable packaging without changing the core architectural boundary

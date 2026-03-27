@@ -180,6 +180,14 @@
   - omission of retrieval diagnostics unless explicitly requested
 ## 2026-03-27
 
+- Added `docs/PORTABLE_RUNTIME.md` as a narrow design slice for future portable runtime packaging.
+- Documented the intended portable-instance model without changing runtime behavior:
+  - minimum portable runtime should require frontend, backend, Postgres, and Chroma persistent state
+  - Ollama remains optional and outside the minimum runtime because it only supports the built-in grounded-answer convenience flow
+  - portable runtime should separate packaged runtime components from persistent data
+  - current local dev workflow remains separate from later portable runtime workflow
+- Clarified `docs/NEXT_STEPS.md` so portable runtime implementation follows the new doc-defined instance model rather than starting with ad hoc container changes.
+
 - Added the first public provider-free context-building API slice:
   - `POST /api/v1/context/build`
   - reuses existing scoped retrieval execution and current reranking behavior
