@@ -180,6 +180,16 @@
   - omission of retrieval diagnostics unless explicitly requested
 ## 2026-03-27
 
+- Fixed the visual inconsistency on the frontend `Operations / Admin` page where the storage/path visibility tiles were still rendering with a light card background.
+- Added a minimal shared frontend dark-surface styling utility:
+  - `surface-panel`
+  - `surface-card`
+- Updated the Operations/Admin page to use that shared baseline so its cards and panels follow the current dark theme consistently.
+- Added `docs/FRONTEND_STYLE_GUIDE.md` as a minimal frontend styling contract:
+  - dark theme is mandatory
+  - card/panel styling should follow the shared baseline
+  - no light card backgrounds should be introduced in new frontend work
+
 - Added the first frontend `Operations / Admin` page v0.
 - The new page consumes `GET /ops/summary` through a small dedicated frontend API service.
 - The page currently renders:

@@ -4,6 +4,10 @@
   --bg-elevated: rgba(26, 27, 31, 0.9);
   --bg-soft: #1b1d22;
   --bg-muted: #20232a;
+  --surface-radius: 20px;
+  --surface-card-radius: 18px;
+  --surface-panel-padding: 24px;
+  --surface-card-padding: 18px;
   --text: #e7e9ee;
   --text-muted: #a8afb9;
   --text-soft: #8b93a1;
@@ -68,6 +72,23 @@ strong {
 .chunk-card,
 .scope-summary {
   background: var(--bg-elevated) !important;
+}
+
+.surface-panel,
+.surface-card {
+  border: 1px solid var(--border) !important;
+  background: var(--bg-elevated) !important;
+  box-shadow: var(--shadow) !important;
+}
+
+.surface-panel {
+  padding: var(--surface-panel-padding);
+  border-radius: var(--surface-radius);
+}
+
+.surface-card {
+  padding: var(--surface-card-padding);
+  border-radius: var(--surface-card-radius);
 }
 
 .answer-card {

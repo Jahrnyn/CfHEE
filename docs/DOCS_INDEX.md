@@ -71,6 +71,12 @@ Use this before writing or refining prompts.
 Reusable template for future Codex prompts.
 Use this to keep prompts consistent and complete.
 
+## Frontend docs
+
+### `docs/FRONTEND_STYLE_GUIDE.md`
+Minimal frontend styling contract.
+Use this when changing or adding frontend UI so dark-theme surfaces, card styling, and consistency rules stay aligned.
+
 ## Meta docs
 
 ### `docs/DOCS_INDEX.md`

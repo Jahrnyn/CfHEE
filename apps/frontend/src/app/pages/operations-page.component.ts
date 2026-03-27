@@ -8,7 +8,7 @@ import { OpsPathVisibilitySummary, OpsSummaryApiService, OpsSummaryResponse } fr
   standalone: true,
   imports: [CommonModule],
   template: `
-    <section class="panel">
+    <section class="panel surface-panel">
       <div class="header">
         <div>
           <p class="label">Read-only ops summary</p>
@@ -31,7 +31,7 @@ import { OpsPathVisibilitySummary, OpsSummaryApiService, OpsSummaryResponse } fr
       <div *ngIf="isLoading && !summary" class="status">Loading operations summary...</div>
 
       <div class="section-grid" *ngIf="summary">
-        <section class="card">
+        <section class="card surface-card">
           <p class="card-label">Runtime</p>
           <h3>Runtime info</h3>
           <p class="meta"><strong>Service:</strong> {{ summary.runtime_info.service }}</p>
@@ -46,7 +46,7 @@ import { OpsPathVisibilitySummary, OpsSummaryApiService, OpsSummaryResponse } fr
           <p class="meta"><strong>Ollama model:</strong> {{ summary.runtime_info.ollama.model }}</p>
         </section>
 
-        <section class="card">
+        <section class="card surface-card">
           <p class="card-label">Config</p>
           <h3>Backend/runtime config</h3>
           <p class="meta">
@@ -64,7 +64,7 @@ import { OpsPathVisibilitySummary, OpsSummaryApiService, OpsSummaryResponse } fr
           </div>
         </section>
 
-        <section class="card">
+        <section class="card surface-card">
           <p class="card-label">Storage</p>
           <h3>Persistence targets</h3>
           <p class="meta">
@@ -77,24 +77,24 @@ import { OpsPathVisibilitySummary, OpsSummaryApiService, OpsSummaryResponse } fr
         </section>
       </div>
 
-      <section class="panel panel-secondary" *ngIf="summary">
+      <section class="panel panel-secondary surface-panel" *ngIf="summary">
         <p class="card-label">Visibility</p>
         <h3>Storage/path visibility</h3>
 
         <div class="paths">
-          <article class="path-card">
+          <article class="path-card surface-card">
             <h4>Chroma persistence</h4>
             <p class="path">{{ summary.storage_visibility.chroma_persist_directory.path }}</p>
             <p class="meta">{{ formatPathSummary(summary.storage_visibility.chroma_persist_directory) }}</p>
           </article>
 
-          <article class="path-card">
+          <article class="path-card surface-card">
             <h4>runtime-data/postgres</h4>
             <p class="path">{{ summary.storage_visibility.runtime_data_postgres.path }}</p>
             <p class="meta">{{ formatPathSummary(summary.storage_visibility.runtime_data_postgres) }}</p>
           </article>
 
-          <article class="path-card">
+          <article class="path-card surface-card">
             <h4>runtime-data/chroma</h4>
             <p class="path">{{ summary.storage_visibility.runtime_data_chroma.path }}</p>
             <p class="meta">{{ formatPathSummary(summary.storage_visibility.runtime_data_chroma) }}</p>
@@ -102,7 +102,7 @@ import { OpsPathVisibilitySummary, OpsSummaryApiService, OpsSummaryResponse } fr
         </div>
       </section>
 
-      <section class="panel panel-secondary" *ngIf="summary">
+      <section class="panel panel-secondary surface-panel" *ngIf="summary">
         <p class="card-label">Notes</p>
         <h3>Operational boundaries</h3>
         <ul class="list">
@@ -115,10 +115,6 @@ import { OpsPathVisibilitySummary, OpsSummaryApiService, OpsSummaryResponse } fr
     `
       .panel {
         padding: 24px;
-        border: 1px solid #e4e4e7;
-        border-radius: 20px;
-        background: rgba(255, 255, 255, 0.82);
-        box-shadow: 0 18px 40px rgba(24, 24, 27, 0.06);
       }
 
       .panel + .panel {
@@ -212,9 +208,6 @@ import { OpsPathVisibilitySummary, OpsSummaryApiService, OpsSummaryResponse } fr
       .card,
       .path-card {
         padding: 18px;
-        border: 1px solid #e4e4e7;
-        border-radius: 18px;
-        background: #fff;
       }
 
       .meta {

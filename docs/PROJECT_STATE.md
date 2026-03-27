@@ -63,6 +63,7 @@ Implemented in code:
 - Working frontend `Ask` flow for grounded answers plus retrieval-only inspection
 - `Ask` keeps a clean minimal user-facing UI for scoped retrieval and grounded answers
 - Working frontend `Operations / Admin` view for consuming the backend read-only ops summary
+- the frontend now also has a minimal shared dark-surface styling contract for panels and cards, and the Operations/Admin page uses that shared baseline
 - FastAPI backend with `GET /`, `GET /health`, `POST /documents`, `GET /documents`, `GET /documents/{id}/chunks`, `POST /retrieval/query`, `POST /answer/query`, and `GET /query-logs`
 - FastAPI backend now also exposes `GET /ops/summary` as a narrow internal read-only ops summary surface
 - FastAPI backend also exposes `GET /scope-values` for lightweight manual-ingest scope reuse
@@ -172,6 +173,7 @@ Verified in the local environment during the latest check:
 - the repo now also documents a future Operations / Admin surface design in `docs/OPERATIONS_SURFACE.md`
 - the backend `GET /ops/summary` route returns a conservative read-only summary of runtime info, config summary, and storage/path visibility
 - the frontend `Operations / Admin` page builds successfully and consumes the backend ops summary through a small dedicated frontend API service
+- the frontend Operations/Admin page now uses a shared dark-surface utility baseline so its storage/path visibility cards stay visually consistent with the rest of the workbench
 - `scripts/runtime-backup.ps1` creates a timestamped backup directory under `backups/` containing `postgres`, `chroma`, and `manifest.json` when the runtime is stopped
 - `scripts/runtime-restore.ps1` restores `runtime-data/postgres` and `runtime-data/chroma` from a selected backup directory when the runtime is stopped and the explicit confirmation phrase is provided
 - local stopped-runtime checks show both helpers fail clearly if Compose still reports running runtime services
