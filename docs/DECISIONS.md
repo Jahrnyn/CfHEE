@@ -29,8 +29,8 @@ LLM provider must remain replaceable.
 Reason: local-first now, stronger model routing later.
 
 ## ADR-008
-CfHEE is defined as a scoped knowledge storage and retrieval module, not as an end-user copilot application.
-Reason: the architectural core of the system is ingest, storage, scope isolation, retrieval, and traceability. Higher-level workflows, automation, and agents should be implemented as external consumers.
+CfHEE is defined as a scoped knowledge infrastructure module for storage, retrieval, and retrieval-derived context building, not as an end-user copilot application.
+Reason: the architectural core of the system is ingest, storage, scope isolation, retrieval, retrieval-derived context building, and traceability. Higher-level workflows, automation, and agents should be implemented as external consumers.
 
 ## ADR-009
 The built-in answer functionality is a convenience consumer, not the primary system responsibility.

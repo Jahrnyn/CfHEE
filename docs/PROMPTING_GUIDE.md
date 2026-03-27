@@ -31,10 +31,12 @@ Use this repo with a thin-slice mindset.
 
 - Windows-first local development is the active path.
 - Frontend API calls default to `http://127.0.0.1:8000`, with a small runtime override path now available.
-- `Ask Copilot` is implemented as a convenience interface; `Scope Manager` and `Settings` are still placeholder pages.
+- `Ask` is implemented as a convenience interface; `Scope Manager` and `Settings` are still placeholder pages.
 - Retrieval and answers should remain scoped by default.
 - Workflow engines, orchestration logic, and agent loops should remain outside CfHEE.
 
 ## Long-term note
 
-After the API boundary is stable, a later infrastructure step is to make the system easier to package and run across environments through containerization and more portable deployment shape.
+The first portable runtime slice now exists.
+
+After the API boundary is stable, the next infrastructure steps are to make that runtime easier to operate, back up, and move across environments without changing the module boundary.

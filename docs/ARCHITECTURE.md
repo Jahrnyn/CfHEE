@@ -2,7 +2,7 @@
 
 ## Purpose
 
-CfHEE is a local-first, scoped knowledge storage and retrieval module.
+CfHEE is a local-first, scoped knowledge storage, retrieval, and retrieval-derived context-building module.
 
 Its purpose is to:
 
@@ -10,6 +10,7 @@ Its purpose is to:
 - preserve raw source material and structured metadata
 - enforce strict isolation across workspace, domain, project, client, and module boundaries
 - provide fast, inspectable, scoped retrieval over stored knowledge
+- provide retrieval-derived context building for higher-level systems
 - expose that knowledge through stable APIs for higher-level systems
 - provide a small built-in query and grounded-answer interface as a convenience consumer
 
@@ -77,6 +78,7 @@ External workflows / tools / apps
 | - Scope Layer                                    |
 | - Ingestion Pipeline                             |
 | - Retrieval Pipeline                             |
+| - Context Builder                                |
 | - Traceability / Query Logging                   |
 | - Built-in Answer Consumer                       |
 +--------------------------------------------------+
@@ -141,6 +143,7 @@ The API layer is the primary boundary of the module.
 - scope validation and enforcement
 - document and chunk inspection
 - retrieval queries
+- retrieval-derived context building
 - grounded-answer access as a convenience endpoint
 - traceability and query-log access
 - later: stable integration surface for external automation and workflow systems
@@ -384,6 +387,7 @@ CfHEE ends at:
 - storage
 - chunking and indexing
 - scoped retrieval
+- retrieval-derived context building
 - traceable grounded access to stored knowledge
 
 CfHEE does not include:
@@ -403,4 +407,6 @@ Those should be implemented outside the module and communicate with it through s
 
 The current active development path is local and Windows-heavy.
 
-Long-term, after the module boundary and API surface are stable, CfHEE should move toward a production-buildable and containerized deployment shape so it can run consistently on Linux and other environments without depending on the current development setup.
+The first portable runtime slice now exists.
+
+Long-term, after the module boundary and API surface are stable, CfHEE should continue moving toward a more production-buildable and containerized deployment shape so it can run consistently on Linux and other environments without depending on the current development setup alone.

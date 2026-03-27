@@ -1,7 +1,7 @@
 # AGENTS.md
 
 ## Project
-CfHEE (Copilot for Hostile Enterprise Environment)
+CfHEE
 
 A local-first, scoped knowledge storage and retrieval module.
 
@@ -36,6 +36,7 @@ It provides:
 - ingestion
 - structured storage
 - scoped retrieval
+- retrieval-derived context building
 - traceable data access
 
 ## What this system is NOT

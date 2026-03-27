@@ -4,7 +4,7 @@ Last reviewed: 2026-03-27
 
 ## Current project identity
 
-CfHEE is currently defined as a local-first, scoped knowledge storage and retrieval module.
+CfHEE is currently defined as a local-first, scoped knowledge infrastructure module for storage, retrieval, and retrieval-derived context building.
 
 Its architectural core is:
 
@@ -12,6 +12,7 @@ Its architectural core is:
 - persistent storage
 - chunking and indexing
 - scoped retrieval
+- retrieval-derived context building
 - traceability
 
 The built-in grounded-answer capability exists as a convenience consumer on top of retrieval.
@@ -208,7 +209,7 @@ What currently exists should be read as:
 Future growth should prefer:
 
 - frontend improvements around the frozen API
-- containerization and runtime portability
+- portable runtime operations, backup, and restore on top of the current runtime slice
 - first external consumer integrations
 - keeping workflow-specific logic outside the module
 

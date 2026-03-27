@@ -1,6 +1,6 @@
 # CfHEE
 
-CfHEE is a local-first, scoped knowledge storage and retrieval module.
+CfHEE is a local-first, scoped knowledge infrastructure module for storage, retrieval, and retrieval-derived context building.
 
 It provides a reusable backend component for storing, organizing, and retrieving domain-specific knowledge with strict scope isolation and full traceability.
 
@@ -17,6 +17,7 @@ CfHEE is responsible for:
 - storing structured knowledge in Postgres
 - enabling fast, scoped retrieval
 - providing traceable, source-grounded access to stored data
+- building deterministic, provider-free context from stored knowledge
 
 ---
 
@@ -32,7 +33,17 @@ CfHEE is not:
 Higher-level systems (workflows, agents, automation tools) are expected to be built **on top of CfHEE**, not inside it.
 
 ---
+## Core capability
 
+CfHEE's primary external value is:
+
+> retrieval-derived context building
+
+External systems are expected to:
+- query CfHEE for context
+- pass that context to an LLM or workflow system
+
+---
 ## System role
 
 CfHEE acts as a:
@@ -78,6 +89,7 @@ Core layers:
 - Ingestion
 - Persistence (Postgres + raw storage)
 - Retrieval (scoped)
+- Context building
 - Answer (convenience only)
 
 ---
@@ -324,6 +336,8 @@ The containerized slice supports storage, retrieval, inspection, and determinist
 
 ## API endpoints (current)
 
+Current implemented API surface includes:
+
 | Method | Endpoint |
 |--------|----------|
 | `GET` | `/` |
@@ -333,6 +347,14 @@ The containerized slice supports storage, retrieval, inspection, and determinist
 | `GET` | `/documents/{document_id}/chunks` |
 | `POST` | `/retrieval/query` |
 | `POST` | `/answer/query` |
+
+Also present in the current repo:
+
+- `GET /scope-values`
+- `GET /query-logs`
+- versioned `/api/v1/...` routes including retrieval, context building, document inspection, and query-log inspection
+
+For the current external contract and freeze boundary, see `docs/API_V1.md`.
 
 ---
 
@@ -369,7 +391,13 @@ The next evolution of CfHEE focuses on:
 - external workflow and agent systems built on top
 - containerization and cross-platform runtime (Linux support)
 
-Runtime portability is in progress, not complete yet.
+The first portable runtime slice now exists.
+
+Runtime portability is still not complete:
+
+- backup and restore are not implemented
+- production hardening is not implemented
+- Ollama remains outside the minimum portable runtime
 
 ---
 
