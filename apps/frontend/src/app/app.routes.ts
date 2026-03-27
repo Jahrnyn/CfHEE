@@ -4,7 +4,7 @@ import { AskPageComponent } from './pages/ask-page.component';
 import { DocumentsPageComponent } from './pages/documents-page.component';
 import { HomePageComponent } from './pages/home-page.component';
 import { InboxPageComponent } from './pages/inbox-page.component';
-import { StaticPageComponent } from './pages/static-page.component';
+import { OperationsPageComponent } from './pages/operations-page.component';
 
 export const routes: Routes = [
   {
@@ -28,20 +28,9 @@ export const routes: Routes = [
     title: 'Ask'
   },
   {
-    path: 'scope-manager',
-    component: StaticPageComponent,
-    data: {
-      title: 'Scope Manager',
-      description: 'Workspaces, domains, projects, clients, and modules will be managed here.'
-    }
-  },
-  {
-    path: 'settings',
-    component: StaticPageComponent,
-    data: {
-      title: 'Settings',
-      description: 'Local runtime and project configuration will live here as the app grows.'
-    }
+    path: 'operations',
+    component: OperationsPageComponent,
+    title: 'Operations / Admin'
   },
   {
     path: '**',

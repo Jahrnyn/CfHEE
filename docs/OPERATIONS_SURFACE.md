@@ -4,11 +4,10 @@ Last reviewed: 2026-03-27
 
 ## Purpose
 
-This document defines the future Operations / Admin surface for CfHEE and records the first implemented read-only backend ops summary slice.
+This document defines the future Operations / Admin surface for CfHEE and records the first implemented read-only backend and frontend ops summary slices.
 
 It does not add:
 
-- a frontend Operations page
 - changes to runtime behavior
 - changes to helper-script behavior
 
@@ -25,9 +24,10 @@ It does not add:
   - `Inbox / Capture`
   - `Documents`
   - `Ask`
-  - `Scope Manager`
-  - `Settings`
-- `Scope Manager` and `Settings` are still placeholder views
+  - `Operations / Admin`
+- the previous `Scope Manager` and `Settings` placeholder views are no longer part of the workbench
+- the frontend now exposes a first read-only `Operations / Admin` page that consumes:
+  - `GET /ops/summary`
 - the backend route layout currently focuses on:
   - system status
   - document ingest and inspection
@@ -78,7 +78,7 @@ That split matters because the running app can safely expose some information an
 
 These are good candidates for a future Operations / Admin workbench surface because they fit the running app boundary.
 
-The first implemented slice now covers a small subset of these:
+The first implemented backend and frontend slices now cover a small subset of these:
 
 - runtime info
 - config summary
@@ -263,10 +263,10 @@ It should avoid trying to become:
 
 **Design intent**
 
-The best next implementation slice after the current read-only summary is:
+The best next implementation slice after the current read-only page is:
 
-- add a minimal frontend Operations/Admin page that reads the existing summary
-- or extend the backend summary with a little more safe visibility if the frontend is still deferred
+- extend the current summary only where visibility is still missing
+- keep the frontend Operations/Admin page read-only
 
 That slice should stay narrow:
 
@@ -285,7 +285,7 @@ Practical first contents:
 
 **Observed current repo state**
 
-- CfHEE already has a developer workbench frontend and a small runtime-helper script set
+- CfHEE already has a developer workbench frontend, a first read-only Operations/Admin page, and a small runtime-helper script set
 - the backend already exposes system, retrieval, document, scope, context, query-log, and read-only ops-summary routes
 - runtime lifecycle remains host-managed
 - backup and restore are currently conservative script-driven operations
@@ -299,6 +299,6 @@ Practical first contents:
 
 **Not implemented yet**
 
-- frontend Operations/Admin page
 - backend ops layers or endpoints beyond the current read-only summary
 - shared backend-owned backup/restore validation logic
+- destructive or lifecycle-managing frontend admin actions

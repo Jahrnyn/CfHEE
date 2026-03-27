@@ -56,12 +56,13 @@ Not allowed during freeze:
 
 Implemented in code:
 
-- Angular frontend shell with routes for `Overview`, `Inbox / Capture`, `Documents`, `Ask`, `Scope Manager`, and `Settings`
+- Angular frontend shell with routes for `Overview`, `Inbox / Capture`, `Documents`, `Ask`, and `Operations / Admin`
 - Working frontend views for manual ingest and document listing
 - Manual ingest now supports reusing stored scope values through lightweight suggestions while still allowing new values
 - Working frontend view for scoped retrieval in `Ask`
 - Working frontend `Ask` flow for grounded answers plus retrieval-only inspection
 - `Ask` keeps a clean minimal user-facing UI for scoped retrieval and grounded answers
+- Working frontend `Operations / Admin` view for consuming the backend read-only ops summary
 - FastAPI backend with `GET /`, `GET /health`, `POST /documents`, `GET /documents`, `GET /documents/{id}/chunks`, `POST /retrieval/query`, `POST /answer/query`, and `GET /query-logs`
 - FastAPI backend now also exposes `GET /ops/summary` as a narrow internal read-only ops summary surface
 - FastAPI backend also exposes `GET /scope-values` for lightweight manual-ingest scope reuse
@@ -170,6 +171,7 @@ Verified in the local environment during the latest check:
 - the repo now also contains first conservative stopped-runtime backup and restore helper scripts for the portable runtime data layer
 - the repo now also documents a future Operations / Admin surface design in `docs/OPERATIONS_SURFACE.md`
 - the backend `GET /ops/summary` route returns a conservative read-only summary of runtime info, config summary, and storage/path visibility
+- the frontend `Operations / Admin` page builds successfully and consumes the backend ops summary through a small dedicated frontend API service
 - `scripts/runtime-backup.ps1` creates a timestamped backup directory under `backups/` containing `postgres`, `chroma`, and `manifest.json` when the runtime is stopped
 - `scripts/runtime-restore.ps1` restores `runtime-data/postgres` and `runtime-data/chroma` from a selected backup directory when the runtime is stopped and the explicit confirmation phrase is provided
 - local stopped-runtime checks show both helpers fail clearly if Compose still reports running runtime services
@@ -178,13 +180,12 @@ Verified in the local environment during the latest check:
 ## Not implemented yet
 
 - real scope management UI
-- settings UI beyond placeholder copy
+- broader settings or admin UI beyond the current read-only `Operations / Admin` surface
 - bulk file import, connectors, and OCR
 - explicit external-integration-oriented API contracts beyond the current app-driven endpoint set
 - versioned `/api/v1` answer, additional scope-helper, and query-log detail endpoints beyond the current health/capabilities/ingest/retrieval/document-inspection/query-log shell
 - backup validation tooling
 - restore safety tooling
-- frontend Operations / Admin workbench surface
 - backend-owned ops layers or endpoints beyond the current read-only summary
 - production hardening for the portable runtime
 - migration tooling for runtime updates

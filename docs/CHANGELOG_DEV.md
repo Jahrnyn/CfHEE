@@ -180,6 +180,23 @@
   - omission of retrieval diagnostics unless explicitly requested
 ## 2026-03-27
 
+- Added the first frontend `Operations / Admin` page v0.
+- The new page consumes `GET /ops/summary` through a small dedicated frontend API service.
+- The page currently renders:
+  - runtime mode
+  - answer-provider mode
+  - backend/runtime config summary
+  - Postgres target summary
+  - Chroma path
+  - storage/path visibility
+  - operational notes
+- Kept the page intentionally narrow:
+  - read-only only
+  - no backup trigger
+  - no restore trigger
+  - no runtime lifecycle control
+- Removed the placeholder-only `Scope Manager` route and placeholder `Settings` surface from the workbench navigation in favor of the implemented `Operations / Admin` page.
+
 - Added the first backend-owned read-only ops summary slice:
   - `GET /ops/summary`
 - Kept the slice intentionally narrow:

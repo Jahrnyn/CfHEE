@@ -71,6 +71,7 @@ It provides:
 - document and chunk inspection
 - scoped retrieval
 - grounded answer querying (as a convenience layer)
+- read-only Operations / Admin inspection of the current running instance
 
 ---
 

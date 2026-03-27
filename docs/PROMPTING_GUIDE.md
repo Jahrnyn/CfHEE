@@ -31,7 +31,7 @@ Use this repo with a thin-slice mindset.
 
 - Windows-first local development is the active path.
 - Frontend API calls default to `http://127.0.0.1:8000`, with a small runtime override path now available.
-- `Ask` is implemented as a convenience interface; `Scope Manager` and `Settings` are still placeholder pages.
+- `Ask` is implemented as a convenience interface, and `Operations / Admin` now exists as a small read-only workbench view over the backend ops summary.
 - Retrieval and answers should remain scoped by default.
 - Workflow engines, orchestration logic, and agent loops should remain outside CfHEE.
 
