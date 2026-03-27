@@ -48,7 +48,7 @@ Why this is next:
 ## Suggested narrow scope
 
 1. Improve the frontend against the frozen API surface.
-2. Exercise the documented runtime operations flow and only then add backup and restore support.
+2. Exercise the documented runtime operations plus the new conservative backup and restore helpers, then tighten validation and safety if needed.
 3. Build or validate first external consumer integrations against the frozen API.
 4. Keep workflow-specific logic outside CfHEE.
 
@@ -59,8 +59,9 @@ Runtime portability note:
 - the portable-instance design baseline is now documented in `docs/PORTABLE_RUNTIME.md`
 - the first containerized portable runtime slice now exists for frontend, backend, and Postgres
 - runtime start/stop/log/update guidance is now documented in `docs/RUNTIME_OPERATIONS.md`
-- backup and restore design intent is now documented in `docs/BACKUP_AND_RESTORE.md`
-- backup, restore, and production hardening are still not implemented
+- backup and restore scope and safety rules are documented in `docs/BACKUP_AND_RESTORE.md`
+- first conservative stopped-runtime backup and restore helpers now exist
+- hot backup, stronger validation, and production hardening are still not implemented
 
 ## Keep out of scope for that step
 
@@ -80,7 +81,7 @@ Once the frozen API surface has been exercised by real consumers, the next long-
 - keep the portable-instance model fixed before implementation drift starts
 - harden and exercise the first containerized runtime
 - separate packaged runtime from persistent instance data
-- implement the first conservative stopped-runtime backup and restore workflow on top of the now-documented runtime operations and backup model
+- tighten validation and operational safety around the new conservative backup and restore workflow
 - reduce dependence on the current Windows-heavy localhost development setup
 - make the module easier to run on Linux and other environments
 - prepare for production-buildable packaging without changing the core architectural boundary

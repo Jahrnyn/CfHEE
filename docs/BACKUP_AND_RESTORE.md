@@ -4,14 +4,10 @@ Last reviewed: 2026-03-27
 
 ## Purpose
 
-This document defines the first backup and restore model for the current CfHEE portable runtime.
-
-It is a design-only slice.
+This document defines the first backup and restore model for the current CfHEE portable runtime and records the first implemented helper scripts.
 
 It does not add:
 
-- backup scripts
-- restore scripts
 - scheduling
 - migration tooling
 - runtime behavior changes
@@ -40,7 +36,9 @@ It does not add:
   - `docker compose down`
   - `scripts/runtime-up.ps1`
   - `scripts/runtime-down.ps1`
-- backup and restore tooling do not exist yet
+- backup and restore helper scripts now exist:
+  - `scripts/runtime-backup.ps1`
+  - `scripts/runtime-restore.ps1`
 
 ## Backup scope
 
@@ -104,11 +102,11 @@ This is intentionally conservative.
 
 The first backup shape should stay simple.
 
-Recommended shape:
+Recommended first implemented shape:
 
-- a timestamped backup directory or archive
+- a timestamped backup directory
 - separate Postgres and Chroma payloads
-- optional `manifest.json`
+- small `manifest.json`
 
 Conceptual example:
 
@@ -119,14 +117,9 @@ cfhee-backup-2026-03-27T18-45-00/
   manifest.json
 ```
 
-Possible archive form:
+The first helper script currently uses the directory form, not an archive.
 
-```text
-cfhee-backup-2026-03-27T18-45-00.zip
-```
-
-The important point is not the exact packaging format.
-The important point is that the first backup artifact should keep Postgres and Chroma clearly visible and restorable together.
+The important point for this slice is that the backup artifact keeps Postgres and Chroma clearly visible and restorable together.
 
 ### Optional manifest content
 
@@ -169,10 +162,9 @@ Not guaranteed yet:
 
 ### What remains future work
 
-- first backup helper script
-- first restore helper script
 - backup artifact validation
 - explicit operator checks before destructive restore
+- optional archive output if it later proves useful
 
 ## Relationship to the current runtime model
 
@@ -207,17 +199,16 @@ This first model assumes a restore is an intentional replacement operation, not 
 
 **Design intent**
 
-The next minimal implementation slice should be:
+The next minimal implementation slice after these helpers should be:
 
-- one conservative stopped-runtime backup helper
-- one conservative stopped-runtime restore helper
+- tighter backup validation
+- tighter restore safety checks
 
-That slice should:
+That follow-up should stay narrow:
 
-- refuse to run while the runtime is up
-- copy or archive `runtime-data/postgres` and `runtime-data/chroma` together
-- restore by replacing the current data directories only after an explicit operator confirmation
-- avoid adding scheduling, cloud sync, encryption, or partial-restore behavior
+- keep the stopped-runtime model
+- keep full-instance restore only
+- avoid scheduling, cloud sync, encryption, or partial-restore behavior
 
 ## Summary
 
@@ -225,18 +216,16 @@ That slice should:
 
 - the portable runtime already has a visible persistent data layout under `runtime-data/`
 - Postgres and Chroma persistence already exist
-- backup and restore tooling do not exist yet
+- conservative backup and restore helper scripts now exist
 
 **Design intent**
 
 - a CfHEE instance backup should cover `runtime-data/postgres` and `runtime-data/chroma`
 - restore should initially be full-instance data replacement
 - backup and restore should initially require the runtime to be stopped
-- the first backup artifact should be a simple timestamped directory or archive with separate Postgres and Chroma payloads
+- the first backup artifact should be a simple timestamped directory with separate Postgres and Chroma payloads plus a small manifest
 
 **Not implemented yet**
 
-- backup scripts
-- restore scripts
 - backup validation
 - restore safety automation

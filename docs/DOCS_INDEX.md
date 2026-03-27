@@ -53,6 +53,10 @@ Use this to understand the portable-instance concept, minimum runtime compositio
 Current runtime operations guide for the existing containerized runtime.
 Use this for start/stop/log/update workflow, runtime-vs-data ownership, and what must be preserved under `runtime-data/`.
 
+### `docs/BACKUP_AND_RESTORE.md`
+Current backup and restore model for the portable runtime.
+Use this for backup scope, restore safety rules, artifact shape, and what the helper scripts do or do not guarantee.
+
 ## Prompting docs
 
 ### `docs/PROMPTING_GUIDE.md`
@@ -81,8 +85,9 @@ For most implementation tasks, read in this order:
 7. `docs/API_V1.md` if the task touches versioned external API work
 8. `docs/PORTABLE_RUNTIME.md` if the task touches runtime packaging or portable-instance design
 9. `docs/RUNTIME_OPERATIONS.md` if the task touches runtime usage, logs, start/stop flow, or data ownership
-10. `docs/PROMPTING_GUIDE.md`
-11. `docs/CHANGELOG_DEV.md` if the task relates to recent work
+10. `docs/BACKUP_AND_RESTORE.md` if the task touches runtime-data backup, restore, or safety rules
+11. `docs/PROMPTING_GUIDE.md`
+12. `docs/CHANGELOG_DEV.md` if the task relates to recent work
 
 ## Human usage note
 
@@ -94,6 +99,7 @@ If you are resuming work after a break, start with:
 If you are resuming runtime-related work, also read:
 - `docs/PORTABLE_RUNTIME.md`
 - `docs/RUNTIME_OPERATIONS.md`
+- `docs/BACKUP_AND_RESTORE.md`
 
 ## Authority rules
 
@@ -105,7 +111,8 @@ When documents disagree, prefer:
 5. `docs/API_V1.md` for the frozen public API v1 contract
 6. `docs/PORTABLE_RUNTIME.md` for portable-runtime design and current runtime packaging intent
 7. `docs/RUNTIME_OPERATIONS.md` for current runtime usage and operational workflow
-8. `docs/CHANGELOG_DEV.md` for recent historical context
+8. `docs/BACKUP_AND_RESTORE.md` for current backup/restore rules and helper-script behavior
+9. `docs/CHANGELOG_DEV.md` for recent historical context
 
 ## Notes on removed docs
 

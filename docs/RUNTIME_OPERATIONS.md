@@ -12,12 +12,11 @@ It covers:
 - what belongs to the runtime layer vs. the data layer
 - how to start and stop the runtime
 - how to inspect logs
+- how to back up and restore the current data layer safely
 - how to update the runtime without deleting stored data
 
 It does not add:
 
-- backup tooling
-- restore tooling
 - migration tooling
 - production hardening
 
@@ -77,6 +76,19 @@ Do not delete:
 - `runtime-data/chroma`
 
 Deleting those directories means deleting the current portable instance data.
+
+### Backup and restore helpers
+
+The current repo now includes:
+
+- `scripts/runtime-backup.ps1`
+- `scripts/runtime-restore.ps1`
+
+These helpers are intentionally conservative:
+
+- they require the portable runtime to be stopped
+- they operate only on `runtime-data/postgres` and `runtime-data/chroma`
+- restore is full-instance data replacement only
 
 ## Start the runtime
 
@@ -144,6 +156,57 @@ docker compose logs backend
 docker compose logs frontend
 docker compose logs postgres
 ```
+
+## Back up the runtime data
+
+The current backup helper creates a timestamped backup directory containing:
+
+- `postgres/`
+- `chroma/`
+- `manifest.json`
+
+From the repo root:
+
+```powershell
+powershell.exe -ExecutionPolicy Bypass -File .\scripts\runtime-backup.ps1
+```
+
+Optional destination root:
+
+```powershell
+powershell.exe -ExecutionPolicy Bypass -File .\scripts\runtime-backup.ps1 -DestinationRoot .\backups
+```
+
+Safety rules:
+
+- the runtime must be stopped first
+- the helper fails if Compose still reports running CfHEE runtime services
+- the helper backs up both data directories together
+
+## Restore the runtime data
+
+The current restore helper replaces the active runtime data layer from a selected backup directory.
+
+From the repo root:
+
+```powershell
+powershell.exe -ExecutionPolicy Bypass -File .\scripts\runtime-restore.ps1 -BackupPath .\backups\cfhee-backup-YYYYMMDD-HHMMSSfff
+```
+
+The helper requires explicit confirmation before replacement.
+
+For a non-interactive explicit confirmation:
+
+```powershell
+powershell.exe -ExecutionPolicy Bypass -File .\scripts\runtime-restore.ps1 -BackupPath .\backups\cfhee-backup-YYYYMMDD-HHMMSSfff -ConfirmRestore RESTORE
+```
+
+Safety rules:
+
+- the runtime must be stopped first
+- restore replaces `runtime-data/postgres` and `runtime-data/chroma`
+- partial restore and merge restore are not supported
+- if the confirmation phrase is not provided exactly, the helper cancels
 
 ## Runtime config in container mode
 
@@ -213,8 +276,9 @@ This update flow rebuilds the runtime layer without deleting the current instanc
 
 Not implemented yet:
 
-- one-command backup
-- restore flow
 - schema/data migration tooling
 - multi-instance management
 - production hardening
+- hot backup support
+- partial restore
+- backup validation tooling

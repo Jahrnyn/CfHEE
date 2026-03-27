@@ -49,10 +49,10 @@ It is implemented through:
 This slice does not add:
 
 - Ollama to Compose
-- backup tooling
-- restore tooling
 - reverse proxy or TLS
 - production hardening
+
+Later runtime-operation slices can add backup and restore helpers on top of this runtime packaging without changing the container topology itself.
 
 ## Portable instance concept
 
@@ -262,8 +262,10 @@ Given the current repo state, the practical staged path is:
 
 ## Explicitly not implemented yet
 
-- backup tooling
-- restore tooling
+- hot backup support
+- partial restore or merge restore
+- backup validation tooling
+- restore safety automation beyond explicit confirmation
 - Ollama portable integration
 - production hardening
 - non-localhost operational defaults
@@ -275,6 +277,7 @@ Given the current repo state, the practical staged path is:
 - current development remains source-based and Windows-first
 - the repo now also contains a first Compose-based portable runtime slice for frontend + backend + Postgres
 - Chroma already uses local persistent filesystem state
+- conservative stopped-runtime backup and restore helpers now exist for the current runtime-data layout
 - Ollama is optional
 
 **Design intent**
@@ -286,4 +289,4 @@ Given the current repo state, the practical staged path is:
 
 **Not implemented yet**
 
-- fuller runtime operations around backup, restore, and updates
+- fuller runtime operations around stronger backup validation, restore safety, and updates

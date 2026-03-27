@@ -180,6 +180,17 @@
   - omission of retrieval diagnostics unless explicitly requested
 ## 2026-03-27
 
+- Added first conservative portable-runtime backup and restore helpers:
+  - `scripts/runtime-backup.ps1`
+  - `scripts/runtime-restore.ps1`
+- Kept the implementation intentionally narrow:
+  - runtime must be stopped before backup
+  - runtime must be stopped before restore
+  - backup captures `runtime-data/postgres` and `runtime-data/chroma` together
+  - restore replaces the full current data layer only
+  - restore requires explicit operator confirmation before destructive replacement
+  - backup artifact is a timestamped directory with `postgres`, `chroma`, and `manifest.json`
+
 - Added `docs/BACKUP_AND_RESTORE.md` as a narrow backup/restore design slice for the current portable runtime.
 - Documented a conservative operator model without changing runtime behavior:
   - backup scope is `runtime-data/postgres` plus `runtime-data/chroma`
@@ -201,6 +212,7 @@
   - how to start the runtime
   - how to stop it
   - how to inspect logs
+  - how to run the conservative backup and restore helpers
   - how runtime layer vs. data layer should be understood
   - what should be backed up later
   - what must not be deleted

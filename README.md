@@ -227,8 +227,6 @@ The first portable runtime slice now includes:
 It does not include:
 
 - Ollama
-- backup tooling
-- restore tooling
 - reverse proxy or TLS
 - production hardening
 
@@ -326,6 +324,37 @@ Current minimal flow:
 
 This updates the runtime layer without deleting the current persistent data layer.
 
+### Back up the portable runtime data
+
+The current helpers use the documented stopped-runtime model.
+
+Stop the runtime first, then run:
+
+```powershell
+powershell.exe -ExecutionPolicy Bypass -File .\scripts\runtime-backup.ps1
+```
+
+This creates a timestamped backup directory with:
+
+- `postgres`
+- `chroma`
+- `manifest.json`
+
+### Restore the portable runtime data
+
+Restore is full-instance data replacement for the current data layer.
+
+Stop the runtime first, then run:
+
+```powershell
+powershell.exe -ExecutionPolicy Bypass -File .\scripts\runtime-restore.ps1 -BackupPath .\backups\cfhee-backup-YYYYMMDD-HHMMSSfff
+```
+
+The helper requires explicit confirmation before replacing:
+
+- `runtime-data/postgres`
+- `runtime-data/chroma`
+
 ### Ollama and the portable runtime
 
 Ollama is still outside the minimum portable runtime.
@@ -395,7 +424,8 @@ The first portable runtime slice now exists.
 
 Runtime portability is still not complete:
 
-- backup and restore are not implemented
+- backup and restore now exist only as conservative stopped-runtime helpers
+- hot backup and stronger validation are not implemented
 - production hardening is not implemented
 - Ollama remains outside the minimum portable runtime
 
@@ -410,3 +440,4 @@ See:
 - `docs/NEXT_STEPS.md`
 - `docs/DECISIONS.md`
 - `docs/RUNTIME_OPERATIONS.md`
+- `docs/BACKUP_AND_RESTORE.md`

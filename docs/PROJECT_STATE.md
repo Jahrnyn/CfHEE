@@ -81,6 +81,8 @@ Implemented in code:
 - Windows-first portable-runtime helper scripts:
   - `scripts/runtime-up.ps1`
   - `scripts/runtime-down.ps1`
+  - `scripts/runtime-backup.ps1`
+  - `scripts/runtime-restore.ps1`
 - frontend API services now use a small runtime config surface instead of hardcoding the backend base URL in code
 - backend CORS origins are now configurable through `CORS_ALLOW_ORIGINS`, while preserving localhost defaults
 - first portable runtime packaging slice:
@@ -164,6 +166,11 @@ Verified in the local environment during the latest check:
   - Chroma writes persistent state under `runtime-data/chroma`
 - the runtime data directories remain present after a `docker compose down` + `docker compose up -d` cycle
 - the repo now also documents a conservative backup and restore design for the current portable runtime in `docs/BACKUP_AND_RESTORE.md`
+- the repo now also contains first conservative stopped-runtime backup and restore helper scripts for the portable runtime data layer
+- `scripts/runtime-backup.ps1` creates a timestamped backup directory under `backups/` containing `postgres`, `chroma`, and `manifest.json` when the runtime is stopped
+- `scripts/runtime-restore.ps1` restores `runtime-data/postgres` and `runtime-data/chroma` from a selected backup directory when the runtime is stopped and the explicit confirmation phrase is provided
+- local stopped-runtime checks show both helpers fail clearly if Compose still reports running runtime services
+- local restore checks show the helper replaces the full current runtime data layer, removing marker files created after the backup snapshot
 
 ## Not implemented yet
 
@@ -172,8 +179,6 @@ Verified in the local environment during the latest check:
 - bulk file import, connectors, and OCR
 - explicit external-integration-oriented API contracts beyond the current app-driven endpoint set
 - versioned `/api/v1` answer, additional scope-helper, and query-log detail endpoints beyond the current health/capabilities/ingest/retrieval/document-inspection/query-log shell
-- backup tooling
-- restore tooling
 - backup validation tooling
 - restore safety tooling
 - production hardening for the portable runtime
@@ -197,7 +202,8 @@ Verified in the local environment during the latest check:
 - Ollama is not included in the minimum portable runtime
 - source-based local development remains valid and separate
 - runtime start/stop/log/update guidance now exists and is documented
-- backup and restore design intent is now documented, but tooling is still not implemented
+- stopped-runtime backup and restore helpers now exist for the current data layout
+- backup and restore remain intentionally conservative and limited to full-instance data replacement
 
 ## Current architectural reading
 
