@@ -123,12 +123,16 @@ def _get_allowed_origins_summary() -> list[str]:
         return [
             "http://localhost:4200",
             "http://127.0.0.1:4200",
+            "http://localhost:4210",
+            "http://127.0.0.1:4210",
         ]
 
     origins = [origin.strip() for origin in configured_origins.split(",") if origin.strip()]
     return origins or [
         "http://localhost:4200",
         "http://127.0.0.1:4200",
+        "http://localhost:4210",
+        "http://127.0.0.1:4210",
     ]
 
 
@@ -160,7 +164,17 @@ def _detect_runtime_mode(database_url: str, chroma_persist_directory: str) -> Li
 
 
 def _get_repo_root() -> Path:
-    return Path(__file__).resolve().parents[5]
+    resolved = Path(__file__).resolve()
+    parents = list(resolved.parents)
+
+    if len(parents) > 5:
+        return parents[5]
+
+    for parent in parents:
+        if parent.name == "src":
+            return parent.parent
+
+    return parents[-1] if parents else Path.cwd()
 
 
 def _summarize_path(path: Path) -> PathVisibilitySummary:

@@ -88,6 +88,7 @@ Implemented in code:
   - `scripts/runtime-restore.ps1`
 - frontend API services now use a small runtime config surface instead of hardcoding the backend base URL in code
 - backend CORS origins are now configurable through `CORS_ALLOW_ORIGINS`, while preserving localhost defaults
+- backend localhost CORS defaults now cover both source-based frontend ports and portable-runtime frontend ports
 - first portable runtime packaging slice:
   - backend Dockerfile
   - frontend Dockerfile
@@ -124,6 +125,7 @@ Verified by code inspection:
 - the portable runtime now wires backend Postgres access through the Compose service name and backend Chroma persistence through an explicit mounted runtime-data path
 - the frontend portable runtime now injects its backend base URL through container-time generation of `runtime-config.js`
 - the portable runtime now uses host-facing frontend/backend ports `4210` and `8010`, while the source-based dev workflow keeps `4200` and `8000`
+- the backend `GET /ops/summary` route now handles the current containerized source-tree layout without crashing
 - the repo now also documents runtime operations clearly through `docs/RUNTIME_OPERATIONS.md`, including start, stop, logs, data ownership, and a minimal update flow
 - query logging is implemented for retrieval-only and answer queries, including scope, result identifiers, answer text, provider used, and fallback usage
 - answer context selection is now explicit and traceable, including selected and dropped chunk IDs in `query_logs`
@@ -139,7 +141,7 @@ Verified in the local environment during the latest check:
 - frontend production build succeeds with `npm.cmd run build`
 - backend source compiles with `python -m compileall`
 - the frontend runtime config helper keeps `http://127.0.0.1:8000` as the default API base URL when no override is provided
-- the backend CORS helper keeps the current localhost frontend origins as defaults and accepts a comma-separated `CORS_ALLOW_ORIGINS` override in code-level checks
+- the backend CORS helper keeps localhost frontend origins for both `4200` and `4210` as defaults and accepts a comma-separated `CORS_ALLOW_ORIGINS` override in code-level checks
 - retrieval endpoint accepts `top_k`, returns explicit empty results, logs query, scope, and result count, and rejects missing scope with a clear validation error when exercised against local Postgres and Chroma
 - answer endpoint returns a grounded short answer with cited chunks for matching scope, returns an explicit no-evidence state for empty retrieval, and rejects missing scope with the same scoped validation
 - Ollama is reachable locally at the default local URL and `qwen2.5:7b` is present locally in this environment
@@ -175,6 +177,8 @@ Verified in the local environment during the latest check:
 - the repo now also contains first conservative stopped-runtime backup and restore helper scripts for the portable runtime data layer
 - the repo now also documents a future Operations / Admin surface design in `docs/OPERATIONS_SURFACE.md`
 - the backend `GET /ops/summary` route returns a conservative read-only summary of runtime info, config summary, storage/path visibility, and backup visibility
+- the portable-runtime backend `GET /ops/summary` route now succeeds on `http://127.0.0.1:8010/ops/summary` after fixing its repo-root fallback for the containerized source layout
+- a runtime-origin request to `GET /ops/summary` from `http://127.0.0.1:4210` now returns `Access-Control-Allow-Origin: http://127.0.0.1:4210`
 - the frontend `Operations / Admin` page builds successfully and consumes the backend ops summary through a small dedicated frontend API service, including the new backup summary section
 - the frontend Operations/Admin page now uses a shared dark-surface utility baseline so its storage/path visibility cards stay visually consistent with the rest of the workbench
 - `scripts/runtime-backup.ps1` creates a timestamped backup directory under `backups/` containing `postgres`, `chroma`, and `manifest.json` when the runtime is stopped

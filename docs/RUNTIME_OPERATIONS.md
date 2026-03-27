@@ -270,6 +270,8 @@ In the current portable runtime, Compose defaults it to:
 - `http://localhost:4210`
 - `http://127.0.0.1:4210`
 
+Without an override, the backend code-level localhost defaults now also include the source-based frontend origins on `4200` plus the portable-runtime frontend origins on `4210`.
+
 ## Why data may appear missing between dev and runtime
 
 The portable runtime is now intentionally separated from the source-based dev workflow by host-facing frontend and backend ports:

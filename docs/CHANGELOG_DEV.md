@@ -180,6 +180,17 @@
   - omission of retrieval diagnostics unless explicitly requested
 ## 2026-03-27
 
+- Fixed the portable-runtime `Operations / Admin` page loading failure.
+- Root causes:
+  - the backend `GET /ops/summary` route crashed in the backend container because its repo-root helper assumed a deeper source path than the current image layout provides
+  - the backend default localhost CORS set did not explicitly cover both dev and portable-runtime frontend ports when no override was present
+- Fixes applied:
+  - made the ops-summary repo-root fallback safe for the current containerized source layout
+  - extended backend localhost CORS defaults to include both `4200` and `4210`
+- Verified in the portable runtime:
+  - `GET /ops/summary` returns `200` on `http://127.0.0.1:8010`
+  - the backend returns `Access-Control-Allow-Origin: http://127.0.0.1:4210` for a request from the portable-runtime frontend origin
+
 - Separated portable-runtime frontend/backend host ports from the source-based dev workflow.
 - Updated `docker-compose.yml` so the portable runtime now publishes:
   - frontend on `4210`
