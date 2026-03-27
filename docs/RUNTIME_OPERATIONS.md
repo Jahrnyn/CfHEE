@@ -12,6 +12,7 @@ It covers:
 - what belongs to the runtime layer vs. the data layer
 - how to start and stop the runtime
 - how to inspect logs
+- how to inspect the current read-only ops summary surface
 - how to back up and restore the current data layer safely
 - how to update the runtime without deleting stored data
 
@@ -157,6 +158,30 @@ docker compose logs frontend
 docker compose logs postgres
 ```
 
+## Inspect the read-only ops summary
+
+The backend now exposes a small read-only operational summary at:
+
+```powershell
+GET /ops/summary
+```
+
+It provides conservative app-visible information such as:
+
+- runtime mode summary
+- answer-provider mode
+- backend CORS origins summary
+- Postgres target summary without secrets
+- Chroma persistence path
+- storage/path visibility as seen by the running backend
+
+It does not provide:
+
+- runtime start or stop control
+- image rebuild control
+- backup trigger
+- restore trigger
+
 ## Back up the runtime data
 
 The current backup helper creates a timestamped backup directory containing:
@@ -282,3 +307,4 @@ Not implemented yet:
 - hot backup support
 - partial restore
 - backup validation tooling
+- runtime lifecycle control from the app

@@ -405,7 +405,7 @@ Those should be implemented outside the module and communicate with it through s
 
 ## Long-term deployment direction
 
-The current active development path is local and Windows-heavy.
+The current active development path is local.
 
 The first portable runtime slice now exists.
 

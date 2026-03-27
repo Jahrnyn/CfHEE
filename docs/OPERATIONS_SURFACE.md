@@ -4,14 +4,11 @@ Last reviewed: 2026-03-27
 
 ## Purpose
 
-This document defines the future Operations / Admin surface for CfHEE.
-
-It is a design-only slice.
+This document defines the future Operations / Admin surface for CfHEE and records the first implemented read-only backend ops summary slice.
 
 It does not add:
 
 - a frontend Operations page
-- backend ops endpoints
 - changes to runtime behavior
 - changes to helper-script behavior
 
@@ -38,6 +35,7 @@ It does not add:
   - grounded answers
   - scope values
   - query-log inspection
+  - read-only ops summary
   - frozen `/api/v1` routes
 - runtime helper scripts currently exist for:
   - runtime start
@@ -46,6 +44,8 @@ It does not add:
   - runtime restore
 - runtime packaging is Compose-based and host-managed
 - backup and restore currently follow a conservative stopped-runtime model
+- the backend now exposes a narrow read-only ops summary route at:
+  - `GET /ops/summary`
 
 ## Design goal
 
@@ -76,7 +76,9 @@ That split matters because the running app can safely expose some information an
 
 **Design intent**
 
-These are good candidates for a future Operations / Admin workbench surface because they fit the running app boundary:
+These are good candidates for a future Operations / Admin workbench surface because they fit the running app boundary.
+
+The first implemented slice now covers a small subset of these:
 
 - runtime info
 - config summary
@@ -261,13 +263,13 @@ It should avoid trying to become:
 
 **Design intent**
 
-The best first implementation slice after this design is:
+The best next implementation slice after the current read-only summary is:
 
-- add a backend internal read-only ops summary surface
+- add a minimal frontend Operations/Admin page that reads the existing summary
+- or extend the backend summary with a little more safe visibility if the frontend is still deferred
 
 That slice should stay narrow:
 
-- no frontend implementation yet, unless a minimal placeholder is explicitly requested later
 - no runtime lifecycle control
 - no destructive restore endpoint
 - no API v1 changes
@@ -284,7 +286,7 @@ Practical first contents:
 **Observed current repo state**
 
 - CfHEE already has a developer workbench frontend and a small runtime-helper script set
-- the backend already exposes system, retrieval, document, scope, context, and query-log routes
+- the backend already exposes system, retrieval, document, scope, context, query-log, and read-only ops-summary routes
 - runtime lifecycle remains host-managed
 - backup and restore are currently conservative script-driven operations
 
@@ -298,6 +300,5 @@ Practical first contents:
 **Not implemented yet**
 
 - frontend Operations/Admin page
-- backend ops layer
-- backend ops endpoints
+- backend ops layers or endpoints beyond the current read-only summary
 - shared backend-owned backup/restore validation logic

@@ -48,7 +48,7 @@ Why this is next:
 ## Suggested narrow scope
 
 1. Improve the frontend against the frozen API surface.
-2. Exercise the documented runtime operations plus the new conservative backup and restore helpers, then add a narrow read-only operations summary surface if runtime visibility becomes the next pain point.
+2. Exercise the documented runtime operations plus the new conservative backup and restore helpers, then add a minimal frontend Operations/Admin page on top of the new read-only ops summary if runtime visibility becomes the next pain point.
 3. Build or validate first external consumer integrations against the frozen API.
 4. Keep workflow-specific logic outside CfHEE.
 
@@ -61,6 +61,7 @@ Runtime portability note:
 - runtime start/stop/log/update guidance is now documented in `docs/RUNTIME_OPERATIONS.md`
 - backup and restore scope and safety rules are documented in `docs/BACKUP_AND_RESTORE.md`
 - future app-managed operations scope is now documented in `docs/OPERATIONS_SURFACE.md`
+- a first backend-owned read-only ops summary surface now exists
 - first conservative stopped-runtime backup and restore helpers now exist
 - hot backup, stronger validation, and production hardening are still not implemented
 
@@ -83,7 +84,7 @@ Once the frozen API surface has been exercised by real consumers, the next long-
 - harden and exercise the first containerized runtime
 - separate packaged runtime from persistent instance data
 - tighten validation and operational safety around the new conservative backup and restore workflow
-- add a narrow backend-owned read-only operations summary before attempting any in-app maintenance triggers
+- add a minimal frontend Operations/Admin view on top of the new backend-owned read-only operations summary before attempting any in-app maintenance triggers
 - reduce dependence on the current Windows-heavy localhost development setup
 - make the module easier to run on Linux and other environments
 - prepare for production-buildable packaging without changing the core architectural boundary

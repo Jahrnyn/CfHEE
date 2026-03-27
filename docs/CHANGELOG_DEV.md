@@ -180,6 +180,15 @@
   - omission of retrieval diagnostics unless explicitly requested
 ## 2026-03-27
 
+- Added the first backend-owned read-only ops summary slice:
+  - `GET /ops/summary`
+- Kept the slice intentionally narrow:
+  - returns only runtime info, config summary, and storage/path visibility
+  - does not expose secrets
+  - does not trigger backup or restore
+  - does not control runtime lifecycle
+  - remains outside `/api/v1` so the public API freeze boundary is preserved
+
 - Added `docs/OPERATIONS_SURFACE.md` as a narrow design slice for future Operations / Admin workbench behavior.
 - Documented a practical split between:
   - safe future app-managed operations

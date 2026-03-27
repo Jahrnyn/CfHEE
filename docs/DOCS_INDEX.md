@@ -59,7 +59,7 @@ Use this for backup scope, restore safety rules, artifact shape, and what the he
 
 ### `docs/OPERATIONS_SURFACE.md`
 Operations/Admin surface design for future app-managed maintenance behavior.
-Use this to understand what should later be manageable from the running app, what should remain host-side, and how helper scripts should evolve.
+Use this to understand the current read-only ops summary surface, what should later be manageable from the running app, what should remain host-side, and how helper scripts should evolve.
 
 ## Prompting docs
 

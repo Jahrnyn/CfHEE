@@ -380,6 +380,7 @@ Current implemented API surface includes:
 Also present in the current repo:
 
 - `GET /scope-values`
+- `GET /ops/summary`
 - `GET /query-logs`
 - versioned `/api/v1/...` routes including retrieval, context building, document inspection, and query-log inspection
 

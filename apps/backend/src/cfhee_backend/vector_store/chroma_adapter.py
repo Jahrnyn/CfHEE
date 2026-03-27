@@ -11,12 +11,16 @@ from cfhee_backend.vector_store.base import VectorChunkRecord, VectorQuery, Vect
 DEFAULT_COLLECTION_NAME = "document_chunks"
 
 
+def get_chroma_persist_directory() -> str:
+    return os.getenv(
+        "CHROMA_PERSIST_DIRECTORY",
+        str(Path(__file__).resolve().parents[3] / "data" / "chroma"),
+    )
+
+
 class ChromaVectorStore:
     def __init__(self, persist_directory: str | None = None) -> None:
-        path = persist_directory or os.getenv(
-            "CHROMA_PERSIST_DIRECTORY",
-            str(Path(__file__).resolve().parents[3] / "data" / "chroma"),
-        )
+        path = persist_directory or get_chroma_persist_directory()
         self._client = chromadb.PersistentClient(path=path)
         self._collection = self._client.get_or_create_collection(name=DEFAULT_COLLECTION_NAME)
 
