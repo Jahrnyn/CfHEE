@@ -180,6 +180,19 @@
   - omission of retrieval diagnostics unless explicitly requested
 ## 2026-03-27
 
+- Added `docs/BACKUP_AND_RESTORE.md` as a narrow backup/restore design slice for the current portable runtime.
+- Documented a conservative operator model without changing runtime behavior:
+  - backup scope is `runtime-data/postgres` plus `runtime-data/chroma`
+  - restore is defined as full-instance data replacement for the current data layer
+  - backup and restore should initially require the runtime to be stopped
+  - the first backup artifact should stay simple: timestamped folder or archive, separate Postgres and Chroma payloads, optional manifest
+- Kept the slice intentionally narrow:
+  - no backup script implementation
+  - no restore script implementation
+  - no scheduling
+  - no runtime-topology changes
+  - no API changes
+
 - Added `docs/RUNTIME_OPERATIONS.md` as a narrow runtime-operations slice on top of the existing portable runtime.
 - Added minimal PowerShell runtime wrappers:
   - `scripts/runtime-up.ps1`

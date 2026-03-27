@@ -72,6 +72,9 @@ Update CONDITIONALLY (if affected):
 - `docs/PORTABLE_RUNTIME.md` → if runtime model changed
 - `docs/RUNTIME_OPERATIONS.md` → if runtime usage changed
 - `docs/ARCHITECTURE.md` → if architectural intent changed
+- `docs/DOCS_INDEX.md` 
+- `docs/BACKUP_AND_RESTORE` 
+(or any other .md documentation inside /docs if needed)
 - `./README.md` → if usage or positioning changed
 Rules for updates:
 reflect only what is implemented or verified

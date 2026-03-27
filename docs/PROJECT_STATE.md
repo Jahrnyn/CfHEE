@@ -163,6 +163,7 @@ Verified in the local environment during the latest check:
   - Postgres initializes under `runtime-data/postgres/pgdata`
   - Chroma writes persistent state under `runtime-data/chroma`
 - the runtime data directories remain present after a `docker compose down` + `docker compose up -d` cycle
+- the repo now also documents a conservative backup and restore design for the current portable runtime in `docs/BACKUP_AND_RESTORE.md`
 
 ## Not implemented yet
 
@@ -173,6 +174,8 @@ Verified in the local environment during the latest check:
 - versioned `/api/v1` answer, additional scope-helper, and query-log detail endpoints beyond the current health/capabilities/ingest/retrieval/document-inspection/query-log shell
 - backup tooling
 - restore tooling
+- backup validation tooling
+- restore safety tooling
 - production hardening for the portable runtime
 - migration tooling for runtime updates
 
@@ -194,6 +197,7 @@ Verified in the local environment during the latest check:
 - Ollama is not included in the minimum portable runtime
 - source-based local development remains valid and separate
 - runtime start/stop/log/update guidance now exists and is documented
+- backup and restore design intent is now documented, but tooling is still not implemented
 
 ## Current architectural reading
 
