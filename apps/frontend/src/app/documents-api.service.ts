@@ -2,6 +2,8 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
+import { getApiBaseUrl } from './runtime-config';
+
 export interface DocumentPayload {
   workspace: string;
   domain: string;
@@ -47,7 +49,7 @@ export interface ChunkSummary {
 @Injectable({ providedIn: 'root' })
 export class DocumentsApiService {
   private readonly http = inject(HttpClient);
-  private readonly apiBaseUrl = 'http://127.0.0.1:8000';
+  private readonly apiBaseUrl = getApiBaseUrl();
 
   createDocument(payload: DocumentPayload): Observable<DocumentSummary> {
     return this.http.post<DocumentSummary>(`${this.apiBaseUrl}/documents`, payload);

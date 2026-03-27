@@ -2,6 +2,8 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
+import { getApiBaseUrl } from './runtime-config';
+
 export interface ScopeValuesResponse {
   workspaces: string[];
   domains: string[];
@@ -20,7 +22,7 @@ export interface ScopeValuesQuery {
 @Injectable({ providedIn: 'root' })
 export class ScopeValuesApiService {
   private readonly http = inject(HttpClient);
-  private readonly apiBaseUrl = 'http://127.0.0.1:8000';
+  private readonly apiBaseUrl = getApiBaseUrl();
 
   listScopeValues(query: ScopeValuesQuery): Observable<ScopeValuesResponse> {
     let params = new HttpParams();

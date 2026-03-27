@@ -2,6 +2,8 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
+import { getApiBaseUrl } from './runtime-config';
+
 export interface RetrievalQueryPayload {
   query_text: string;
   workspace: string;
@@ -55,7 +57,7 @@ export interface RetrievalQueryResponse {
 @Injectable({ providedIn: 'root' })
 export class RetrievalApiService {
   private readonly http = inject(HttpClient);
-  private readonly apiBaseUrl = 'http://127.0.0.1:8000';
+  private readonly apiBaseUrl = getApiBaseUrl();
 
   query(payload: RetrievalQueryPayload): Observable<RetrievalQueryResponse> {
     return this.http.post<RetrievalQueryResponse>(`${this.apiBaseUrl}/retrieval/query`, payload);

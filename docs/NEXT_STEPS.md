@@ -52,6 +52,11 @@ Why this is next:
 3. Build or validate first external consumer integrations against the frozen API.
 4. Keep workflow-specific logic outside CfHEE.
 
+Runtime portability note:
+
+- the first narrow portability slice is now in place through configurable frontend API base URL and configurable backend CORS origins
+- full containerized local/dev runtime is still not implemented
+
 ## Keep out of scope for that step
 
 - workflow orchestration inside CfHEE

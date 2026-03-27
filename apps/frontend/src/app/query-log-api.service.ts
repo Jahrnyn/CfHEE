@@ -2,6 +2,8 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
+import { getApiBaseUrl } from './runtime-config';
+
 export interface QueryLogEntry {
   id: number;
   created_at: string;
@@ -30,7 +32,7 @@ export interface QueryLogEntry {
 @Injectable({ providedIn: 'root' })
 export class QueryLogApiService {
   private readonly http = inject(HttpClient);
-  private readonly apiBaseUrl = 'http://127.0.0.1:8000';
+  private readonly apiBaseUrl = getApiBaseUrl();
 
   list(limit = 20): Observable<QueryLogEntry[]> {
     return this.http.get<QueryLogEntry[]>(`${this.apiBaseUrl}/query-logs?limit=${limit}`);

@@ -1,8 +1,25 @@
+import os
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from cfhee_backend.api.routes import router as api_router
 from cfhee_backend.persistence.database import initialize_database
+
+
+DEFAULT_CORS_ALLOW_ORIGINS = (
+    "http://localhost:4200",
+    "http://127.0.0.1:4200",
+)
+
+
+def get_allowed_origins() -> list[str]:
+    configured_origins = os.getenv("CORS_ALLOW_ORIGINS")
+    if not configured_origins:
+        return list(DEFAULT_CORS_ALLOW_ORIGINS)
+
+    origins = [origin.strip() for origin in configured_origins.split(",") if origin.strip()]
+    return origins or list(DEFAULT_CORS_ALLOW_ORIGINS)
 
 
 def create_app() -> FastAPI:
@@ -16,7 +33,7 @@ def create_app() -> FastAPI:
 
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["http://localhost:4200", "http://127.0.0.1:4200"],
+        allow_origins=get_allowed_origins(),
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],

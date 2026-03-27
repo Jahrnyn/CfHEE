@@ -30,7 +30,7 @@ Use this repo with a thin-slice mindset.
 ## Current known constraints
 
 - Windows-first local development is the active path.
-- Frontend API calls are currently pointed at `http://127.0.0.1:8000`.
+- Frontend API calls default to `http://127.0.0.1:8000`, with a small runtime override path now available.
 - `Ask Copilot` is implemented as a convenience interface; `Scope Manager` and `Settings` are still placeholder pages.
 - Retrieval and answers should remain scoped by default.
 - Workflow engines, orchestration logic, and agent loops should remain outside CfHEE.

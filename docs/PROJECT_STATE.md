@@ -77,6 +77,8 @@ Implemented in code:
 - Windows-first local bootstrap scripts:
   - `scripts/dev-up.ps1`
   - `scripts/dev-check.ps1`
+- frontend API services now use a small runtime config surface instead of hardcoding the backend base URL in code
+- backend CORS origins are now configurable through `CORS_ALLOW_ORIGINS`, while preserving localhost defaults
 - Retrieval regression guardrail:
   - fixture: `apps/backend/fixtures/retrieval_regression_cases.json`
   - runner: `apps/backend/scripts/retrieval_regression_check.py`
@@ -115,6 +117,8 @@ Verified in the local environment during the latest check:
 - `dev-check.ps1` runs successfully when invoked with `powershell.exe -ExecutionPolicy Bypass -File ...`
 - frontend production build succeeds with `npm.cmd run build`
 - backend source compiles with `python -m compileall`
+- the frontend runtime config helper keeps `http://127.0.0.1:8000` as the default API base URL when no override is provided
+- the backend CORS helper keeps the current localhost frontend origins as defaults and accepts a comma-separated `CORS_ALLOW_ORIGINS` override in code-level checks
 - retrieval endpoint accepts `top_k`, returns explicit empty results, logs query, scope, and result count, and rejects missing scope with a clear validation error when exercised against local Postgres and Chroma
 - answer endpoint returns a grounded short answer with cited chunks for matching scope, returns an explicit no-evidence state for empty retrieval, and rejects missing scope with the same scoped validation
 - Ollama is reachable locally at the default local URL and `qwen2.5:7b` is present locally in this environment
@@ -142,6 +146,14 @@ Verified in the local environment during the latest check:
 - explicit external-integration-oriented API contracts beyond the current app-driven endpoint set
 - versioned `/api/v1` answer, additional scope-helper, and query-log detail endpoints beyond the current health/capabilities/ingest/retrieval/document-inspection/query-log shell
 - containerized cross-environment runtime
+
+## Current runtime model
+
+- Postgres is required
+- backend is required
+- frontend developer workbench is required
+- Chroma local vector state is required
+- Ollama is optional and only affects the built-in grounded-answer convenience flow
 
 ## Current architectural reading
 

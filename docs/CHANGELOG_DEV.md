@@ -180,6 +180,19 @@
   - omission of retrieval diagnostics unless explicitly requested
 ## 2026-03-27
 
+- Added the first narrow runtime-portability configuration slice:
+  - frontend API services no longer hardcode the backend base URL directly in service files
+  - frontend now reads an optional runtime override from `apps/frontend/public/runtime-config.js`
+  - current localhost backend default remains `http://127.0.0.1:8000` when no override is provided
+  - backend CORS origins are now configurable through `CORS_ALLOW_ORIGINS`
+  - current localhost frontend origins remain the backend default when no override is provided
+- Clarified the runtime contract in docs:
+  - Postgres required
+  - backend required
+  - frontend required
+  - Chroma local vector state required
+  - Ollama optional convenience dependency only
+  - runtime portability/containerization is in progress, not complete
 - Updated visible frontend copy to match the current CfHEE module definition:
   - renamed the visible `Ask Copilot` label to `Ask`
   - updated the main frontend title to `CfHEE Knowledge Workbench`
