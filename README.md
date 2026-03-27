@@ -235,6 +235,12 @@ These directories hold persistent instance state and are separate from the runti
 docker compose up --build
 ```
 
+PowerShell wrapper:
+
+```powershell
+powershell.exe -ExecutionPolicy Bypass -File .\scripts\runtime-up.ps1
+```
+
 If you already have the source-based frontend or backend running locally, stop those first.
 The portable runtime uses the same host ports:
 
@@ -247,6 +253,28 @@ Portable runtime URLs:
 - frontend: `http://127.0.0.1:4200`
 - backend: `http://127.0.0.1:8000`
 - API docs: `http://127.0.0.1:8000/docs`
+
+### Stop the portable runtime
+
+```bash
+docker compose down
+```
+
+PowerShell wrapper:
+
+```powershell
+powershell.exe -ExecutionPolicy Bypass -File .\scripts\runtime-down.ps1
+```
+
+### Inspect runtime logs
+
+```bash
+docker compose logs
+docker compose logs -f
+docker compose logs backend
+docker compose logs frontend
+docker compose logs postgres
+```
 
 ### Portable runtime configuration
 
@@ -267,6 +295,24 @@ If you want different host-facing values, override Compose environment variables
 - `CFHEE_API_BASE_URL`
 - `CFHEE_CORS_ALLOW_ORIGINS`
 - `CFHEE_ANSWER_PROVIDER`
+
+Container-mode wiring:
+
+- frontend reaches backend through `runtime-config.js`
+- backend reaches Postgres through the Compose hostname `postgres`
+- Postgres data persists under `runtime-data/postgres`
+- Chroma data persists under `runtime-data/chroma`
+
+### Update the portable runtime
+
+Current minimal flow:
+
+1. Pull the latest repo changes.
+2. Keep `runtime-data/` in place.
+3. Run `docker compose up --build -d`.
+4. Check `docker compose ps` and `docker compose logs`.
+
+This updates the runtime layer without deleting the current persistent data layer.
 
 ### Ollama and the portable runtime
 
@@ -335,3 +381,4 @@ See:
 - `docs/PROJECT_STATE.md`
 - `docs/NEXT_STEPS.md`
 - `docs/DECISIONS.md`
+- `docs/RUNTIME_OPERATIONS.md`

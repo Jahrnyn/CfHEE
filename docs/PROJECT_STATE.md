@@ -77,6 +77,9 @@ Implemented in code:
 - Windows-first local bootstrap scripts:
   - `scripts/dev-up.ps1`
   - `scripts/dev-check.ps1`
+- Windows-first portable-runtime helper scripts:
+  - `scripts/runtime-up.ps1`
+  - `scripts/runtime-down.ps1`
 - frontend API services now use a small runtime config surface instead of hardcoding the backend base URL in code
 - backend CORS origins are now configurable through `CORS_ALLOW_ORIGINS`, while preserving localhost defaults
 - first portable runtime packaging slice:
@@ -113,6 +116,7 @@ Verified by code inspection:
 - the repo now contains a first portable runtime container skeleton for frontend, backend, and Postgres
 - the portable runtime now wires backend Postgres access through the Compose service name and backend Chroma persistence through an explicit mounted runtime-data path
 - the frontend portable runtime now injects its backend base URL through container-time generation of `runtime-config.js`
+- the repo now also documents runtime operations clearly through `docs/RUNTIME_OPERATIONS.md`, including start, stop, logs, data ownership, and a minimal update flow
 - query logging is implemented for retrieval-only and answer queries, including scope, result identifiers, answer text, provider used, and fallback usage
 - answer context selection is now explicit and traceable, including selected and dropped chunk IDs in `query_logs`
 - answer queries now persist simple deterministic evaluation fields in `query_logs`: `has_evidence`, `context_used_count`, `answer_length`, and `grounded_flag`
@@ -150,11 +154,14 @@ Verified in the local environment during the latest check:
 - backend and frontend container images build successfully with `docker compose build`
 - `docker compose up -d` starts Postgres, backend, and frontend containers successfully after adding `PGDATA` for the bind-mounted Postgres data directory
 - `docker ps` shows the three portable-runtime containers up with the expected published ports
+- `docker compose down` stops and removes the portable-runtime containers while leaving `runtime-data/` intact
+- `docker compose logs`, `docker compose logs backend`, `docker compose logs frontend`, and `docker compose logs postgres` are usable for runtime inspection
 - backend container logs show Uvicorn startup completed in the Compose topology after rebuilding the backend image to run against the copied source tree
 - frontend container serves its generated `runtime-config.js` over HTTP inside the container, with `apiBaseUrl` set from `CFHEE_API_BASE_URL`
 - the bind-mounted runtime data layout is active:
   - Postgres initializes under `runtime-data/postgres/pgdata`
   - Chroma writes persistent state under `runtime-data/chroma`
+- the runtime data directories remain present after a `docker compose down` + `docker compose up -d` cycle
 
 ## Not implemented yet
 
@@ -166,6 +173,7 @@ Verified in the local environment during the latest check:
 - backup tooling
 - restore tooling
 - production hardening for the portable runtime
+- migration tooling for runtime updates
 
 ## Current runtime model
 
@@ -184,6 +192,7 @@ Verified in the local environment during the latest check:
 - Chroma persistent data is bound to `runtime-data/chroma`
 - Ollama is not included in the minimum portable runtime
 - source-based local development remains valid and separate
+- runtime start/stop/log/update guidance now exists and is documented
 
 ## Current architectural reading
 

@@ -180,6 +180,25 @@
   - omission of retrieval diagnostics unless explicitly requested
 ## 2026-03-27
 
+- Added `docs/RUNTIME_OPERATIONS.md` as a narrow runtime-operations slice on top of the existing portable runtime.
+- Added minimal PowerShell runtime wrappers:
+  - `scripts/runtime-up.ps1`
+  - `scripts/runtime-down.ps1`
+- Documented the current portable-runtime operational flow without changing architecture or topology:
+  - how to start the runtime
+  - how to stop it
+  - how to inspect logs
+  - how runtime layer vs. data layer should be understood
+  - what should be backed up later
+  - what must not be deleted
+  - how to perform the current minimal rebuild/restart update flow
+- Kept this slice intentionally narrow:
+  - no Compose redesign
+  - no backup implementation
+  - no restore implementation
+  - no API changes
+  - no service-topology changes
+
 - Added the first portable runtime containerization slice:
   - `apps/backend/Dockerfile`
   - `apps/frontend/Dockerfile`

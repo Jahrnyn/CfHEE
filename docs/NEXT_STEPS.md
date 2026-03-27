@@ -48,7 +48,7 @@ Why this is next:
 ## Suggested narrow scope
 
 1. Improve the frontend against the frozen API surface.
-2. Validate and harden the first portable runtime slice without changing the public contract.
+2. Exercise the documented runtime operations flow and only then add backup and restore support.
 3. Build or validate first external consumer integrations against the frozen API.
 4. Keep workflow-specific logic outside CfHEE.
 
@@ -58,7 +58,8 @@ Runtime portability note:
 - the API surface now also includes a narrow provider-free context-build endpoint on top of existing retrieval behavior
 - the portable-instance design baseline is now documented in `docs/PORTABLE_RUNTIME.md`
 - the first containerized portable runtime slice now exists for frontend, backend, and Postgres
-- backup, restore, update flow, and production hardening are still not implemented
+- runtime start/stop/log/update guidance is now documented in `docs/RUNTIME_OPERATIONS.md`
+- backup, restore, and production hardening are still not implemented
 
 ## Keep out of scope for that step
 
@@ -69,7 +70,7 @@ Runtime portability note:
 - expanding the `/api/v1` API surface during the freeze
 - broad connector ecosystems
 - complex file-import subsystems unless an immediate integration need forces it
-- backup/restore implementation before the runtime slice itself has been exercised
+- runtime-topology changes before the current portable instance workflow has been exercised
 
 ## After that step
 
@@ -78,8 +79,7 @@ Once the frozen API surface has been exercised by real consumers, the next long-
 - keep the portable-instance model fixed before implementation drift starts
 - harden and exercise the first containerized runtime
 - separate packaged runtime from persistent instance data
-- define a simple update workflow for runtime vs. data
-- define backup and restore workflow
+- add backup and restore workflow on top of the now-documented runtime operations
 - reduce dependence on the current Windows-heavy localhost development setup
 - make the module easier to run on Linux and other environments
 - prepare for production-buildable packaging without changing the core architectural boundary

@@ -212,7 +212,24 @@ That means:
 - a later packaged runtime can be rebuilt or updated from the repo or build outputs
 - persistent runtime data should remain separate from source code checkout
 
+The current runtime-operations workflow is now documented in:
+
+- `docs/RUNTIME_OPERATIONS.md`
+
 ## Update model
+
+**Observed current repo state**
+
+The repo now has a minimal documented runtime update flow:
+
+1. pull latest repo changes
+2. keep `runtime-data/` in place
+3. rebuild and restart with `docker compose up --build -d`
+4. confirm the containers and logs
+
+This is documentation only.
+
+It is not migration tooling.
 
 **Design intent**
 
@@ -223,7 +240,7 @@ A later portable-instance update flow should follow this shape:
 3. Keep the persistent data layer intact
 4. Run any explicit migrations only when needed
 
-This document does not define the actual update commands yet.
+For the current concrete commands, use `docs/RUNTIME_OPERATIONS.md`.
 
 ## Staged implementation direction
 
@@ -245,7 +262,6 @@ Given the current repo state, the practical staged path is:
 
 ## Explicitly not implemented yet
 
-- runtime update commands
 - backup tooling
 - restore tooling
 - Ollama portable integration
