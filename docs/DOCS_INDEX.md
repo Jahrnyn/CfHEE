@@ -25,6 +25,10 @@ Defines the core domain hierarchy:
 
 Use this when working on persistence, retrieval, and scoping.
 
+### `docs/API_V1.md`
+Current public API v1 contract and freeze boundary.
+Use this when working on versioned external endpoints, request/response shapes, and what is or is not allowed during API v1 stabilization.
+
 ## Live project state docs
 
 ### `docs/PROJECT_STATE.md`
@@ -39,6 +43,18 @@ Use this to avoid scope drift.
 Chronological development log.
 Use this to understand what changed recently and what issues were observed.
 
+## Runtime docs
+
+### `docs/PORTABLE_RUNTIME.md`
+Portable runtime design and current runtime packaging model.
+Use this to understand the portable-instance concept, minimum runtime composition, persistent data layout, and what remains intentionally unimplemented.
+
+### `docs/RUNTIME_OPERATIONS.md`
+Current runtime operations guide for the existing containerized runtime.
+Use this for start/stop/log/update workflow, runtime-vs-data ownership, and what must be preserved under `runtime-data/`.
+
+## Prompting docs
+
 ### `docs/PROMPTING_GUIDE.md`
 Practical rules for working with Codex in this repository.
 Use this before writing or refining prompts.
@@ -47,21 +63,26 @@ Use this before writing or refining prompts.
 Reusable template for future Codex prompts.
 Use this to keep prompts consistent and complete.
 
-### `docs/API_V1.md` 
-Initial design for a compact, stable, reusable module API
+## Meta docs
+
+### `docs/DOCS_INDEX.md`
+Index of the documentation set.
+Use this to quickly find the right source of truth before making changes.
 
 ## Suggested reading order for AI assistants
 
 For most implementation tasks, read in this order:
 1. `AGENTS.md`
-2. `docs/PROJECT_STATE.md`
-3. `docs/NEXT_STEPS.md`
-4. `docs/ARCHITECTURE.md`
+2. `docs/ARCHITECTURE.md`
+3. `docs/PROJECT_STATE.md`
+4. `docs/NEXT_STEPS.md`
 5. `docs/DECISIONS.md`
 6. `docs/DOMAIN_MODEL.md`
-7. `docs/PROMPTING_GUIDE.md`
-8. `docs/API_V1.md` 
-9. `docs/CHANGELOG_DEV.md` if the task relates to recent work
+7. `docs/API_V1.md` if the task touches versioned external API work
+8. `docs/PORTABLE_RUNTIME.md` if the task touches runtime packaging or portable-instance design
+9. `docs/RUNTIME_OPERATIONS.md` if the task touches runtime usage, logs, start/stop flow, or data ownership
+10. `docs/PROMPTING_GUIDE.md`
+11. `docs/CHANGELOG_DEV.md` if the task relates to recent work
 
 ## Human usage note
 
@@ -70,6 +91,10 @@ If you are resuming work after a break, start with:
 - `docs/NEXT_STEPS.md`
 - `docs/CHANGELOG_DEV.md`
 
+If you are resuming runtime-related work, also read:
+- `docs/PORTABLE_RUNTIME.md`
+- `docs/RUNTIME_OPERATIONS.md`
+
 ## Authority rules
 
 When documents disagree, prefer:
@@ -77,7 +102,10 @@ When documents disagree, prefer:
 2. `docs/NEXT_STEPS.md` for current intended next step
 3. `docs/DECISIONS.md` for fixed technical decisions
 4. `docs/ARCHITECTURE.md` for long-term structure
-5. `docs/CHANGELOG_DEV.md` for recent historical context
+5. `docs/API_V1.md` for the frozen public API v1 contract
+6. `docs/PORTABLE_RUNTIME.md` for portable-runtime design and current runtime packaging intent
+7. `docs/RUNTIME_OPERATIONS.md` for current runtime usage and operational workflow
+8. `docs/CHANGELOG_DEV.md` for recent historical context
 
 ## Notes on removed docs
 
