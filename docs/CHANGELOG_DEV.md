@@ -180,6 +180,17 @@
   - omission of retrieval diagnostics unless explicitly requested
 ## 2026-03-27
 
+- Separated portable-runtime frontend/backend host ports from the source-based dev workflow.
+- Updated `docker-compose.yml` so the portable runtime now publishes:
+  - frontend on `4210`
+  - backend on `8010`
+  - Postgres still on `5432`
+- Updated the container-mode frontend runtime-config default to `http://127.0.0.1:8010`.
+- Kept the source-based dev defaults unchanged:
+  - frontend `4200`
+  - backend `8000`
+- Updated runtime docs and `README.md` to make DEV vs RUNTIME separation explicit and to explain why data may appear missing between the two environments.
+
 - Extended the read-only ops summary surface with conservative backup visibility.
 - `GET /ops/summary` now also reports:
   - expected backup root path

@@ -114,8 +114,8 @@ What this does:
 
 Default host ports:
 
-- frontend: `4200`
-- backend: `8000`
+- frontend: `4210`
+- backend: `8010`
 - Postgres: `5432`
 
 ## Stop the runtime
@@ -239,8 +239,8 @@ Safety rules:
 
 The current runtime exposes:
 
-- frontend on `http://127.0.0.1:4200`
-- backend on `http://127.0.0.1:8000`
+- frontend on `http://127.0.0.1:4210`
+- backend on `http://127.0.0.1:8010`
 - Postgres on `localhost:5432`
 
 ### Frontend to backend path
@@ -253,7 +253,7 @@ That file sets `apiBaseUrl` from:
 
 Default:
 
-- `http://127.0.0.1:8000`
+- `http://127.0.0.1:8010`
 
 ### Backend to Postgres path
 
@@ -267,8 +267,26 @@ The backend still uses `CORS_ALLOW_ORIGINS`.
 
 In the current portable runtime, Compose defaults it to:
 
-- `http://localhost:4200`
-- `http://127.0.0.1:4200`
+- `http://localhost:4210`
+- `http://127.0.0.1:4210`
+
+## Why data may appear missing between dev and runtime
+
+The portable runtime is now intentionally separated from the source-based dev workflow by host-facing frontend and backend ports:
+
+- source-based dev uses `4200` for the frontend and `8000` for the backend
+- portable runtime uses `4210` for the frontend and `8010` for the backend
+
+That means it is easier to tell which environment is currently serving the workbench and API.
+
+The current data-path difference that most often matters is Chroma persistence:
+
+- source-based local backend defaults to `apps/backend/data/chroma`
+- portable runtime backend uses `runtime-data/chroma`
+
+Postgres instance data for the portable runtime remains under `runtime-data/postgres`.
+
+If retrieval or context-building results look different, first confirm which frontend/backend port pair you are using before assuming data has been deleted.
 
 ## Update the runtime
 

@@ -139,6 +139,15 @@ Two workflows now exist side by side:
 
 The containerized runtime does not replace the current local dev workflow.
 
+### DEV vs RUNTIME
+
+Keep these workflows separate mentally:
+
+- DEV = source-based workbench on `4200` + backend on `8000`
+- RUNTIME = portable instance on `4210` + backend on `8010`
+
+The portable runtime uses its own host-facing frontend and backend ports so it is easier to tell which environment you are using.
+
 ### Postgres
 
 ```bash
@@ -252,18 +261,17 @@ PowerShell wrapper:
 powershell.exe -ExecutionPolicy Bypass -File .\scripts\runtime-up.ps1
 ```
 
-If you already have the source-based frontend or backend running locally, stop those first.
-The portable runtime uses the same host ports:
+The portable runtime uses host ports that are intentionally different from the source-based dev workflow:
 
-- `4200` for the frontend
-- `8000` for the backend
+- `4210` for the frontend
+- `8010` for the backend
 - `5432` for Postgres
 
 Portable runtime URLs:
 
-- frontend: `http://127.0.0.1:4200`
-- backend: `http://127.0.0.1:8000`
-- API docs: `http://127.0.0.1:8000/docs`
+- frontend: `http://127.0.0.1:4210`
+- backend: `http://127.0.0.1:8010`
+- API docs: `http://127.0.0.1:8010/docs`
 
 ### Stop the portable runtime
 
@@ -297,8 +305,8 @@ Compose now sets:
 
 Defaults in the portable runtime:
 
-- frontend origin: `http://127.0.0.1:4200`
-- backend base URL used by the frontend: `http://127.0.0.1:8000`
+- frontend origin: `http://127.0.0.1:4210`
+- backend base URL used by the frontend: `http://127.0.0.1:8010`
 - backend answer provider: `deterministic`
 
 If you want different host-facing values, override Compose environment variables before startup:
@@ -313,6 +321,24 @@ Container-mode wiring:
 - backend reaches Postgres through the Compose hostname `postgres`
 - Postgres data persists under `runtime-data/postgres`
 - Chroma data persists under `runtime-data/chroma`
+
+### Why data may appear missing between dev and runtime
+
+The source-based dev workflow and the portable runtime are now intentionally separated at the frontend and backend ports:
+
+- DEV frontend/backend: `4200` / `8000`
+- RUNTIME frontend/backend: `4210` / `8010`
+
+They can therefore point at different backend processes.
+
+The most important current data difference is Chroma persistence:
+
+- source-based local backend defaults to `apps/backend/data/chroma`
+- portable runtime backend uses `runtime-data/chroma`
+
+Postgres runtime data remains under `runtime-data/postgres`.
+
+If documents or retrieval results look different, first confirm which frontend/backend port pair you are using before assuming data loss.
 
 ### Update the portable runtime
 

@@ -25,6 +25,9 @@ The design intent still matters here, but this document is no longer planning-on
 - backend defaults to `DATABASE_URL=postgresql://cfhee:cfhee@localhost:5432/cfhee`
 - backend defaults Chroma persistence to `apps/backend/data/chroma`, overridable through `CHROMA_PERSIST_DIRECTORY`
 - frontend defaults to `http://127.0.0.1:8000` and can be redirected through `apps/frontend/public/runtime-config.js`
+- the portable runtime now publishes different host-facing ports than source-based dev:
+  - frontend on `4210`
+  - backend on `8010`
 - Ollama is optional in the current repo and only affects grounded-answer convenience behavior
 
 ## First implemented portable runtime slice
@@ -205,12 +208,32 @@ Both workflows should continue to exist with different purposes:
 - local dev workflow: source editing, local testing, iteration, GitHub push
 - portable runtime workflow: running a packaged instance with persistent data
 
+The current repo now also separates those workflows by host-facing frontend and backend ports so the active environment is easier to recognize.
+
 That means:
 
 - developers can still work from source in the current repo
 - code can still be pushed to GitHub normally
 - a later packaged runtime can be rebuilt or updated from the repo or build outputs
 - persistent runtime data should remain separate from source code checkout
+
+### Why data may appear missing between dev and runtime
+
+Source-based local work and the portable runtime can now be distinguished quickly by port:
+
+- source-based dev frontend/backend: `4200` / `8000`
+- portable runtime frontend/backend: `4210` / `8010`
+
+They can therefore point at different backend processes.
+
+The most important current data-path difference is Chroma persistence:
+
+- source-based local backend defaults to `apps/backend/data/chroma`
+- portable runtime backend uses `runtime-data/chroma`
+
+Postgres portable-runtime data remains under `runtime-data/postgres`.
+
+If retrieval or context-building output looks different between those environments, first confirm which port pair is active before assuming data loss.
 
 The current runtime-operations workflow is now documented in:
 

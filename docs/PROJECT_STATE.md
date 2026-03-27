@@ -93,6 +93,7 @@ Implemented in code:
   - frontend Dockerfile
   - multi-container `docker-compose.yml` for frontend, backend, and Postgres
   - explicit bind-mounted runtime data directories for Postgres and Chroma under `runtime-data/`
+  - host-facing runtime frontend/backend port separation from source-based dev through `4210` and `8010`
 - Retrieval regression guardrail:
   - fixture: `apps/backend/fixtures/retrieval_regression_cases.json`
   - runner: `apps/backend/scripts/retrieval_regression_check.py`
@@ -122,6 +123,7 @@ Verified by code inspection:
 - the repo now contains a first portable runtime container skeleton for frontend, backend, and Postgres
 - the portable runtime now wires backend Postgres access through the Compose service name and backend Chroma persistence through an explicit mounted runtime-data path
 - the frontend portable runtime now injects its backend base URL through container-time generation of `runtime-config.js`
+- the portable runtime now uses host-facing frontend/backend ports `4210` and `8010`, while the source-based dev workflow keeps `4200` and `8000`
 - the repo now also documents runtime operations clearly through `docs/RUNTIME_OPERATIONS.md`, including start, stop, logs, data ownership, and a minimal update flow
 - query logging is implemented for retrieval-only and answer queries, including scope, result identifiers, answer text, provider used, and fallback usage
 - answer context selection is now explicit and traceable, including selected and dropped chunk IDs in `query_logs`
@@ -159,11 +161,12 @@ Verified in the local environment during the latest check:
 - `docker compose config` resolves successfully for the new multi-container runtime definition
 - backend and frontend container images build successfully with `docker compose build`
 - `docker compose up -d` starts Postgres, backend, and frontend containers successfully after adding `PGDATA` for the bind-mounted Postgres data directory
-- `docker ps` shows the three portable-runtime containers up with the expected published ports
+- `docker ps` shows the three portable-runtime containers up with the expected published ports, now including runtime frontend/backend separation on `4210` and `8010`
 - `docker compose down` stops and removes the portable-runtime containers while leaving `runtime-data/` intact
 - `docker compose logs`, `docker compose logs backend`, `docker compose logs frontend`, and `docker compose logs postgres` are usable for runtime inspection
 - backend container logs show Uvicorn startup completed in the Compose topology after rebuilding the backend image to run against the copied source tree
 - frontend container serves its generated `runtime-config.js` over HTTP inside the container, with `apiBaseUrl` set from `CFHEE_API_BASE_URL`
+- the portable runtime responds on `http://127.0.0.1:4210` for the frontend and `http://127.0.0.1:8010` for the backend after the host-port separation update
 - the bind-mounted runtime data layout is active:
   - Postgres initializes under `runtime-data/postgres/pgdata`
   - Chroma writes persistent state under `runtime-data/chroma`
@@ -209,6 +212,7 @@ Verified in the local environment during the latest check:
 - Chroma persistent data is bound to `runtime-data/chroma`
 - Ollama is not included in the minimum portable runtime
 - source-based local development remains valid and separate
+- portable runtime frontend/backend host ports are now intentionally separated from source-based dev
 - runtime start/stop/log/update guidance now exists and is documented
 - stopped-runtime backup and restore helpers now exist for the current data layout
 - backup and restore remain intentionally conservative and limited to full-instance data replacement
