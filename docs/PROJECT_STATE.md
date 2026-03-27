@@ -90,7 +90,7 @@ Verified by code inspection:
 - manual ingest is implemented end to end in backend and frontend code
 - document listing and chunk inspection are implemented in backend and frontend code
 - scoped retrieval is implemented in backend and frontend code
-- the first versioned external API ingest, retrieval, document-inspection, and query-log inspection shell exists under `/api/v1` with `GET /api/v1/health`, `GET /api/v1/capabilities`, `GET /api/v1/scopes/values`, `POST /api/v1/documents`, `POST /api/v1/retrieval/query`, `GET /api/v1/documents`, `GET /api/v1/documents/{document_id}`, `GET /api/v1/documents/{document_id}/chunks`, and `GET /api/v1/query-logs`
+- the first versioned external API ingest, retrieval, context-build, document-inspection, and query-log inspection shell exists under `/api/v1` with `GET /api/v1/health`, `GET /api/v1/capabilities`, `GET /api/v1/scopes/values`, `POST /api/v1/documents`, `POST /api/v1/retrieval/query`, `POST /api/v1/context/build`, `GET /api/v1/documents`, `GET /api/v1/documents/{document_id}`, `GET /api/v1/documents/{document_id}/chunks`, and `GET /api/v1/query-logs`
 - the v1 ingest slice now uses a nested public `scope` object and translates that request into the existing internal document-ingest contract
 - the shared public v1 `scope` model now applies conservative normalization and hierarchy validation before document and retrieval translation handlers run
 - the v1 document-create request accepts an optional `metadata` object, which is currently ignored by the backend translation layer
