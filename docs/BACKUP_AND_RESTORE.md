@@ -39,6 +39,12 @@ It does not add:
 - backup and restore helper scripts now exist:
   - `scripts/runtime-backup.ps1`
   - `scripts/runtime-restore.ps1`
+- the read-only ops summary now also exposes conservative backup visibility for the default `backups/` location:
+  - expected backup root path
+  - whether that location exists
+  - discovered backup count
+  - latest backup name
+  - latest manifest/timestamp visibility when safely inferable
 
 ## Backup scope
 
@@ -182,6 +188,7 @@ That means:
 - source code checkout is not the backup target for instance preservation
 - persistent instance data is the backup target
 - the runtime layer can later be rebuilt or refreshed without redefining what instance data must be preserved
+- the running app can now show simple read-only backup-location visibility, but backup creation and restore remain external helper-driven operations
 
 ## Restore assumptions
 
@@ -229,3 +236,4 @@ That follow-up should stay narrow:
 
 - backup validation
 - restore safety automation
+- backup trigger or restore trigger from the running app

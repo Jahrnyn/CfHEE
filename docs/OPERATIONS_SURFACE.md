@@ -28,6 +28,7 @@ It does not add:
 - the previous `Scope Manager` and `Settings` placeholder views are no longer part of the workbench
 - the frontend now exposes a first read-only `Operations / Admin` page that consumes:
   - `GET /ops/summary`
+  - runtime info, config summary, storage/path visibility, and read-only backup visibility
 - the backend route layout currently focuses on:
   - system status
   - document ingest and inspection
@@ -46,6 +47,7 @@ It does not add:
 - backup and restore currently follow a conservative stopped-runtime model
 - the backend now exposes a narrow read-only ops summary route at:
   - `GET /ops/summary`
+  - including conservative backup-location visibility and latest-backup summary facts
 
 ## Design goal
 
@@ -83,6 +85,7 @@ The first implemented backend and frontend slices now cover a small subset of th
 - runtime info
 - config summary
 - storage/path visibility
+- backup visibility
 - query-log inspection
 - backup trigger
 - restore preparation and guarded restore planning
@@ -105,6 +108,12 @@ The first implemented backend and frontend slices now cover a small subset of th
   - whether those directories are visible and writable from the current runtime
 - **query-log inspection**
   - this already conceptually fits the workbench and mostly exists through current backend routes
+- **backup visibility**
+  - expected backup root
+  - whether the backup location exists
+  - backup count
+  - latest backup name
+  - latest manifest/timestamp visibility when safely inferable
 - **backup trigger**
   - later, a running app may be able to trigger a backend-managed backup action if that action can be performed safely inside the app boundary
 - **restore preparation and guarded restore planning**
@@ -279,6 +288,7 @@ Practical first contents:
 - runtime info
 - config summary
 - storage/path visibility
+- read-only backup summary
 - explicit statement that runtime lifecycle remains external
 
 ## Summary
@@ -288,7 +298,7 @@ Practical first contents:
 - CfHEE already has a developer workbench frontend, a first read-only Operations/Admin page, and a small runtime-helper script set
 - the backend already exposes system, retrieval, document, scope, context, query-log, and read-only ops-summary routes
 - runtime lifecycle remains host-managed
-- backup and restore are currently conservative script-driven operations
+- backup and restore are currently conservative script-driven operations, with read-only backup visibility now exposed through the app
 
 **Design intent**
 

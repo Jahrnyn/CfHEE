@@ -41,6 +41,15 @@ export interface OpsSummaryResponse {
     runtime_data_postgres: OpsPathVisibilitySummary;
     runtime_data_chroma: OpsPathVisibilitySummary;
   };
+  backup_summary: {
+    expected_backup_root: string;
+    backup_root_visible_to_runtime: boolean;
+    backup_root_exists: boolean;
+    discovered_backup_count: number;
+    latest_backup_name?: string;
+    latest_backup_created_at_utc?: string;
+    latest_backup_has_manifest?: boolean;
+  };
   notes: string[];
 }
 

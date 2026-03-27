@@ -180,6 +180,21 @@
   - omission of retrieval diagnostics unless explicitly requested
 ## 2026-03-27
 
+- Extended the read-only ops summary surface with conservative backup visibility.
+- `GET /ops/summary` now also reports:
+  - expected backup root path
+  - whether the backup location exists
+  - number of discovered backups
+  - latest backup directory name when present
+  - latest backup timestamp from `manifest.json` when safely inferable
+  - whether the latest backup manifest is present
+- Updated the frontend `Operations / Admin` page to render a read-only backup summary section on top of that backend data.
+- Kept the slice intentionally narrow:
+  - no backup trigger
+  - no restore trigger
+  - no delete action
+  - no backup validation beyond simple file-system visibility checks
+
 - Fixed the visual inconsistency on the frontend `Operations / Admin` page where the storage/path visibility tiles were still rendering with a light card background.
 - Added a minimal shared frontend dark-surface styling utility:
   - `surface-panel`

@@ -103,6 +103,49 @@ import { OpsPathVisibilitySummary, OpsSummaryApiService, OpsSummaryResponse } fr
       </section>
 
       <section class="panel panel-secondary surface-panel" *ngIf="summary">
+        <p class="card-label">Backups</p>
+        <h3>Backup summary</h3>
+
+        <div class="section-grid">
+          <section class="card surface-card">
+            <h4>Backup location</h4>
+            <p class="path">{{ summary.backup_summary.expected_backup_root }}</p>
+            <p class="meta">
+              {{ formatBackupRootSummary() }}
+            </p>
+          </section>
+
+          <section class="card surface-card">
+            <h4>Discovered backups</h4>
+            <p class="metric">{{ summary.backup_summary.discovered_backup_count }}</p>
+            <p class="meta" *ngIf="summary.backup_summary.discovered_backup_count === 0">
+              No backup directories were discovered in the expected backup root.
+            </p>
+            <p class="meta" *ngIf="summary.backup_summary.discovered_backup_count > 0">
+              Latest backup:
+              {{ summary.backup_summary.latest_backup_name || 'Unknown backup name' }}
+            </p>
+          </section>
+
+          <section class="card surface-card">
+            <h4>Latest backup details</h4>
+            <p class="meta">
+              <strong>Name:</strong>
+              {{ summary.backup_summary.latest_backup_name || 'No backups discovered' }}
+            </p>
+            <p class="meta">
+              <strong>Manifest:</strong>
+              {{ formatManifestPresence(summary.backup_summary.latest_backup_has_manifest) }}
+            </p>
+            <p class="meta">
+              <strong>Timestamp:</strong>
+              {{ summary.backup_summary.latest_backup_created_at_utc || 'Not inferable safely from the current backup contents' }}
+            </p>
+          </section>
+        </div>
+      </section>
+
+      <section class="panel panel-secondary surface-panel" *ngIf="summary">
         <p class="card-label">Notes</p>
         <h3>Operational boundaries</h3>
         <ul class="list">
@@ -153,7 +196,8 @@ import { OpsPathVisibilitySummary, OpsSummaryApiService, OpsSummaryResponse } fr
       .intro,
       .meta,
       .path,
-      .status {
+      .status,
+      .metric {
         color: #3f3f46;
         line-height: 1.6;
       }
@@ -212,6 +256,13 @@ import { OpsPathVisibilitySummary, OpsSummaryApiService, OpsSummaryResponse } fr
 
       .meta {
         margin: 8px 0 0;
+      }
+
+      .metric {
+        margin: 8px 0 0;
+        font-size: 2rem;
+        font-weight: 700;
+        line-height: 1.2;
       }
 
       .meta-block {
@@ -299,5 +350,27 @@ export class OperationsPageComponent implements OnInit {
     }
 
     return parts.join(' | ');
+  }
+
+  protected formatBackupRootSummary(): string {
+    if (!this.summary) {
+      return '';
+    }
+
+    const backupSummary = this.summary.backup_summary;
+    const parts = [
+      backupSummary.backup_root_visible_to_runtime ? 'Visible to runtime' : 'Not visible to runtime',
+      backupSummary.backup_root_exists ? 'Exists' : 'Missing'
+    ];
+
+    return parts.join(' | ');
+  }
+
+  protected formatManifestPresence(hasManifest?: boolean): string {
+    if (hasManifest === undefined) {
+      return 'Not applicable';
+    }
+
+    return hasManifest ? 'Present' : 'Missing';
   }
 }

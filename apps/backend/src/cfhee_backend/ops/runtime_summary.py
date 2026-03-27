@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import json
 from pathlib import Path
 from typing import Literal
 from urllib.parse import urlparse
@@ -53,11 +54,22 @@ class StorageVisibilitySummary(BaseModel):
     runtime_data_chroma: PathVisibilitySummary
 
 
+class BackupSummary(BaseModel):
+    expected_backup_root: str
+    backup_root_visible_to_runtime: bool
+    backup_root_exists: bool
+    discovered_backup_count: int
+    latest_backup_name: str | None = None
+    latest_backup_created_at_utc: str | None = None
+    latest_backup_has_manifest: bool | None = None
+
+
 class OpsSummaryResponse(BaseModel):
     status: str
     runtime_info: RuntimeInfoSummary
     config_summary: ConfigSummary
     storage_visibility: StorageVisibilitySummary
+    backup_summary: BackupSummary
     notes: list[str]
 
 
@@ -91,9 +103,11 @@ def build_ops_summary() -> OpsSummaryResponse:
             runtime_data_postgres=_summarize_path(_get_repo_root() / "runtime-data" / "postgres"),
             runtime_data_chroma=_summarize_path(_get_repo_root() / "runtime-data" / "chroma"),
         ),
+        backup_summary=_summarize_backups(_get_repo_root() / "backups"),
         notes=[
             "This surface is read-only and reports conservative app-visible runtime facts only.",
             "Runtime start, stop, rebuild, and other host lifecycle operations remain external.",
+            "Backup visibility here is read-only only. Backup creation and restore remain external helper-driven operations.",
             "Final destructive restore cutover remains external while the stopped-runtime restore model is in place.",
         ],
     )
@@ -159,3 +173,47 @@ def _summarize_path(path: Path) -> PathVisibilitySummary:
         exists=exists,
         writable=os.access(path, os.W_OK) if exists and is_directory else None,
     )
+
+
+def _summarize_backups(backup_root: Path) -> BackupSummary:
+    root_exists = backup_root.exists() and backup_root.is_dir()
+    backup_entries = _discover_backups(backup_root) if root_exists else []
+    latest_backup = backup_entries[-1] if backup_entries else None
+
+    latest_backup_name = latest_backup.name if latest_backup else None
+    latest_backup_has_manifest = None
+    latest_backup_created_at_utc = None
+
+    if latest_backup and latest_backup.is_dir():
+        manifest_path = latest_backup / "manifest.json"
+        latest_backup_has_manifest = manifest_path.exists()
+        latest_backup_created_at_utc = _read_backup_manifest_timestamp(manifest_path) if manifest_path.exists() else None
+
+    return BackupSummary(
+        expected_backup_root=str(backup_root),
+        backup_root_visible_to_runtime=root_exists,
+        backup_root_exists=root_exists,
+        discovered_backup_count=len(backup_entries),
+        latest_backup_name=latest_backup_name,
+        latest_backup_created_at_utc=latest_backup_created_at_utc,
+        latest_backup_has_manifest=latest_backup_has_manifest,
+    )
+
+
+def _discover_backups(backup_root: Path) -> list[Path]:
+    backups: list[Path] = []
+    for child in backup_root.iterdir():
+        if child.name.startswith("cfhee-backup-") and child.is_dir():
+            backups.append(child)
+
+    return sorted(backups, key=lambda path: path.name)
+
+
+def _read_backup_manifest_timestamp(manifest_path: Path) -> str | None:
+    try:
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        return None
+
+    created_at_utc = manifest.get("created_at_utc")
+    return created_at_utc if isinstance(created_at_utc, str) and created_at_utc.strip() else None
