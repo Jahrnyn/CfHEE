@@ -63,7 +63,7 @@ Implemented in code:
 - `Ask` keeps a clean minimal user-facing UI for scoped retrieval and grounded answers
 - FastAPI backend with `GET /`, `GET /health`, `POST /documents`, `GET /documents`, `GET /documents/{id}/chunks`, `POST /retrieval/query`, `POST /answer/query`, and `GET /query-logs`
 - FastAPI backend also exposes `GET /scope-values` for lightweight manual-ingest scope reuse
-- FastAPI backend now also exposes the first versioned external API shell with `GET /api/v1/health`, `GET /api/v1/capabilities`, `GET /api/v1/scopes/values`, `POST /api/v1/documents`, `POST /api/v1/retrieval/query`, `GET /api/v1/documents`, `GET /api/v1/documents/{document_id}`, `GET /api/v1/documents/{document_id}/chunks`, and `GET /api/v1/query-logs`
+- FastAPI backend now also exposes the first versioned external API shell with `GET /api/v1/health`, `GET /api/v1/capabilities`, `GET /api/v1/scopes/values`, `POST /api/v1/documents`, `POST /api/v1/retrieval/query`, `POST /api/v1/context/build`, `GET /api/v1/documents`, `GET /api/v1/documents/{document_id}`, `GET /api/v1/documents/{document_id}/chunks`, and `GET /api/v1/query-logs`
 - Retrieval-to-answer handoff now uses an explicit context builder with deterministic ordering, conservative dedupe, and an answer-context limit
 - Postgres schema for workspaces, domains, projects, clients, modules, documents, and chunks
 - Document ingest flow that:
@@ -96,6 +96,7 @@ Verified by code inspection:
 - the v1 document-create request accepts an optional `metadata` object, which is currently ignored by the backend translation layer
 - the v1 retrieval slice now uses the same nested public `scope` object and translates that request into the existing internal retrieval contract
 - the v1 retrieval response adapts current retrieval results into a public contract and omits diagnostics unless they are explicitly requested
+- the v1 context-build slice now exposes provider-free retrieval-derived context preparation with deterministic chunk selection, formatted context text, selected chunks, dropped chunk IDs, and optional retrieval diagnostics
 - the v1 document inspection slice now exposes a scoped list envelope plus factual detail and chunk-envelope responses on top of the existing stored document and chunk data
 - the v1 query-log slice now exposes a conservative developer-oriented list envelope for inspectable stored traces, with limit, type, and scope filters mapped onto persisted query-log fields and `workspace` + `domain` required together when scope filtering is used
 - retrieval responses now include explicit scope, chunk and document identifiers, distance, and similarity score

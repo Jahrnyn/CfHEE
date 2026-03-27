@@ -1,5 +1,6 @@
 from fastapi import APIRouter
 
+from cfhee_backend.api.v1.context_routes import router as context_router_v1
 from cfhee_backend.api.v1.document_routes import router as document_router_v1
 from cfhee_backend.api.v1.models import ApiV1CapabilitiesResponse, ApiV1HealthResponse, CapabilitiesFlags
 from cfhee_backend.api.v1.query_log_routes import router as query_log_router_v1
@@ -10,6 +11,7 @@ router = APIRouter(prefix="/api/v1", tags=["api-v1"])
 router.include_router(scope_router_v1)
 router.include_router(document_router_v1)
 router.include_router(retrieval_router_v1)
+router.include_router(context_router_v1)
 router.include_router(query_log_router_v1)
 
 

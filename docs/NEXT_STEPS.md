@@ -55,6 +55,7 @@ Why this is next:
 Runtime portability note:
 
 - the first narrow portability slice is now in place through configurable frontend API base URL and configurable backend CORS origins
+- the API surface now also includes a narrow provider-free context-build endpoint on top of existing retrieval behavior
 - full containerized local/dev runtime is still not implemented
 
 ## Keep out of scope for that step

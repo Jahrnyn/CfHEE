@@ -155,6 +155,42 @@ class RetrievalQueryResponseV1(BaseModel):
     diagnostics: RetrievalDiagnosticsV1 | None = None
 
 
+class ContextBuildRequestV1(BaseModel):
+    query: str
+    scope: ScopeRef
+    top_k: int = Field(default=5, ge=1, le=20)
+    max_context_chunks: int = Field(default=4, ge=1, le=20)
+    include_diagnostics: bool = False
+
+
+class ContextChunkV1(BaseModel):
+    document_id: int
+    chunk_id: int
+    chunk_index: int
+    title: str
+    source_type: str
+    similarity_score: float | None
+    distance: float | None
+    text: str
+
+
+class ContextStatsV1(BaseModel):
+    char_count: int
+    chunk_count: int
+
+
+class ContextBuildResponseV1(BaseModel):
+    status: str
+    query: str
+    active_scope: ScopeRef
+    context_text: str
+    selected_chunks: list[ContextChunkV1]
+    selected_chunk_count: int
+    dropped_chunk_ids: list[int]
+    context_stats: ContextStatsV1
+    diagnostics: RetrievalDiagnosticsV1 | None = None
+
+
 class QueryLogListItemV1(BaseModel):
     query_log_id: int
     type: Literal["retrieval", "answer"]

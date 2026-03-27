@@ -73,17 +73,18 @@ The purpose of CfHEE API v1 is to:
 
 The key statement:
 
-> **CfHEE API v1 = scoped ingest + scoped retrieval + grounded access + inspectability**
+> **CfHEE API v1 = scoped ingest + scoped retrieval + context building + grounded access + inspectability**
 
 ---
 
 ## What is in v1
 
-Four capabilities only:
+Five capabilities only:
 
 - Scope-aware document ingest
 - Scope-aware document and chunk inspection
 - Scope-aware retrieval
+- Retrieval-derived context building
 - Scoped grounded answer as a convenience endpoint
 
 Plus one supplementary capability:
@@ -344,6 +345,7 @@ Document metadata and raw preview.
 
 ```
 POST /api/v1/retrieval/query
+POST /api/v1/context/build
 ```
 
 The most important external endpoint. Retrieval is the core value path.
@@ -415,7 +417,80 @@ When `include_diagnostics` is `false`, the `diagnostics` field is omitted from t
 
 ---
 
-### 5. Answer
+### 5. Context Build
+
+```
+POST /api/v1/context/build
+```
+
+This endpoint prepares provider-free, retrieval-derived context for external consumers.
+It does not generate an answer and does not add prompt instructions.
+
+**Request**
+
+```json
+{
+  "query": "Where is refund handling described in avizo logic?",
+  "scope": {
+    "workspace": "Internal",
+    "domain": "Business Central",
+    "project": "Finance Customization",
+    "client": "CustomerA",
+    "module": "Avizo"
+  },
+  "top_k": 5,
+  "max_context_chunks": 4,
+  "include_diagnostics": false
+}
+```
+
+**Response**
+
+```json
+{
+  "status": "ok",
+  "query": "Where is refund handling described in avizo logic?",
+  "active_scope": {
+    "workspace": "Internal",
+    "domain": "Business Central",
+    "project": "Finance Customization",
+    "client": "CustomerA",
+    "module": "Avizo"
+  },
+  "context_text": "[Chunk 1]\n...",
+  "selected_chunks": [
+    {
+      "document_id": 142,
+      "chunk_id": 991,
+      "chunk_index": 0,
+      "title": "Rydoo refund avizo logic extension",
+      "source_type": "jira_ticket",
+      "similarity_score": 0.88,
+      "distance": 0.12,
+      "text": "...."
+    }
+  ],
+  "selected_chunk_count": 1,
+  "dropped_chunk_ids": [],
+  "context_stats": {
+    "char_count": 180,
+    "chunk_count": 1
+  }
+}
+```
+
+Behavior in the current slice:
+
+- reuses scoped retrieval and current reranking behavior
+- reuses the current deterministic context-selection and dedupe logic from the answer flow
+- applies a chunk-count limit through `max_context_chunks`
+- omits diagnostics unless `include_diagnostics=true`
+- does not support `max_context_chars` yet
+- does not log a separate context-build trace yet
+
+---
+
+### 6. Answer
 
 ```
 POST /api/v1/answer/query
@@ -479,7 +554,7 @@ External apps can choose between using retrieval directly or using this built-in
 
 ---
 
-### 6. Query Logs / Traces
+### 7. Query Logs / Traces
 
 ```
 GET /api/v1/query-logs

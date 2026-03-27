@@ -180,6 +180,13 @@
   - omission of retrieval diagnostics unless explicitly requested
 ## 2026-03-27
 
+- Added the first public provider-free context-building API slice:
+  - `POST /api/v1/context/build`
+  - reuses existing scoped retrieval execution and current reranking behavior
+  - reuses the current deterministic context-selection and dedupe logic from the answer flow
+  - returns `context_text`, selected chunks, dropped chunk IDs, simple context stats, and optional retrieval diagnostics
+  - does not invoke any LLM/provider logic
+  - does not create a separate context-build query-log type in this slice
 - Added the first narrow runtime-portability configuration slice:
   - frontend API services no longer hardcode the backend base URL directly in service files
   - frontend now reads an optional runtime override from `apps/frontend/public/runtime-config.js`
