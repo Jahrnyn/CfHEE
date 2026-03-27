@@ -180,6 +180,18 @@
   - omission of retrieval diagnostics unless explicitly requested
 ## 2026-03-27
 
+- Added `docs/OPERATIONS_SURFACE.md` as a narrow design slice for future Operations / Admin workbench behavior.
+- Documented a practical split between:
+  - safe future app-managed operations
+  - host/runtime-managed operations that should remain outside the frontend
+- Classified the current helper scripts:
+  - `runtime-up.ps1` and `runtime-down.ps1` stay host/runtime-only
+  - `runtime-backup.ps1` and `runtime-restore.ps1` are partial candidates for later backend-owned reusable logic
+- Documented the intended evolution path:
+  - a future backend internal ops layer should own reusable app-bound maintenance logic
+  - PowerShell scripts should remain thin wrappers where host-side execution is still required
+  - destructive final restore cutover should remain external while the stopped-runtime model is in place
+
 - Added first conservative portable-runtime backup and restore helpers:
   - `scripts/runtime-backup.ps1`
   - `scripts/runtime-restore.ps1`

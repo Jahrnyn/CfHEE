@@ -57,6 +57,10 @@ Use this for start/stop/log/update workflow, runtime-vs-data ownership, and what
 Current backup and restore model for the portable runtime.
 Use this for backup scope, restore safety rules, artifact shape, and what the helper scripts do or do not guarantee.
 
+### `docs/OPERATIONS_SURFACE.md`
+Operations/Admin surface design for future app-managed maintenance behavior.
+Use this to understand what should later be manageable from the running app, what should remain host-side, and how helper scripts should evolve.
+
 ## Prompting docs
 
 ### `docs/PROMPTING_GUIDE.md`
@@ -86,8 +90,9 @@ For most implementation tasks, read in this order:
 8. `docs/PORTABLE_RUNTIME.md` if the task touches runtime packaging or portable-instance design
 9. `docs/RUNTIME_OPERATIONS.md` if the task touches runtime usage, logs, start/stop flow, or data ownership
 10. `docs/BACKUP_AND_RESTORE.md` if the task touches runtime-data backup, restore, or safety rules
-11. `docs/PROMPTING_GUIDE.md`
-12. `docs/CHANGELOG_DEV.md` if the task relates to recent work
+11. `docs/OPERATIONS_SURFACE.md` if the task touches future admin/operations UI or helper-script evolution
+12. `docs/PROMPTING_GUIDE.md`
+13. `docs/CHANGELOG_DEV.md` if the task relates to recent work
 
 ## Human usage note
 
@@ -100,6 +105,7 @@ If you are resuming runtime-related work, also read:
 - `docs/PORTABLE_RUNTIME.md`
 - `docs/RUNTIME_OPERATIONS.md`
 - `docs/BACKUP_AND_RESTORE.md`
+- `docs/OPERATIONS_SURFACE.md`
 
 ## Authority rules
 
@@ -112,7 +118,8 @@ When documents disagree, prefer:
 6. `docs/PORTABLE_RUNTIME.md` for portable-runtime design and current runtime packaging intent
 7. `docs/RUNTIME_OPERATIONS.md` for current runtime usage and operational workflow
 8. `docs/BACKUP_AND_RESTORE.md` for current backup/restore rules and helper-script behavior
-9. `docs/CHANGELOG_DEV.md` for recent historical context
+9. `docs/OPERATIONS_SURFACE.md` for future app-managed operations scope and helper-script evolution intent
+10. `docs/CHANGELOG_DEV.md` for recent historical context
 
 ## Notes on removed docs
 
