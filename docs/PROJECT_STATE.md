@@ -79,6 +79,11 @@ Implemented in code:
   - `scripts/dev-check.ps1`
 - frontend API services now use a small runtime config surface instead of hardcoding the backend base URL in code
 - backend CORS origins are now configurable through `CORS_ALLOW_ORIGINS`, while preserving localhost defaults
+- first portable runtime packaging slice:
+  - backend Dockerfile
+  - frontend Dockerfile
+  - multi-container `docker-compose.yml` for frontend, backend, and Postgres
+  - explicit bind-mounted runtime data directories for Postgres and Chroma under `runtime-data/`
 - Retrieval regression guardrail:
   - fixture: `apps/backend/fixtures/retrieval_regression_cases.json`
   - runner: `apps/backend/scripts/retrieval_regression_check.py`
@@ -105,6 +110,9 @@ Verified by code inspection:
 - Ollama grounded-answer prompting is now built through an explicit prompt builder with conservative instructions and deterministic context formatting
 - vector-store abstraction exists and is currently backed by Chroma
 - embedding abstraction exists and is currently backed by a local hash embedding service
+- the repo now contains a first portable runtime container skeleton for frontend, backend, and Postgres
+- the portable runtime now wires backend Postgres access through the Compose service name and backend Chroma persistence through an explicit mounted runtime-data path
+- the frontend portable runtime now injects its backend base URL through container-time generation of `runtime-config.js`
 - query logging is implemented for retrieval-only and answer queries, including scope, result identifiers, answer text, provider used, and fallback usage
 - answer context selection is now explicit and traceable, including selected and dropped chunk IDs in `query_logs`
 - answer queries now persist simple deterministic evaluation fields in `query_logs`: `has_evidence`, `context_used_count`, `answer_length`, and `grounded_flag`
@@ -138,6 +146,15 @@ Verified in the local environment during the latest check:
 - stored scope values can now be queried through `GET /scope-values`, reused in the manual-ingest form, and matched conservatively against trim, casing, and spacing variants during document creation when exercised locally
 - `POST /api/v1/retrieval/query` omits the `diagnostics` field unless `include_diagnostics=true`, while still returning diagnostics when explicitly requested in local in-process checks
 - invalid nested v1 scope shapes and invalid `top_k` values now fail with request validation in local in-process checks instead of reaching retrieval execution
+- `docker compose config` resolves successfully for the new multi-container runtime definition
+- backend and frontend container images build successfully with `docker compose build`
+- `docker compose up -d` starts Postgres, backend, and frontend containers successfully after adding `PGDATA` for the bind-mounted Postgres data directory
+- `docker ps` shows the three portable-runtime containers up with the expected published ports
+- backend container logs show Uvicorn startup completed in the Compose topology after rebuilding the backend image to run against the copied source tree
+- frontend container serves its generated `runtime-config.js` over HTTP inside the container, with `apiBaseUrl` set from `CFHEE_API_BASE_URL`
+- the bind-mounted runtime data layout is active:
+  - Postgres initializes under `runtime-data/postgres/pgdata`
+  - Chroma writes persistent state under `runtime-data/chroma`
 
 ## Not implemented yet
 
@@ -146,7 +163,9 @@ Verified in the local environment during the latest check:
 - bulk file import, connectors, and OCR
 - explicit external-integration-oriented API contracts beyond the current app-driven endpoint set
 - versioned `/api/v1` answer, additional scope-helper, and query-log detail endpoints beyond the current health/capabilities/ingest/retrieval/document-inspection/query-log shell
-- containerized cross-environment runtime
+- backup tooling
+- restore tooling
+- production hardening for the portable runtime
 
 ## Current runtime model
 
@@ -155,6 +174,16 @@ Verified in the local environment during the latest check:
 - frontend developer workbench is required
 - Chroma local vector state is required
 - Ollama is optional and only affects the built-in grounded-answer convenience flow
+
+## Current portable runtime model
+
+- frontend container is implemented
+- backend container is implemented
+- Postgres container is implemented
+- Postgres persistent data is bound to `runtime-data/postgres`
+- Chroma persistent data is bound to `runtime-data/chroma`
+- Ollama is not included in the minimum portable runtime
+- source-based local development remains valid and separate
 
 ## Current architectural reading
 

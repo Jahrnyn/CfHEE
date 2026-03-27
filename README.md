@@ -119,6 +119,13 @@ Minimum runtime roles today:
 - Chroma local vector state: required
 - Ollama: optional convenience dependency for grounded answers only
 
+Two workflows now exist side by side:
+
+- source-based local development
+- portable runtime from containers
+
+The containerized runtime does not replace the current local dev workflow.
+
 ### Postgres
 
 ```bash
@@ -193,6 +200,79 @@ Chroma uses local persistent filesystem state by default.
 
 - default path: `apps/backend/data/chroma`
 - override with `CHROMA_PERSIST_DIRECTORY`
+
+---
+
+## Run the portable runtime
+
+The first portable runtime slice now includes:
+
+- frontend container
+- backend container
+- Postgres container
+- explicit persistent state directories for Postgres and Chroma
+
+It does not include:
+
+- Ollama
+- backup tooling
+- restore tooling
+- reverse proxy or TLS
+- production hardening
+
+### Persistent runtime data layout
+
+The portable runtime uses visible bind-mounted directories:
+
+- `runtime-data/postgres`
+- `runtime-data/chroma`
+
+These directories hold persistent instance state and are separate from the runtime packaging itself.
+
+### Start the portable runtime
+
+```bash
+docker compose up --build
+```
+
+If you already have the source-based frontend or backend running locally, stop those first.
+The portable runtime uses the same host ports:
+
+- `4200` for the frontend
+- `8000` for the backend
+- `5432` for Postgres
+
+Portable runtime URLs:
+
+- frontend: `http://127.0.0.1:4200`
+- backend: `http://127.0.0.1:8000`
+- API docs: `http://127.0.0.1:8000/docs`
+
+### Portable runtime configuration
+
+Compose now sets:
+
+- backend `DATABASE_URL` to the Compose Postgres service
+- backend `CHROMA_PERSIST_DIRECTORY` to `/app/data/chroma`
+- frontend runtime `apiBaseUrl` through `CFHEE_API_BASE_URL`
+
+Defaults in the portable runtime:
+
+- frontend origin: `http://127.0.0.1:4200`
+- backend base URL used by the frontend: `http://127.0.0.1:8000`
+- backend answer provider: `deterministic`
+
+If you want different host-facing values, override Compose environment variables before startup:
+
+- `CFHEE_API_BASE_URL`
+- `CFHEE_CORS_ALLOW_ORIGINS`
+- `CFHEE_ANSWER_PROVIDER`
+
+### Ollama and the portable runtime
+
+Ollama is still outside the minimum portable runtime.
+
+The containerized slice supports storage, retrieval, inspection, and deterministic grounded answers without Ollama.
 
 ---
 

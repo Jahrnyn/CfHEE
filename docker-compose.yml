@@ -7,11 +7,44 @@ services:
       POSTGRES_DB: cfhee
       POSTGRES_USER: cfhee
       POSTGRES_PASSWORD: cfhee
+      PGDATA: /var/lib/postgresql/data/pgdata
     ports:
       - "5432:5432"
     volumes:
       - ./apps/backend/sql:/docker-entrypoint-initdb.d:ro
-      - postgres-data:/var/lib/postgresql/data
+      - ./runtime-data/postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cfhee -d cfhee"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
-volumes:
-  postgres-data:
+  backend:
+    build:
+      context: ./apps/backend
+    container_name: cfhee-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://cfhee:cfhee@postgres:5432/cfhee
+      CHROMA_PERSIST_DIRECTORY: /app/data/chroma
+      CORS_ALLOW_ORIGINS: ${CFHEE_CORS_ALLOW_ORIGINS:-http://localhost:4200,http://127.0.0.1:4200}
+      ANSWER_PROVIDER: ${CFHEE_ANSWER_PROVIDER:-deterministic}
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./runtime-data/chroma:/app/data/chroma
+
+  frontend:
+    build:
+      context: ./apps/frontend
+    container_name: cfhee-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    environment:
+      CFHEE_API_BASE_URL: ${CFHEE_API_BASE_URL:-http://127.0.0.1:8000}
+    ports:
+      - "4200:4200"

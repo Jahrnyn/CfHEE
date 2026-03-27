@@ -180,6 +180,28 @@
   - omission of retrieval diagnostics unless explicitly requested
 ## 2026-03-27
 
+- Added the first portable runtime containerization slice:
+  - `apps/backend/Dockerfile`
+  - `apps/frontend/Dockerfile`
+  - multi-container `docker-compose.yml` for frontend, backend, and Postgres
+- Added a visible bind-mounted persistent runtime data layout:
+  - `runtime-data/postgres`
+  - `runtime-data/chroma`
+- Kept the slice intentionally narrow:
+  - no Ollama service in Compose
+  - no API contract changes
+  - no backend business-logic changes
+  - no frontend redesign
+- Wired the portable runtime configuration with explicit boring defaults:
+  - backend `DATABASE_URL` now points to the Compose Postgres service in the container topology
+  - backend Chroma persistence is mounted at `/app/data/chroma`
+  - frontend runtime writes `runtime-config.js` from `CFHEE_API_BASE_URL` at container startup
+  - portable-runtime answer provider defaults to `deterministic`, keeping Ollama outside the minimum runtime
+- Updated runtime docs to distinguish:
+  - source-based local development workflow
+  - portable container runtime workflow
+  - implemented portable runtime support vs. still-missing backup/restore/update tooling
+
 - Added `docs/PORTABLE_RUNTIME.md` as a narrow design slice for future portable runtime packaging.
 - Documented the intended portable-instance model without changing runtime behavior:
   - minimum portable runtime should require frontend, backend, Postgres, and Chroma persistent state

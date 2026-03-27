@@ -4,18 +4,9 @@ Last reviewed: 2026-03-27
 
 ## Purpose
 
-This document defines the intended portable runtime model for CfHEE before runtime packaging work begins.
+This document defines the portable runtime model for CfHEE and records the first implemented runtime packaging slice.
 
-It is a design and planning document only.
-
-It does not implement:
-
-- containerization changes
-- Dockerfile creation
-- `docker-compose.yml` changes
-- backend changes
-- frontend changes
-- API changes
+The design intent still matters here, but this document is no longer planning-only.
 
 ## Status labels used in this document
 
@@ -25,17 +16,43 @@ It does not implement:
 
 ## Observed current repo state
 
-- `docker-compose.yml` currently starts Postgres only
-- local development is Windows-first
-- `scripts/dev-up.ps1` starts:
+- local development remains Windows-first
+- `scripts/dev-up.ps1` still starts:
   - Postgres through Docker Compose
   - backend through local Python / Uvicorn
   - frontend through local Angular dev server
-- `scripts/dev-check.ps1` verifies Postgres, backend, frontend, and optional Ollama readiness
+- `scripts/dev-check.ps1` still verifies the source-based local workflow
 - backend defaults to `DATABASE_URL=postgresql://cfhee:cfhee@localhost:5432/cfhee`
 - backend defaults Chroma persistence to `apps/backend/data/chroma`, overridable through `CHROMA_PERSIST_DIRECTORY`
 - frontend defaults to `http://127.0.0.1:8000` and can be redirected through `apps/frontend/public/runtime-config.js`
 - Ollama is optional in the current repo and only affects grounded-answer convenience behavior
+
+## First implemented portable runtime slice
+
+**Observed current repo state**
+
+The first containerized portable runtime slice now includes:
+
+- frontend container
+- backend container
+- Postgres container
+- explicit bind-mounted persistent data directories:
+  - `runtime-data/postgres`
+  - `runtime-data/chroma`
+
+It is implemented through:
+
+- `apps/backend/Dockerfile`
+- `apps/frontend/Dockerfile`
+- `docker-compose.yml`
+
+This slice does not add:
+
+- Ollama to Compose
+- backup tooling
+- restore tooling
+- reverse proxy or TLS
+- production hardening
 
 ## Portable instance concept
 
@@ -136,25 +153,25 @@ This document does not add a separate raw-artifact storage directory to the mini
 
 ### Conceptual layout
 
-This is a conceptual example only, not an implementation commitment:
+The repo now uses this concrete first-slice layout:
 
 ```text
-cfhee-instance/
-  runtime/
-    frontend/
-    backend/
-    packaging/
-  data/
+repo-root/
+  docker-compose.yml
+  runtime-data/
     postgres/
     chroma/
 ```
 
 Meaning:
 
-- `runtime/` holds the packaged runnable components
-- `data/` holds durable instance state
+- Compose defines the packaged runtime
+- `runtime-data/` holds durable instance state
 
-The exact filenames, container definitions, and build outputs are not decided in this slice.
+The higher-level portable-instance idea still remains:
+
+- runtime packaging should stay separate from persistent data
+- instance data should remain easy to copy and move
 
 ### Important separation rule
 
@@ -228,20 +245,19 @@ Given the current repo state, the practical staged path is:
 
 ## Explicitly not implemented yet
 
-- portable container set for frontend + backend + Postgres
-- packaged runtime artifacts
-- portable instance directory structure in code
 - runtime update commands
 - backup tooling
 - restore tooling
 - Ollama portable integration
+- production hardening
+- non-localhost operational defaults
 
 ## Summary
 
 **Observed current repo state**
 
 - current development remains source-based and Windows-first
-- current Compose usage is limited to Postgres
+- the repo now also contains a first Compose-based portable runtime slice for frontend + backend + Postgres
 - Chroma already uses local persistent filesystem state
 - Ollama is optional
 
@@ -254,4 +270,4 @@ Given the current repo state, the practical staged path is:
 
 **Not implemented yet**
 
-- actual containerization and runtime packaging work
+- fuller runtime operations around backup, restore, and updates

@@ -48,7 +48,7 @@ Why this is next:
 ## Suggested narrow scope
 
 1. Improve the frontend against the frozen API surface.
-2. Define the portable runtime packaging model clearly in docs first, then containerize and harden runtime setup without changing the public contract.
+2. Validate and harden the first portable runtime slice without changing the public contract.
 3. Build or validate first external consumer integrations against the frozen API.
 4. Keep workflow-specific logic outside CfHEE.
 
@@ -57,7 +57,8 @@ Runtime portability note:
 - the first narrow portability slice is now in place through configurable frontend API base URL and configurable backend CORS origins
 - the API surface now also includes a narrow provider-free context-build endpoint on top of existing retrieval behavior
 - the portable-instance design baseline is now documented in `docs/PORTABLE_RUNTIME.md`
-- full containerized local/dev runtime is still not implemented
+- the first containerized portable runtime slice now exists for frontend, backend, and Postgres
+- backup, restore, update flow, and production hardening are still not implemented
 
 ## Keep out of scope for that step
 
@@ -68,15 +69,17 @@ Runtime portability note:
 - expanding the `/api/v1` API surface during the freeze
 - broad connector ecosystems
 - complex file-import subsystems unless an immediate integration need forces it
-- cross-environment packaging work before the API boundary is stable
+- backup/restore implementation before the runtime slice itself has been exercised
 
 ## After that step
 
 Once the frozen API surface has been exercised by real consumers, the next long-term infrastructure target is deployment portability:
 
 - keep the portable-instance model fixed before implementation drift starts
-- containerize the system
+- harden and exercise the first containerized runtime
 - separate packaged runtime from persistent instance data
+- define a simple update workflow for runtime vs. data
+- define backup and restore workflow
 - reduce dependence on the current Windows-heavy localhost development setup
 - make the module easier to run on Linux and other environments
 - prepare for production-buildable packaging without changing the core architectural boundary
