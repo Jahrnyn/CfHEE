@@ -2,6 +2,22 @@
 
 ## 2026-03-30
 
+- Assessed the current chunking implementation as it actually exists in code and aligned docs to that verified behavior.
+- Applied one narrow correctness fix before documenting it:
+  - stopped the ingest model from collapsing `raw_text` whitespace and line breaks before chunking
+- Verified the current chunking behavior in code and with small in-process checks:
+  - chunk boundaries come only from blank-line paragraph breaks
+  - paragraphs are greedily packed until adding the next paragraph would exceed the current `1200`-character target
+  - there is no overlap
+  - very short inputs become a single chunk
+  - text without blank-line paragraph breaks stays a single chunk
+  - a single long paragraph can exceed the target because the current chunker does not split inside a paragraph
+  - mixed prose/code-like input gets no special handling beyond the same blank-line paragraph rule
+- Recorded the current assessment explicitly:
+  - acceptable for the current project stage and small paragraph-oriented corpus work
+  - weak for dense single-block text, long single paragraphs, and code-heavy or mixed-format sources
+  - a future narrow chunking-improvement slice is reasonable, but no redesign was done here
+
 - Added a docs-only metadata-boundary clarification slice after metadata persistence.
 - Clarified across the core docs that current document `metadata` is:
   - persisted document-level descriptive data

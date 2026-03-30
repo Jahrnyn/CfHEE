@@ -54,6 +54,7 @@ Why this is next:
 4. When checking retrieval after the semantic embedding switch, make sure the checked corpus is actually indexed in the active semantic Chroma collection rather than an older hash-vector collection.
 5. Keep the scope-resolution boundary explicit: CfHEE executes retrieval within caller-provided scope and does not infer missing scope from user questions.
 6. Build or validate consumers against the frozen API only after the scope semantics they depend on are deterministic.
+7. Treat the current chunker as acceptable but intentionally basic: it now preserves raw paragraph boundaries correctly, but a later narrow slice is still warranted if real corpus ingest shows pressure from dense single-block documents, long paragraphs, or code-heavy content.
 
 External-consumer note:
 

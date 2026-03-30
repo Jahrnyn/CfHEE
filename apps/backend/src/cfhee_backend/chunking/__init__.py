@@ -1,1 +1,1 @@
-"""Chunking placeholders for future document chunk generation."""
+"""Simple paragraph-block chunking helpers."""

@@ -29,7 +29,6 @@ class DocumentCreate(BaseModel):
         "module",
         "source_type",
         "title",
-        "raw_text",
         "language",
         "source_ref",
         mode="before",
@@ -37,6 +36,17 @@ class DocumentCreate(BaseModel):
     @classmethod
     def normalize_text(cls, value: str | None) -> str | None:
         return normalize_scope_value(value)
+
+    @field_validator("raw_text", mode="before")
+    @classmethod
+    def validate_raw_text(cls, value: str) -> str:
+        if not isinstance(value, str):
+            raise TypeError("raw_text must be a string")
+
+        if not value.strip():
+            raise ValueError("raw_text must not be empty")
+
+        return value
 
     @model_validator(mode="after")
     def validate_scope_hierarchy(self) -> "DocumentCreate":
