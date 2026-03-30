@@ -65,7 +65,8 @@ Runtime portability note:
 - the first narrow portability slice is now in place through configurable frontend API base URL and configurable backend CORS origins
 - the API surface now also includes a narrow provider-free context-build endpoint on top of existing retrieval behavior
 - the portable-instance design baseline is now documented in `docs/PORTABLE_RUNTIME.md`
-- the first containerized portable runtime slice now exists for frontend, backend, and Postgres
+- the first containerized portable runtime slice now exists for frontend, backend, Postgres, and Ollama
+- the portable runtime now also includes runtime-local Ollama for the normal `bge-m3` semantic embedding path
 - runtime start/stop/log/update guidance is now documented in `docs/RUNTIME_OPERATIONS.md`
 - backup and restore scope and safety rules are documented in `docs/BACKUP_AND_RESTORE.md`
 - future app-managed operations scope is now documented in `docs/OPERATIONS_SURFACE.md`
@@ -84,7 +85,7 @@ Runtime portability note:
 - broad connector ecosystems
 - complex file-import subsystems unless an immediate integration need forces it
 - automatic cross-scope retrieval or silent retrieval widening
-- runtime-topology changes before the current portable instance workflow has been exercised
+- broad runtime-topology redesign beyond the current portable instance workflow
 
 ## After that step
 

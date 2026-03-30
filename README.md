@@ -146,7 +146,9 @@ For the current public contract, use [docs/API_V1.md](docs/API_V1.md).
 - DEV: source-based workbench on `http://127.0.0.1:4200` with backend on `http://127.0.0.1:8000`
 - Use the current `scripts/dev-up.ps1` workflow for source-based local development
 - RUNTIME: portable containerized instance on `http://127.0.0.1:4210` with backend on `http://127.0.0.1:8010`
-- For normal semantic ingest and retrieval, make sure Ollama is reachable and `bge-m3` is pulled
+- Portable runtime now includes a runtime-local Ollama service for semantic embeddings
+- On first runtime start, Compose lazily pulls `bge-m3` into `runtime-data/ollama` if it is not already present
+- Readiness is inspectable through `docker compose ps`, `docker compose logs ollama-model-init`, and `docker compose logs ollama`
 - For full runtime details, use [docs/RUNTIME_OPERATIONS.md](docs/RUNTIME_OPERATIONS.md)
 
 ## Full Documentation

@@ -24,13 +24,17 @@ It does not add:
   - frontend container
   - backend container
   - Postgres container
+  - Ollama container
 - persistent runtime data currently lives under:
   - `runtime-data/postgres`
   - `runtime-data/chroma`
+  - `runtime-data/ollama`
 - `runtime-data/postgres` currently contains the active Postgres files under:
   - `runtime-data/postgres/pgdata`
 - the backend uses a persistent Chroma path mounted at:
   - `runtime-data/chroma`
+- runtime-local Ollama now uses a persistent model cache mounted at:
+  - `runtime-data/ollama`
 - runtime start and stop are currently handled through:
   - `docker compose up --build -d`
   - `docker compose down`
@@ -59,6 +63,12 @@ That means:
 
 - Postgres should be backed up as the durable relational system of record for stored documents, chunks, scopes, and query logs
 - Chroma should be backed up as the durable vector-state companion for retrieval and context building
+
+Current helper-scope note:
+
+- the current helper scripts still back up and restore only `runtime-data/postgres` and `runtime-data/chroma`
+- `runtime-data/ollama` currently acts as a persisted runtime dependency cache for the packaged `bge-m3` embedding runtime
+- if that Ollama cache is missing after a move or restore, the portable runtime can repull `bge-m3` on the next startup bootstrap
 
 The runtime layer itself is not the primary backup target for this first model.
 
@@ -181,7 +191,7 @@ This backup and restore model follows the existing portable-runtime rules:
 - portable runtime and persistent data remain separate concerns
 - source-based local development remains separate from runtime instance operations
 - the minimum portable runtime still consists of frontend, backend, Postgres, and Chroma persistence
-- Ollama remains optional and outside the minimum portable runtime
+- runtime-local Ollama is now part of the portable runtime for the normal semantic embedding path
 
 That means:
 

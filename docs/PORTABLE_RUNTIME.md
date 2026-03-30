@@ -30,7 +30,7 @@ The design intent still matters here, but this document is no longer planning-on
   - frontend on `4210`
   - backend on `8010`
 - the backend now uses Ollama-backed semantic embeddings for normal ingest and retrieval
-- the current portable runtime keeps Ollama outside Compose and points the backend at an external embedding runtime URL instead
+- the portable runtime now includes an Ollama service and points backend embeddings at the runtime-local Ollama URL
 
 ## First implemented portable runtime slice
 
@@ -41,9 +41,11 @@ The first containerized portable runtime slice now includes:
 - frontend container
 - backend container
 - Postgres container
+- Ollama container
 - explicit bind-mounted persistent data directories:
   - `runtime-data/postgres`
   - `runtime-data/chroma`
+  - `runtime-data/ollama`
 
 It is implemented through:
 
@@ -53,7 +55,6 @@ It is implemented through:
 
 This slice does not add:
 
-- Ollama to Compose
 - reverse proxy or TLS
 - production hardening
 
@@ -89,11 +90,12 @@ The minimum portable runtime should include:
 - backend: required
 - Postgres: required
 - Chroma persistent state: required
+- Ollama for semantic embeddings: required in the portable runtime normal path
 
 Current repo-state note:
 
-- the current normal semantic embedding path also needs Ollama reachability for the backend embedding runtime
-- Ollama is still not packaged as a Compose service in this slice
+- the current normal semantic embedding path needs runtime-local Ollama reachability for the backend embedding runtime
+- the portable runtime now packages Ollama as a Compose service for the normal semantic path
 
 ## Current Ollama dependency shape
 
@@ -102,12 +104,13 @@ Current repo-state note:
 - Ollama-backed `bge-m3` embeddings are now the default normal path for ingest and retrieval
 - `EMBEDDING_PROVIDER=hash` remains available only as an explicit fallback mode
 - grounded-answer generation still has deterministic fallback behavior and therefore does not require Ollama
-- the current portable runtime points embedding traffic at an external Ollama base URL rather than packaging Ollama in Compose
+- the portable runtime now points embedding traffic at the Compose-local Ollama service
+- the runtime now persists the Ollama model cache under `runtime-data/ollama`
+- startup now includes a one-shot bootstrap check that pulls `bge-m3` only when it is missing from that persisted runtime-local Ollama cache
 
-**Design intent**
+Operational note:
 
-Ollama should remain outside Compose in this slice even though the current normal semantic path depends on it.
-If a portable instance needs semantic ingest and retrieval, the backend must be able to reach an external Ollama runtime.
+- the built-in answer layer can still remain on deterministic mode even while the portable runtime includes Ollama for semantic embeddings
 
 ## Component model
 
@@ -118,7 +121,8 @@ The intended minimum portable runtime is:
 1. Frontend runtime
 2. Backend runtime
 3. Postgres runtime
-4. Chroma persistence used by the backend
+4. Ollama runtime for semantic embeddings
+5. Chroma persistence used by the backend
 
 This can later be packaged as multiple cooperating containers.
 
@@ -162,6 +166,7 @@ repo-root/
   runtime-data/
     postgres/
     chroma/
+    ollama/
 ```
 
 Meaning:
@@ -297,15 +302,16 @@ Given the current repo state, the practical staged path is:
 
 - current development remains source-based and Windows-first
 - the repo now also contains a first Compose-based portable runtime slice for frontend + backend + Postgres
+- the portable runtime now also includes Compose-local Ollama for semantic embeddings
 - Chroma already uses local persistent filesystem state
+- the Ollama model cache now also uses local persistent filesystem state under `runtime-data/ollama`
 - conservative stopped-runtime backup and restore helpers now exist for the current runtime-data layout
-- the current normal semantic path depends on externally reachable Ollama embeddings
+- the current normal semantic path now runs inside the portable runtime through runtime-local Ollama embeddings
 
 **Design intent**
 
 - future portable CfHEE should be a movable instance made of runtime layer plus persistent data layer
-- minimum runtime should require frontend, backend, Postgres, and Chroma persistence
-- Ollama should stay outside Compose even when a given instance needs it for semantic embeddings
+- minimum runtime should require frontend, backend, Postgres, runtime-local Ollama for semantic embeddings, and Chroma persistence
 - portable runtime packaging should complement, not replace, the current dev workflow
 
 **Not implemented yet**

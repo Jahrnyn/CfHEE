@@ -97,7 +97,7 @@ def build_ops_summary() -> OpsSummaryResponse:
             runtime_mode=runtime_mode,
             answer_provider_mode=_get_answer_provider_mode(),
             ollama=OllamaSummary(
-                optional=True,
+                optional=_is_ollama_optional(),
                 base_url=os.getenv("OLLAMA_BASE_URL", "http://127.0.0.1:11434"),
                 model=os.getenv("OLLAMA_MODEL", "qwen2.5:7b"),
             ),
@@ -133,6 +133,12 @@ def build_ops_summary() -> OpsSummaryResponse:
 
 def _get_answer_provider_mode() -> str:
     return os.getenv("ANSWER_PROVIDER", "auto").strip().lower() or "auto"
+
+
+def _is_ollama_optional() -> bool:
+    embedding_provider = os.getenv("EMBEDDING_PROVIDER", "ollama").strip().lower() or "ollama"
+    answer_provider = _get_answer_provider_mode()
+    return embedding_provider == "hash" and answer_provider not in {"ollama"}
 
 
 def _get_allowed_origins_summary() -> list[str]:

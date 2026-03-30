@@ -2,6 +2,28 @@
 
 ## 2026-03-30
 
+- Added a narrow portable-runtime Ollama integration slice for semantic embeddings.
+- Updated `docker-compose.yml` so the portable runtime now includes:
+  - `ollama`
+  - `ollama-model-init`
+- Switched the portable-runtime backend embedding URL from external `host.docker.internal` wiring to the runtime-local Ollama service at `http://ollama:11434`.
+- Kept the model story intentionally narrow around the existing semantic default:
+  - `EMBEDDING_PROVIDER=ollama`
+  - `EMBEDDING_MODEL=bge-m3`
+- Added a first-run lazy bootstrap behavior for the portable runtime:
+  - `ollama-model-init` checks the persisted runtime-local Ollama cache
+  - it pulls `bge-m3` only when the model is missing
+  - the model cache now persists under `runtime-data/ollama`
+- Extended the read-only ops summary so it now marks Ollama as non-optional when the runtime is using Ollama-backed embeddings.
+- Updated `scripts/runtime-up.ps1` with a small readiness note pointing operators at:
+  - `docker compose ps`
+  - `docker compose logs ollama`
+  - `docker compose logs ollama-model-init`
+- Updated runtime docs and `README.md` so they now reflect that:
+  - semantic embeddings are part of the portable runtime core path
+  - portable runtime now packages Ollama for semantic embeddings
+  - grounded answers may still remain on deterministic mode
+
 - Added a narrow semantic regression verification slice for the new Ollama-backed `bge-m3` embedding path.
 - Fixed one small regression-pack setup issue:
   - corrected the mojibake Hungarian summary query in `apps/backend/fixtures/retrieval_regression_cases.json`

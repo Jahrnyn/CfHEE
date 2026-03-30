@@ -30,9 +30,8 @@ Today that means:
 - frontend container
 - backend container
 - Postgres container
+- Ollama container
 - persistent runtime data under `runtime-data/`
-
-For the current normal semantic embedding path, the backend also needs reachability to an Ollama runtime with `bge-m3` available.
 
 ## Runtime layer vs data layer
 
@@ -53,6 +52,7 @@ The data layer is the persistent instance state:
 
 - `runtime-data/postgres`
 - `runtime-data/chroma`
+- `runtime-data/ollama`
 
 This data should survive container rebuilds and restarts.
 
@@ -63,6 +63,7 @@ This data should survive container rebuilds and restarts.
 - Postgres data lives under `runtime-data/postgres`
   - the current container writes its active database files under `runtime-data/postgres/pgdata`
 - Chroma data lives under `runtime-data/chroma`
+- Ollama model-cache data lives under `runtime-data/ollama`
 
 ### What should be backed up
 
@@ -71,14 +72,20 @@ For the current portable runtime, the important persistent data to back up is:
 - `runtime-data/postgres`
 - `runtime-data/chroma`
 
+Current helper-scope note:
+
+- the current backup and restore helpers still operate only on `runtime-data/postgres` and `runtime-data/chroma`
+- `runtime-data/ollama` is a persisted runtime dependency cache, not part of the current helper-driven backup payload
+
 ### What must not be deleted casually
 
 Do not delete:
 
 - `runtime-data/postgres`
 - `runtime-data/chroma`
+- `runtime-data/ollama`
 
-Deleting those directories means deleting the current portable instance data.
+Deleting those directories means deleting the current portable instance data or the persisted runtime-local Ollama model cache.
 
 ### Backup and restore helpers
 
@@ -111,14 +118,17 @@ What this does:
 
 - builds updated images when needed
 - starts Postgres
+- starts Ollama
+- pulls `bge-m3` into runtime-local Ollama only if the model is not already present in `runtime-data/ollama`
 - starts backend
 - starts frontend
 
 Current semantic-embedding note:
 
 - the backend now defaults to `EMBEDDING_PROVIDER=ollama`
-- in portable runtime mode, Compose defaults `EMBEDDING_OLLAMA_BASE_URL` to `http://host.docker.internal:11434`
-- make sure the host Ollama runtime is reachable there and has `bge-m3` pulled if you want normal semantic ingest and retrieval
+- in portable runtime mode, Compose now defaults `EMBEDDING_OLLAMA_BASE_URL` to `http://ollama:11434`
+- the portable runtime includes a runtime-local Ollama service and persists its model cache under `runtime-data/ollama`
+- if `bge-m3` is missing in that runtime-local cache, the one-shot `ollama-model-init` service pulls it on startup and does not repull it on later starts while the cache remains present
 - `EMBEDDING_PROVIDER=hash` remains available only as an explicit placeholder fallback mode
 
 Default host ports:
@@ -165,7 +175,15 @@ Single-service examples:
 docker compose logs backend
 docker compose logs frontend
 docker compose logs postgres
+docker compose logs ollama
+docker compose logs ollama-model-init
 ```
+
+Readiness note:
+
+- `ollama-model-init` is the narrow first-run bootstrap surface for `bge-m3`
+- when that service completes successfully, the portable runtime-local model bootstrap is done for the current `runtime-data/ollama`
+- if it fails, backend ingest and retrieval continue to fail clearly until Ollama and `bge-m3` are actually ready
 
 ## Inspect the read-only ops summary
 
@@ -179,6 +197,7 @@ It provides conservative app-visible information such as:
 
 - runtime mode summary
 - answer-provider mode
+- Ollama runtime summary
 - embedding provider and model summary
 - backend CORS origins summary
 - Postgres target summary without secrets
@@ -275,7 +294,7 @@ In container mode, the backend reaches Postgres through the Compose service name
 
 In the current portable runtime, Compose defaults the embedding runtime URL to:
 
-- `http://host.docker.internal:11434`
+- `http://ollama:11434`
 
 Relevant backend env vars:
 
@@ -286,6 +305,12 @@ Relevant backend env vars:
 Current default model:
 
 - `bge-m3`
+
+Bootstrap behavior:
+
+- the portable runtime includes an `ollama-model-init` service that checks whether `bge-m3` is already present in the persisted runtime-local Ollama cache
+- if the model is missing, that service pulls it once
+- later runtime starts reuse the persisted cache under `runtime-data/ollama` and do not repull the model unless that cache is removed
 
 ### Backend CORS
 

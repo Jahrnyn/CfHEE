@@ -19,6 +19,42 @@ services:
       timeout: 5s
       retries: 10
 
+  ollama:
+    image: ollama/ollama:latest
+    container_name: cfhee-ollama
+    restart: unless-stopped
+    volumes:
+      - ./runtime-data/ollama:/root/.ollama
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  ollama-model-init:
+    image: ollama/ollama:latest
+    container_name: cfhee-ollama-model-init
+    restart: "no"
+    depends_on:
+      ollama:
+        condition: service_healthy
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+      EMBEDDING_MODEL: ${CFHEE_EMBEDDING_MODEL:-bge-m3}
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        set -eu
+        model="$${EMBEDDING_MODEL}"
+        existing_models="$$(ollama list | tail -n +2 | awk '{print $$1}')"
+        if printf '%s\n' "$${existing_models}" | grep -Fxq "$${model}" || printf '%s\n' "$${existing_models}" | grep -Fxq "$${model}:latest"; then
+          echo "Embedding model '$${model}' already available in runtime-local Ollama."
+          exit 0
+        fi
+        echo "Pulling embedding model '$${model}' into runtime-local Ollama..."
+        ollama pull "$${model}"
+
   backend:
     build:
       context: ./apps/backend
@@ -27,14 +63,19 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      ollama:
+        condition: service_healthy
+      ollama-model-init:
+        condition: service_completed_successfully
     environment:
       DATABASE_URL: postgresql://cfhee:cfhee@postgres:5432/cfhee
       CHROMA_PERSIST_DIRECTORY: /app/data/chroma
       CORS_ALLOW_ORIGINS: ${CFHEE_CORS_ALLOW_ORIGINS:-http://localhost:4210,http://127.0.0.1:4210}
       EMBEDDING_PROVIDER: ${CFHEE_EMBEDDING_PROVIDER:-ollama}
-      EMBEDDING_OLLAMA_BASE_URL: ${CFHEE_EMBEDDING_OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+      EMBEDDING_OLLAMA_BASE_URL: ${CFHEE_EMBEDDING_OLLAMA_BASE_URL:-http://ollama:11434}
       EMBEDDING_MODEL: ${CFHEE_EMBEDDING_MODEL:-bge-m3}
       ANSWER_PROVIDER: ${CFHEE_ANSWER_PROVIDER:-deterministic}
+      OLLAMA_BASE_URL: ${CFHEE_OLLAMA_BASE_URL:-http://ollama:11434}
     ports:
       - "8010:8000"
     volumes:

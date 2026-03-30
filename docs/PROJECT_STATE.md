@@ -95,7 +95,7 @@ Implemented in code:
 - first portable runtime packaging slice:
   - backend Dockerfile
   - frontend Dockerfile
-  - multi-container `docker-compose.yml` for frontend, backend, and Postgres
+  - multi-container `docker-compose.yml` for frontend, backend, Postgres, and Ollama
   - explicit bind-mounted runtime data directories for Postgres and Chroma under `runtime-data/`
   - host-facing runtime frontend/backend port separation from source-based dev through `4210` and `8010`
 - Retrieval regression guardrail:
@@ -142,10 +142,11 @@ Verified by code inspection:
 - document deletion now uses the existing vector-store abstraction to remove chunk vectors from the active backend
 - embedding abstraction now supports explicit `ollama` and `hash` modes, with Ollama-backed `bge-m3` as the default normal path
 - the active Chroma collection name now derives from the configured embedding provider/model so new semantic vectors do not collide with older hash-vector collections
-- the repo now contains a first portable runtime container skeleton for frontend, backend, and Postgres
+- the repo now contains a first portable runtime container skeleton for frontend, backend, Postgres, and Ollama
 - the portable runtime now wires backend Postgres access through the Compose service name and backend Chroma persistence through an explicit mounted runtime-data path
 - the frontend portable runtime now injects its backend base URL through container-time generation of `runtime-config.js`
 - the portable runtime now uses host-facing frontend/backend ports `4210` and `8010`, while the source-based dev workflow keeps `4200` and `8000`
+- the portable runtime now also includes a runtime-local Ollama service for semantic embeddings, with a one-shot `bge-m3` bootstrap check that pulls only when the model is missing from the persisted runtime Ollama data directory
 - the backend `GET /ops/summary` route now handles the current containerized source-tree layout without crashing
 - the repo now also documents runtime operations clearly through `docs/RUNTIME_OPERATIONS.md`, including start, stop, logs, data ownership, and a minimal update flow
 - query logging is implemented for retrieval-only and answer queries, including scope, result identifiers, answer text, provider used, and fallback usage
@@ -216,16 +217,17 @@ Verified in the local environment during the latest check:
 - invalid nested v1 scope shapes and invalid `top_k` values now fail with request validation in local in-process checks instead of reaching retrieval execution
 - `docker compose config` resolves successfully for the new multi-container runtime definition
 - backend and frontend container images build successfully with `docker compose build`
-- `docker compose up -d` starts Postgres, backend, and frontend containers successfully after adding `PGDATA` for the bind-mounted Postgres data directory
-- `docker ps` shows the three portable-runtime containers up with the expected published ports, now including runtime frontend/backend separation on `4210` and `8010`
+- `docker compose up -d` now starts Postgres, Ollama, backend, and frontend successfully in the portable runtime after adding `PGDATA` for the bind-mounted Postgres data directory and runtime-local Ollama startup
+- `docker ps` now shows the portable-runtime containers up with the expected published frontend/backend ports, now including runtime-local Ollama for semantic embeddings
 - `docker compose down` stops and removes the portable-runtime containers while leaving `runtime-data/` intact
-- `docker compose logs`, `docker compose logs backend`, `docker compose logs frontend`, and `docker compose logs postgres` are usable for runtime inspection
+- `docker compose logs`, `docker compose logs backend`, `docker compose logs frontend`, `docker compose logs postgres`, `docker compose logs ollama`, and `docker compose logs ollama-model-init` are usable for runtime inspection
 - backend container logs show Uvicorn startup completed in the Compose topology after rebuilding the backend image to run against the copied source tree
 - frontend container serves its generated `runtime-config.js` over HTTP inside the container, with `apiBaseUrl` set from `CFHEE_API_BASE_URL`
 - the portable runtime responds on `http://127.0.0.1:4210` for the frontend and `http://127.0.0.1:8010` for the backend after the host-port separation update
 - the bind-mounted runtime data layout is active:
   - Postgres initializes under `runtime-data/postgres/pgdata`
   - Chroma writes persistent state under `runtime-data/chroma`
+- runtime-local Ollama now persists its model cache under `runtime-data/ollama`
 - the runtime data directories remain present after a `docker compose down` + `docker compose up -d` cycle
 - the repo now also documents a conservative backup and restore design for the current portable runtime in `docs/BACKUP_AND_RESTORE.md`
 - the repo now also contains first conservative stopped-runtime backup and restore helper scripts for the portable runtime data layer
@@ -271,9 +273,12 @@ Verified in the local environment during the latest check:
 - frontend container is implemented
 - backend container is implemented
 - Postgres container is implemented
+- Ollama container is implemented for the normal semantic embedding path
 - Postgres persistent data is bound to `runtime-data/postgres`
 - Chroma persistent data is bound to `runtime-data/chroma`
-- Ollama is not included in Compose, but the backend now defaults its embedding runtime to an external Ollama endpoint for normal semantic operation
+- runtime-local Ollama model cache is bound to `runtime-data/ollama`
+- portable runtime backend now defaults its embedding runtime to the Compose-local Ollama service at `http://ollama:11434`
+- portable runtime startup now includes a one-shot `bge-m3` bootstrap check that pulls the model only when it is missing from the persisted runtime Ollama cache
 - source-based local development remains valid and separate
 - portable runtime frontend/backend host ports are now intentionally separated from source-based dev
 - runtime start/stop/log/update guidance now exists and is documented
