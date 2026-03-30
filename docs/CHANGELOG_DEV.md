@@ -23,6 +23,15 @@
   - CfHEE does not perform query-scope inference
   - scope determination belongs to the caller or an external orchestration layer
   - CfHEE is a scoped execution engine, not a discovery engine
+- Added a new versioned scope-tree visibility helper:
+  - `GET /api/v1/scopes/tree`
+- Implemented the scope-tree helper as a small backend service that reads stored `workspaces`, `domains`, `projects`, `clients`, and `modules` and returns only actually stored hierarchy combinations.
+- Kept the endpoint intentionally narrow:
+  - no scope inference
+  - no scope resolution
+  - no fuzzy matching
+  - no frontend changes
+- Added current-state and API v1 doc updates for the new endpoint and its non-inference boundary.
 - Aligned the active doc set so `docs/TASKS.md` is no longer treated as an active source of truth.
 - Updated `docs/NEXT_STEPS.md` so the next conceptual focus is reliable scope taxonomy and metadata policy rather than broader feature expansion.
 - Tightened `docs/API_V1.md` to reflect the current implemented v1 surface more conservatively.

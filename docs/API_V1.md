@@ -78,6 +78,7 @@ Implemented versioned capabilities:
 - Retrieval-derived context building
 - Query-log inspection for developer use
 - Scope-value reuse for ingest helpers
+- Scope-tree visibility for external callers
 
 Module note:
 
@@ -185,6 +186,7 @@ It does not imply a versioned `/api/v1/answer/query` endpoint exists in the curr
 
 ```text
 GET /api/v1/scopes/values
+GET /api/v1/scopes/tree
 ```
 
 Retrieves existing stored scope values for reuse during ingest.
@@ -206,8 +208,52 @@ Useful for autocomplete and conservative value reuse in external tools.
 
 Current note:
 
-- the current v1 helper surface exposes only value reuse
+- the current v1 helper surface exposes value reuse plus stored-hierarchy visibility
 - there is no versioned scope-resolution endpoint in the current freeze slice
+
+#### GET /api/v1/scopes/tree
+
+Returns the currently stored scope hierarchy as a structured tree built from the `workspaces`, `domains`, `projects`, `clients`, and `modules` tables.
+
+This is a visibility helper for external callers.
+It does not infer scope, resolve scope, or plan retrieval on behalf of the caller.
+
+**Response**
+
+```json
+{
+  "workspaces": [
+    {
+      "name": "Internal",
+      "domains": [
+        {
+          "name": "Business Central",
+          "projects": [
+            {
+              "name": "Finance Customization",
+              "clients": [
+                {
+                  "name": "CustomerA",
+                  "modules": [
+                    { "name": "Avizo" }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
+Behavior in the current slice:
+
+- only stored scope combinations are returned
+- no synthetic nodes are created
+- naming is returned exactly as stored
+- the endpoint is a visibility helper only and must not be treated as query-scope inference
 
 ---
 

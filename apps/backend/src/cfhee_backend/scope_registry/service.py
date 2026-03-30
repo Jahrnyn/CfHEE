@@ -3,7 +3,17 @@ from __future__ import annotations
 from typing import Any
 
 from cfhee_backend.persistence.database import get_connection
-from cfhee_backend.scope_registry.models import ScopeValuesQuery, ScopeValuesResponse, normalize_scope_value
+from cfhee_backend.scope_registry.models import (
+    ScopeTreeClientNode,
+    ScopeTreeDomainNode,
+    ScopeTreeModuleNode,
+    ScopeTreeProjectNode,
+    ScopeTreeResponse,
+    ScopeTreeWorkspaceNode,
+    ScopeValuesQuery,
+    ScopeValuesResponse,
+    normalize_scope_value,
+)
 
 
 def list_scope_values(query: ScopeValuesQuery) -> ScopeValuesResponse:
@@ -70,6 +80,104 @@ def list_scope_values(query: ScopeValuesQuery) -> ScopeValuesResponse:
     )
 
 
+def get_scope_tree() -> ScopeTreeResponse:
+    with get_connection() as connection:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT
+                  w.id AS workspace_id,
+                  w.name AS workspace_name,
+                  d.id AS domain_id,
+                  d.name AS domain_name,
+                  p.id AS project_id,
+                  p.name AS project_name,
+                  c.id AS client_id,
+                  c.name AS client_name,
+                  m.id AS module_id,
+                  m.name AS module_name
+                FROM workspaces w
+                LEFT JOIN domains d ON d.workspace_id = w.id
+                LEFT JOIN projects p ON p.domain_id = d.id
+                LEFT JOIN clients c ON c.project_id = p.id
+                LEFT JOIN modules m ON m.client_id = c.id
+                ORDER BY w.id ASC, d.id ASC, p.id ASC, c.id ASC, m.id ASC
+                """
+            )
+            rows = cursor.fetchall()
+
+    workspaces: list[ScopeTreeWorkspaceNode] = []
+    workspace_nodes: dict[int, ScopeTreeWorkspaceNode] = {}
+    domain_nodes: dict[int, ScopeTreeDomainNode] = {}
+    project_nodes: dict[int, ScopeTreeProjectNode] = {}
+    client_nodes: dict[int, ScopeTreeClientNode] = {}
+    module_ids: set[int] = set()
+
+    for row in rows:
+        workspace_id = int(row["workspace_id"])
+        workspace_node = workspace_nodes.get(workspace_id)
+        if workspace_node is None:
+            workspace_node = ScopeTreeWorkspaceNode(
+                name=row["workspace_name"],
+                domains=[],
+            )
+            workspace_nodes[workspace_id] = workspace_node
+            workspaces.append(workspace_node)
+
+        domain_id = row["domain_id"]
+        if domain_id is None:
+            continue
+
+        domain_node = domain_nodes.get(int(domain_id))
+        if domain_node is None:
+            domain_node = ScopeTreeDomainNode(
+                name=row["domain_name"],
+                projects=[],
+            )
+            domain_nodes[int(domain_id)] = domain_node
+            workspace_node.domains.append(domain_node)
+
+        project_id = row["project_id"]
+        if project_id is None:
+            continue
+
+        project_node = project_nodes.get(int(project_id))
+        if project_node is None:
+            project_node = ScopeTreeProjectNode(
+                name=row["project_name"],
+                clients=[],
+            )
+            project_nodes[int(project_id)] = project_node
+            domain_node.projects.append(project_node)
+
+        client_id = row["client_id"]
+        if client_id is None:
+            continue
+
+        client_node = client_nodes.get(int(client_id))
+        if client_node is None:
+            client_node = ScopeTreeClientNode(
+                name=row["client_name"],
+                modules=[],
+            )
+            client_nodes[int(client_id)] = client_node
+            project_node.clients.append(client_node)
+
+        module_id = row["module_id"]
+        if module_id is None or int(module_id) in module_ids:
+            continue
+
+        module_ids.add(int(module_id))
+        client_node.modules.append(
+            ScopeTreeModuleNode(
+                name=row["module_name"],
+            )
+        )
+
+    # Visibility helper only: this reflects stored scope hierarchy and does not infer missing scope.
+    return ScopeTreeResponse(workspaces=workspaces)
+
+
 def resolve_scope_name(
     cursor: Any,
     table_name: str,
@@ -83,7 +191,7 @@ def resolve_scope_name(
 
     if parent_column is None:
         cursor.execute(
-            f"""
+            fr"""
             SELECT name
             FROM {table_name}
             WHERE LOWER(REGEXP_REPLACE(name, '\s+', ' ', 'g')) = LOWER(%(name)s)
@@ -94,7 +202,7 @@ def resolve_scope_name(
         )
     else:
         cursor.execute(
-            f"""
+            fr"""
             SELECT name
             FROM {table_name}
             WHERE {parent_column} = %(parent_id)s
@@ -125,7 +233,7 @@ def _find_scope_id(
 
     if parent_column is None:
         cursor.execute(
-            f"""
+            fr"""
             SELECT id
             FROM {table_name}
             WHERE LOWER(REGEXP_REPLACE(name, '\s+', ' ', 'g')) = LOWER(%(name)s)
@@ -139,7 +247,7 @@ def _find_scope_id(
             return None
 
         cursor.execute(
-            f"""
+            fr"""
             SELECT id
             FROM {table_name}
             WHERE {parent_column} = %(parent_id)s

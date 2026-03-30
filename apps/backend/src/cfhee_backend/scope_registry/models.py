@@ -29,3 +29,31 @@ class ScopeValuesResponse(BaseModel):
     projects: list[str]
     clients: list[str]
     modules: list[str]
+
+
+class ScopeTreeModuleNode(BaseModel):
+    name: str
+
+
+class ScopeTreeClientNode(BaseModel):
+    name: str
+    modules: list[ScopeTreeModuleNode]
+
+
+class ScopeTreeProjectNode(BaseModel):
+    name: str
+    clients: list[ScopeTreeClientNode]
+
+
+class ScopeTreeDomainNode(BaseModel):
+    name: str
+    projects: list[ScopeTreeProjectNode]
+
+
+class ScopeTreeWorkspaceNode(BaseModel):
+    name: str
+    domains: list[ScopeTreeDomainNode]
+
+
+class ScopeTreeResponse(BaseModel):
+    workspaces: list[ScopeTreeWorkspaceNode]

@@ -55,6 +55,34 @@ class ScopeValuesResponseV1(BaseModel):
     modules: list[str]
 
 
+class ScopeTreeModuleNodeV1(BaseModel):
+    name: str
+
+
+class ScopeTreeClientNodeV1(BaseModel):
+    name: str
+    modules: list[ScopeTreeModuleNodeV1]
+
+
+class ScopeTreeProjectNodeV1(BaseModel):
+    name: str
+    clients: list[ScopeTreeClientNodeV1]
+
+
+class ScopeTreeDomainNodeV1(BaseModel):
+    name: str
+    projects: list[ScopeTreeProjectNodeV1]
+
+
+class ScopeTreeWorkspaceNodeV1(BaseModel):
+    name: str
+    domains: list[ScopeTreeDomainNodeV1]
+
+
+class ScopeTreeResponseV1(BaseModel):
+    workspaces: list[ScopeTreeWorkspaceNodeV1]
+
+
 class DocumentCreateRequestV1(BaseModel):
     source_type: str
     title: str

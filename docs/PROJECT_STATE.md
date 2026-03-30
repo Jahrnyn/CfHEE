@@ -67,7 +67,7 @@ Implemented in code:
 - FastAPI backend with `GET /`, `GET /health`, `POST /documents`, `GET /documents`, `GET /documents/{id}/chunks`, `POST /retrieval/query`, `POST /answer/query`, and `GET /query-logs`
 - FastAPI backend now also exposes `GET /ops/summary` as a narrow internal read-only ops summary surface, including conservative backup visibility
 - FastAPI backend also exposes `GET /scope-values` for lightweight manual-ingest scope reuse
-- FastAPI backend now also exposes the first versioned external API shell with `GET /api/v1/health`, `GET /api/v1/capabilities`, `GET /api/v1/scopes/values`, `POST /api/v1/documents`, `POST /api/v1/retrieval/query`, `POST /api/v1/context/build`, `GET /api/v1/documents`, `GET /api/v1/documents/{document_id}`, `GET /api/v1/documents/{document_id}/chunks`, and `GET /api/v1/query-logs`
+- FastAPI backend now also exposes the first versioned external API shell with `GET /api/v1/health`, `GET /api/v1/capabilities`, `GET /api/v1/scopes/values`, `GET /api/v1/scopes/tree`, `POST /api/v1/documents`, `POST /api/v1/retrieval/query`, `POST /api/v1/context/build`, `GET /api/v1/documents`, `GET /api/v1/documents/{document_id}`, `GET /api/v1/documents/{document_id}/chunks`, and `GET /api/v1/query-logs`
 - Retrieval-to-answer handoff now uses an explicit context builder with deterministic ordering, conservative dedupe, and an answer-context limit
 - Postgres schema for workspaces, domains, projects, clients, modules, documents, and chunks
 - Document ingest flow that:
@@ -104,6 +104,7 @@ Implemented in code:
   - deterministic ingest guidance for choosing scope values
   - the current explicit-scope retrieval stance and its limits for partial-scope questions
   - the boundary that CfHEE does not perform query-scope inference and remains a scoped execution engine rather than a discovery engine
+- API v1 now also includes a scope-tree visibility helper that exposes the stored scope hierarchy without adding scope inference, scope resolution, or planning logic
 
 ## Verified status
 
@@ -112,10 +113,11 @@ Verified by code inspection:
 - manual ingest is implemented end to end in backend and frontend code
 - document listing and chunk inspection are implemented in backend and frontend code
 - scoped retrieval is implemented in backend and frontend code
-- the first versioned external API ingest, retrieval, context-build, document-inspection, and query-log inspection shell exists under `/api/v1` with `GET /api/v1/health`, `GET /api/v1/capabilities`, `GET /api/v1/scopes/values`, `POST /api/v1/documents`, `POST /api/v1/retrieval/query`, `POST /api/v1/context/build`, `GET /api/v1/documents`, `GET /api/v1/documents/{document_id}`, `GET /api/v1/documents/{document_id}/chunks`, and `GET /api/v1/query-logs`
+- the first versioned external API ingest, retrieval, context-build, document-inspection, and query-log inspection shell exists under `/api/v1` with `GET /api/v1/health`, `GET /api/v1/capabilities`, `GET /api/v1/scopes/values`, `GET /api/v1/scopes/tree`, `POST /api/v1/documents`, `POST /api/v1/retrieval/query`, `POST /api/v1/context/build`, `GET /api/v1/documents`, `GET /api/v1/documents/{document_id}`, `GET /api/v1/documents/{document_id}/chunks`, and `GET /api/v1/query-logs`
 - the v1 ingest slice now uses a nested public `scope` object and translates that request into the existing internal document-ingest contract
 - the shared public v1 `scope` model now applies conservative normalization and hierarchy validation before document and retrieval translation handlers run
 - the v1 document-create request accepts an optional `metadata` object, which is currently ignored by the backend translation layer
+- the new v1 `GET /api/v1/scopes/tree` endpoint exposes the stored scope hierarchy as a structured tree for visibility only, without deriving or suggesting scope
 - the v1 retrieval slice now uses the same nested public `scope` object and translates that request into the existing internal retrieval contract
 - the v1 retrieval response adapts current retrieval results into a public contract and omits diagnostics unless they are explicitly requested
 - the v1 context-build slice now exposes provider-free retrieval-derived context preparation with deterministic chunk selection, formatted context text, selected chunks, dropped chunk IDs, and optional retrieval diagnostics
@@ -143,6 +145,7 @@ Verified by code inspection:
 - manual ingest scope suggestions and conservative normalization are implemented as a thin usability slice, not as a full scope-management system
 - current retrieval behavior remains explicit-scope-driven and does not silently widen when a query is underspecified relative to ingest scope
 - current docs now explicitly place scope determination outside CfHEE, with future partial-scope or cross-scope orchestration treated as an external concern
+- the new scope-tree helper can be exercised in-process and returns `200`, an empty tree for no rows, and a nested hierarchy for populated rows without duplicate module nodes in the checked cases
 
 Verified in the local environment during the latest check:
 
