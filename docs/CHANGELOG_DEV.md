@@ -2,6 +2,26 @@
 
 ## 2026-03-30
 
+- Added a narrow chunking robustness slice for normal text only.
+- Kept paragraph-first chunking as the main model:
+  - blank-line paragraph boundaries still define the normal chunking path
+  - short paragraphs are still greedily packed up to the current `1200`-character target
+- Added explicit oversized-paragraph fallback behavior:
+  - oversized paragraphs are now split by sentence boundaries first
+  - sentence units are greedily packed into target-sized chunks
+  - if sentence splitting still cannot keep chunks safe, a final hard character fallback is used
+- Kept the slice intentionally narrow:
+  - no code-aware chunking changes
+  - no overlap
+  - no semantic chunking
+  - no retrieval changes
+- Verified locally:
+  - backend source compiles
+  - very short text still becomes one chunk
+  - multiple short paragraphs are still greedily packed
+  - a single oversized paragraph with sentence boundaries now splits into multiple chunks under the current target
+  - a paragraph with poor sentence boundaries falls back to deterministic hard character splits
+
 - Added a small Scope Guide closure/alignment slice to `README.md`.
 - Made the project entry surface more directly operational for humans and AI helpers by adding a compact guide for:
   - `workspace`

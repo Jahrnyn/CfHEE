@@ -80,6 +80,7 @@ Implemented in code:
   - stores raw document text in Postgres without collapsing internal whitespace or line breaks
   - stores optional caller-provided document metadata in Postgres
   - chunks text by blank-line paragraph blocks with greedy paragraph packing up to the current `1200`-character target
+  - applies sentence-based fallback for oversized paragraphs and a final hard character fallback when sentence boundaries still do not produce safe chunks
   - computes Ollama-backed semantic embeddings with `bge-m3` by default
   - indexes chunks into Chroma
 - Windows-first local bootstrap scripts:
@@ -137,9 +138,10 @@ Verified by code inspection:
 - current chunking is intentionally simple:
   - chunk boundaries are created only from blank-line paragraph breaks in stored `raw_text`
   - consecutive paragraphs are greedily packed into a chunk until adding the next paragraph would exceed the current `1200`-character target
-  - there is no overlap, no sentence-level splitting, and no code-aware or format-aware chunking
+  - oversized paragraphs fall back to sentence-based packing, with a final hard character split only when sentence boundaries still do not keep chunk sizes safe
+  - there is no overlap and no code-aware or format-aware chunking
   - if text has no blank-line paragraph boundaries, it remains a single chunk
-  - a single long paragraph can exceed the `1200`-character target because the current chunker does not split inside a paragraph
+  - a single long paragraph no longer remains one giant chunk by default; it is split by sentence boundaries when possible and by a final hard fallback when needed
 - the v1 query-log slice now exposes a conservative developer-oriented list envelope for inspectable stored traces, with limit, type, and scope filters mapped onto persisted query-log fields and `workspace` + `domain` required together when scope filtering is used
 - retrieval and v1 retrieval both require explicit scope input and do not infer missing scope from query text
 - retrieval responses now include explicit scope, chunk and document identifiers, distance, and similarity score
@@ -229,7 +231,8 @@ Verified in the local environment during the latest check:
   - very short inputs become a single chunk
   - text without blank-line paragraph breaks stays a single chunk
   - multiple paragraph blocks are split only when adding the next paragraph would exceed the current `1200`-character target
-  - a single long paragraph still becomes one oversize chunk rather than being split internally
+  - a single long paragraph is now split by sentence boundaries when that keeps chunk sizes under the current target
+  - oversized paragraphs with poor or missing sentence boundaries fall back to deterministic hard character splits
   - mixed prose/code-like input receives no special chunking treatment beyond blank-line paragraph boundaries
 - `POST /api/v1/retrieval/query` omits the `diagnostics` field unless `include_diagnostics=true`, while still returning diagnostics when explicitly requested in local in-process checks
 - invalid nested v1 scope shapes and invalid `top_k` values now fail with request validation in local in-process checks instead of reaching retrieval execution
@@ -270,7 +273,7 @@ Verified in the local environment during the latest check:
 - explicit external-integration-oriented API contracts beyond the current app-driven endpoint set
 - broader document lifecycle management beyond explicit single-document deletion
 - metadata-based retrieval, ranking, filtering, or first-class metadata query surfaces
-- advanced chunking behavior such as sentence-aware splitting, code-aware splitting, overlap, or metadata-aware chunking
+- advanced chunking behavior such as code-aware splitting, language-aware splitting, overlap, or metadata-aware chunking
 - versioned `/api/v1` answer, additional scope-helper, and query-log detail endpoints beyond the current health/capabilities/ingest/retrieval/document-inspection/query-log shell
 - backup validation tooling
 - restore safety tooling
@@ -287,7 +290,7 @@ Verified in the local environment during the latest check:
 - current normal semantic ingest and retrieval require Ollama reachability for embeddings
 - `hash` embeddings remain available only as an explicit fallback mode through `EMBEDDING_PROVIDER=hash`
 - Ollama for grounded answers remains optional because the answer layer still supports deterministic fallback
-- current chunking is acceptable for the present project stage because it is inspectable and deterministic for paragraph-oriented notes, tickets, and summaries, but it is still weak for dense single-block text, code-heavy inputs, and documents without meaningful paragraph separation
+- current chunking is acceptable for the present project stage because it is inspectable and deterministic for paragraph-oriented notes, tickets, and summaries, and oversized normal-text paragraphs now degrade more safely; it is still weak for code-heavy inputs and documents whose structure is not well represented by paragraph or simple sentence boundaries
 
 ## Current portable runtime model
 
