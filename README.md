@@ -48,6 +48,39 @@ External systems are expected to retrieve scoped context from CfHEE and use it d
 - If scope is wrong or incomplete, results may be empty or partial.
 - Behavior is intended to stay explicit and deterministic.
 
+## Scope Guide
+
+- `workspace`: stable top-level knowledge space, usually an organization or other durable top boundary
+- `domain`: broad technical, product, or business area inside that workspace
+- `project`: concrete initiative or solution area when that distinction matters for retrieval
+- `client`: specific customer or tenant when that distinction is operationally meaningful
+- `module`: narrowest functional or business subsystem that is still useful as a retrieval boundary
+
+Practical rules:
+
+- the caller provides scope
+- CfHEE does not infer scope
+- retrieval stays inside the caller-provided scope
+- incorrect or overly narrow scope can produce empty or partial results
+- hard scope is not the same as descriptive metadata such as `source_type`, `language`, `source_ref`, or document `metadata`
+
+For external apps, scripts, and future orchestration layers:
+
+- use stable scope values
+- reuse existing stored scope values when possible
+- treat scope as an explicit contract with CfHEE
+- do not expect hidden scope widening, discovery behavior, or scope repair from CfHEE
+
+Example:
+
+workspace: "Internal"
+domain: "Business Central"
+project: "Finance Customization"
+client: "CustomerA"
+module: "Avizo"
+
+At minimum, `workspace` and `domain` must always be provided.
+
 ## Minimal Usage Flow
 
 1. Ingest a document with explicit scope.
@@ -109,14 +142,6 @@ Main versioned endpoints:
 - `GET /api/v1/query-logs`
 
 For the current public contract, use [docs/API_V1.md](docs/API_V1.md).
-
-## Scope Responsibility
-
-- Scope correctness is the responsibility of the caller.
-- CfHEE executes retrieval within the provided scope only.
-- Incorrect scope can produce empty results.
-- Overly narrow scope can produce partial results.
-- CfHEE does not automatically infer, repair, or widen scope for the caller.
 
 ## Current Capabilities
 

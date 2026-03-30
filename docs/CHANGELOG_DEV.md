@@ -2,6 +2,24 @@
 
 ## 2026-03-30
 
+- Added a small Scope Guide closure/alignment slice to `README.md`.
+- Made the project entry surface more directly operational for humans and AI helpers by adding a compact guide for:
+  - `workspace`
+  - `domain`
+  - `project`
+  - `client`
+  - `module`
+- Clarified at the README entry surface that:
+  - the caller provides scope
+  - CfHEE does not infer scope
+  - retrieval stays inside caller-provided scope
+  - incorrect or overly narrow scope can produce empty or partial results
+  - external callers should treat scope as an explicit contract and should not expect hidden widening or discovery behavior
+- Kept the slice intentionally narrow:
+  - no code changes
+  - no scope-policy redesign
+  - no retrieval behavior changes
+
 - Assessed the current chunking implementation as it actually exists in code and aligned docs to that verified behavior.
 - Applied one narrow correctness fix before documenting it:
   - stopped the ingest model from collapsing `raw_text` whitespace and line breaks before chunking
