@@ -43,3 +43,15 @@ Reason: the module should remain reusable by other tools, scripts, and services 
 ## ADR-011
 Long-term deployment direction is containerized, cross-environment runtime after API stabilization.
 Reason: the current Windows-heavy localhost workflow is acceptable for development, but the module should eventually become easier to run consistently on Linux and other systems.
+
+## ADR-012
+The hard scope model is limited to `workspace`, `domain`, `project`, `client`, and `module`; `source_type`, `language`, and `source_ref` are descriptive metadata only.
+Reason: retrieval partitioning must stay deterministic and must not drift into mixed use of source descriptors as pseudo-scope.
+
+## ADR-013
+Ingest should prefer the smallest stable hard scope that matches how knowledge is expected to be retrieved later, while leaving uncertain narrower fields empty instead of inventing values.
+Reason: deterministic ingest reduces fragmentation and makes strict scoped retrieval operationally usable.
+
+## ADR-014
+Current retrieval remains explicit-scope-driven and must not silently widen for partial-scope or uncertain-scope queries.
+Reason: strict scoped isolation is a deliberate safety property; wider-scope resolution is a future design area that must be made explicit rather than implicit.

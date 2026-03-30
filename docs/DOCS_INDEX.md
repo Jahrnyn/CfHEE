@@ -23,7 +23,8 @@ Defines the core domain hierarchy:
 - document
 - chunk
 
-Use this when working on persistence, retrieval, and scoping.
+Use this when working on persistence, retrieval, scoping, scope taxonomy, and ingest metadata policy.
+This is also the primary doc for the distinction between hard scope and descriptive metadata.
 
 ### `docs/API_V1.md`
 Current public API v1 contract and freeze boundary.
@@ -131,3 +132,6 @@ When documents disagree, prefer:
 
 `docs/MVP.md` is intentionally removed from the active documentation set.
 The project is no longer framed primarily as a copilot-style MVP. The current documentation is organized around a stable module boundary, current verified state, and next integration-oriented steps.
+
+`docs/TASKS.md` is not part of the active documentation set.
+Use `docs/PROJECT_STATE.md`, `docs/NEXT_STEPS.md`, and `docs/CHANGELOG_DEV.md` instead of reviving a stale task list as external memory.

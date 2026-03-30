@@ -34,23 +34,24 @@ Not frozen:
 
 ## Recommended next development step
 
-Keep the API surface stable and shift the next development focus away from new public endpoint work.
+Keep the API surface stable and make scope taxonomy plus metadata policy the next narrow conceptual focus.
 
 Why this is next:
 
 - the core scoped knowledge module is already functional in a narrow local form
-- manual ingest, chunk persistence, scoped retrieval, grounded answer access, and query logging already exist
+- manual ingest, scope-value suggestions, conservative normalization, chunk persistence, scoped retrieval, grounded answer access, query logging, and a small retrieval regression pack already exist
 - the built-in frontend is useful as a developer workbench, but it should not become the main expansion surface
 - the newly clarified architectural direction treats higher-level workflows and automation as external consumers
 - the first public versioned routing shell now exists and is frozen for contract stabilization
-- the next leverage comes from using that stable surface, not expanding it further right now
+- future real-world ingest and retrieval use now depends on deterministic scope semantics more than on broader feature expansion
+- the next leverage comes from making ingest and query scope usage reliable, not from expanding the public surface right now
 
 ## Suggested narrow scope
 
-1. Improve the frontend against the frozen API surface.
-2. Exercise the documented runtime operations, conservative backup and restore helpers, and the new read-only frontend Operations/Admin page, then extend the summary only where visibility gaps remain.
-3. Build or validate first external consumer integrations against the frozen API.
-4. Keep workflow-specific logic outside CfHEE.
+1. Keep the documented scope taxonomy and ingest metadata policy explicit and consistent across docs and future implementation work.
+2. Exercise current scoped retrieval against realistic exact-scope queries and use the regression guardrail when retrieval behavior changes.
+3. Avoid redesigning retrieval during the freeze; document partial-scope and wider-scope handling as future work instead of implying it already exists.
+4. Build or validate consumers against the frozen API only after the scope semantics they depend on are deterministic.
 
 Runtime portability note:
 
@@ -75,11 +76,12 @@ Runtime portability note:
 - expanding the `/api/v1` API surface during the freeze
 - broad connector ecosystems
 - complex file-import subsystems unless an immediate integration need forces it
+- automatic cross-scope retrieval or silent retrieval widening
 - runtime-topology changes before the current portable instance workflow has been exercised
 
 ## After that step
 
-Once the frozen API surface has been exercised by real consumers, the next long-term infrastructure target is deployment portability:
+Once scope semantics and real consumer usage are better exercised, the next long-term infrastructure target is deployment portability:
 
 - keep the portable-instance model fixed before implementation drift starts
 - harden and exercise the first containerized runtime

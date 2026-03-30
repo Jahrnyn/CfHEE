@@ -106,8 +106,26 @@ Workspace > Domain > Project > Client > Module
 - **Workspace**: highest-level separation, usually company or major knowledge space
 - **Domain**: large technical or business area inside a workspace
 - **Project**: concrete project or solution area
-- **Client**: customer or sub-tenant inside a project or domain
+- **Client**: customer or sub-tenant inside a project
 - **Module**: narrow feature, subsystem, or operational context
+
+### Scope field classes
+
+Hard scope / retrieval partitioning:
+
+- `workspace`
+- `domain`
+- `project`
+- `client`
+- `module`
+
+Descriptive document metadata:
+
+- `source_type`
+- `language`
+- `source_ref`
+
+The descriptive fields are preserved and returned for traceability, but they do not define the retrieval partition.
 
 ### Rule
 
@@ -128,6 +146,12 @@ Optional:
 - module
 - language
 - source_ref
+
+### Ingest policy stance
+
+The ingest path should prefer stable, reusable scope values over ad hoc labels.
+If a narrower hard-scope field is not truly known or not needed as a retrieval boundary, it should be left empty rather than invented.
+Conservative normalization may reduce accidental duplicates, but it does not replace deliberate scope assignment.
 
 ---
 
@@ -190,6 +214,7 @@ This layer protects isolation and keeps the knowledge base partitioned correctly
 - cross-workspace access is forbidden unless explicitly enabled
 - global search is opt-in only
 - user-provided top-level scope is never silently overridden
+- partial-scope and wider-scope query handling are future resolver concerns, not implicit current behavior
 
 ---
 
@@ -254,6 +279,8 @@ Query → Scope resolve → Embed → Scoped retrieval → Rank/select → Build
 - empty retrieval must be explicit
 - retrieved results must remain inspectable
 - retrieved chunks must preserve source traceability
+- the current design is strongest for exact or intentionally chosen scopes
+- future scope resolution or explicit widening must remain visible and explicit
 
 ---
 

@@ -1,5 +1,28 @@
 # Dev Changelog
 
+## 2026-03-30
+
+- Added a documentation-first scope taxonomy and metadata policy slice.
+- Clarified across the core docs that hard scope / retrieval partitioning is limited to:
+  - `workspace`
+  - `domain`
+  - `project`
+  - `client`
+  - `module`
+- Clarified that these are descriptive metadata fields rather than hard scope:
+  - `source_type`
+  - `language`
+  - `source_ref`
+- Documented deterministic ingest guidance so future manual ingest and automation do not fragment scope values with ad hoc labels.
+- Documented the current retrieval stance more explicitly:
+  - retrieval is explicit-scope-driven
+  - retrieval does not silently widen across scope boundaries
+  - the current model is strongest for exact or intentionally chosen scopes
+  - partial-scope and wider-scope query handling remain future design areas
+- Aligned the active doc set so `docs/TASKS.md` is no longer treated as an active source of truth.
+- Updated `docs/NEXT_STEPS.md` so the next conceptual focus is reliable scope taxonomy and metadata policy rather than broader feature expansion.
+- Tightened `docs/API_V1.md` to reflect the current implemented v1 surface more conservatively.
+
 ## 2026-03-19
 
 - Added Windows-first local bootstrap scripts:
@@ -40,7 +63,7 @@
 - Direct `.\scripts\*.ps1` execution can be blocked by PowerShell execution policy in this environment.
 - Docker emitted a user-config warning under PowerShell in this environment; the bootstrap scripts route Docker calls through `cmd.exe` to avoid that issue.
 - Scoped retrieval verification required starting Postgres with escalated Docker access in this environment.
-- `docs/TASKS.md` no longer reflects current implementation status and should be updated later.
+- `docs/TASKS.md` no longer reflected current implementation status at that time; it has since been removed from the active documentation set.
 
 ## 2026-03-20
 

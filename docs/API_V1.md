@@ -44,6 +44,7 @@ CfHEE API v1 is frozen as a contract for:
 
 - scoped knowledge storage
 - scoped retrieval
+- retrieval-derived context building
 - inspection
 - observability
 
@@ -51,16 +52,6 @@ CfHEE API v1 is not frozen as a contract for:
 
 - answer generation as a core responsibility
 - workflow orchestration
-
-### Next focus after freeze
-
-- frontend improvements
-- containerization
-- first external consumer integrations
-
-Not the next focus:
-
-- expanding the API surface
 
 ## Goal
 
@@ -73,23 +64,25 @@ The purpose of CfHEE API v1 is to:
 
 The key statement:
 
-> **CfHEE API v1 = scoped ingest + scoped retrieval + context building + grounded access + inspectability**
+> **CfHEE API v1 = scoped ingest + scoped retrieval + context building + inspectability**
 
 ---
 
 ## What is in v1
 
-Five capabilities only:
+Implemented versioned capabilities:
 
 - Scope-aware document ingest
 - Scope-aware document and chunk inspection
 - Scope-aware retrieval
 - Retrieval-derived context building
-- Scoped grounded answer as a convenience endpoint
+- Query-log inspection for developer use
+- Scope-value reuse for ingest helpers
 
-Plus one supplementary capability:
+Module note:
 
-- Trace / query log inspection for developer use
+- the module has a built-in grounded-answer capability on the unversioned convenience route
+- there is no `POST /api/v1/answer/query` route in the current frozen v1 slice
 
 ---
 
@@ -104,6 +97,7 @@ Explicitly out of scope:
 - no file parser platform
 - no bulk ingest pipeline framework
 - no cross-scope implicit search
+- no versioned answer endpoint in the current freeze slice
 - no domain-specific business endpoints
 
 ---
@@ -114,19 +108,37 @@ Explicitly out of scope:
 
 Retrieval is already scoped by default. The API must enforce this strictly.
 
-### 2. API-first, UI-second
+### 2. Hard scope is distinct from descriptive metadata
 
-The frontend is a consumer only — not a privileged client.
+Hard scope / retrieval partitioning fields:
 
-### 3. Raw and structured together
+- `workspace`
+- `domain`
+- `project`
+- `client`
+- `module`
+
+Descriptive metadata fields:
+
+- `source_type`
+- `language`
+- `source_ref`
+
+The descriptive fields are stored and returned, but they are not part of the shared scope object and do not define the retrieval partition.
+
+### 3. API-first, UI-second
+
+The frontend is a consumer only, not a privileged client.
+
+### 4. Raw and structured together
 
 The system preserves both raw input and structured chunks. The API exposes both document-level and chunk-level views accordingly.
 
-### 4. Versioned contract
+### 5. Versioned contract
 
-All public endpoints are under `/api/v1/...`.
+All public endpoints in this slice are under `/api/v1/...`.
 
-### 5. Deterministic envelope
+### 6. Deterministic envelope
 
 All responses follow a consistent shape so external apps can consume them easily.
 
@@ -136,12 +148,12 @@ All responses follow a consistent shape so external apps can consume them easily
 
 ### 1. System
 
-```
-GET  /api/v1/health
-GET  /api/v1/capabilities
+```text
+GET /api/v1/health
+GET /api/v1/capabilities
 ```
 
-External clients need a quick bootstrap to check whether the service is alive, which features are enabled, and whether the answer provider is available.
+External clients need a quick bootstrap to check whether the service is alive and which backend capabilities exist.
 
 **Example response**
 
@@ -161,18 +173,19 @@ External clients need a quick bootstrap to check whether the service is alive, w
 }
 ```
 
+`grounded_answer: true` indicates a module capability exists.
+It does not imply a versioned `/api/v1/answer/query` endpoint exists in the current slice.
+
 ---
 
 ### 2. Scope Helpers
 
-```
-GET  /api/v1/scopes/values
-POST /api/v1/scopes/resolve
+```text
+GET /api/v1/scopes/values
 ```
 
-#### GET /api/v1/scopes/values
-
-Retrieves existing scope values. Useful for autocomplete in external ingest tools.
+Retrieves existing stored scope values for reuse during ingest.
+Useful for autocomplete and conservative value reuse in external tools.
 
 **Query params** (all optional): `workspace`, `domain`, `project`, `client`
 
@@ -188,57 +201,23 @@ Retrieves existing scope values. Useful for autocomplete in external ingest tool
 }
 ```
 
-#### POST /api/v1/scopes/resolve
+Current note:
 
-Allows a client to verify how a scope would be normalized — and validate it before ingest.
-
-**Request**
-
-```json
-{
-  "scope": {
-    "workspace": " Bechtle ",
-    "domain": "CRM ",
-    "project": "Dynamics Rollout",
-    "client": "Contoso",
-    "module": "Lead Sync"
-  }
-}
-```
-
-**Response**
-
-```json
-{
-  "normalized_scope": {
-    "workspace": "Bechtle",
-    "domain": "CRM",
-    "project": "Dynamics Rollout",
-    "client": "Contoso",
-    "module": "Lead Sync"
-  },
-  "matched_existing": {
-    "workspace": true,
-    "domain": true,
-    "project": false,
-    "client": false,
-    "module": false
-  }
-}
-```
+- the current v1 helper surface exposes only value reuse
+- there is no versioned scope-resolution endpoint in the current freeze slice
 
 ---
 
 ### 3. Documents
 
-```
+```text
 POST /api/v1/documents
 GET  /api/v1/documents
 GET  /api/v1/documents/{document_id}
 GET  /api/v1/documents/{document_id}/chunks
 ```
 
-This is close to the current implementation, promoted to a stable public contract.
+These routes expose the current public ingest and inspection slice.
 
 #### POST /api/v1/documents
 
@@ -267,88 +246,27 @@ The primary ingest endpoint.
 }
 ```
 
-> `metadata` is optional and loosely structured. In the current v1 slice, it is accepted by the public request model but not persisted yet.
-
-**Response**
-
-```json
-{
-  "document_id": 142,
-  "status": "stored",
-  "scope": {
-    "workspace": "Internal",
-    "domain": "Business Central",
-    "project": "Finance Customization",
-    "client": "CustomerA",
-    "module": "Avizo"
-  },
-  "chunk_count": 7,
-  "indexed": true
-}
-```
+`metadata` is optional and loosely structured.
+In the current v1 slice, it is accepted by the public request model but not persisted by the backend translation layer.
 
 #### GET /api/v1/documents
 
-Filterable list endpoint. **Document listing is scoped by default.**
+Filterable list endpoint.
+Document listing is scoped by default.
 
 **Query params**: `workspace`, `domain`, `project`, `client`, `module`, `source_type`, `title_contains`, `limit`, `offset`
 
-In v1, at least `workspace` + `domain` are required (conservative approach).
-
-#### GET /api/v1/documents/{document_id}
-
-Document metadata and raw preview.
-
-**Response**
-
-```json
-{
-  "document_id": 142,
-  "title": "Rydoo refund avizo logic extension",
-  "source_type": "jira_ticket",
-  "language": "en",
-  "source_ref": "JIRA-123",
-  "scope": {
-    "workspace": "Internal",
-    "domain": "Business Central",
-    "project": "Finance Customization",
-    "client": "CustomerA",
-    "module": "Avizo"
-  },
-  "raw_text_preview": "First 1000 chars...",
-  "chunk_count": 7,
-  "created_at": "2026-03-26T18:00:00Z"
-}
-```
-
-#### GET /api/v1/documents/{document_id}/chunks
-
-**Response**
-
-```json
-{
-  "document_id": 142,
-  "chunks": [
-    {
-      "chunk_id": 991,
-      "chunk_index": 0,
-      "text": "...",
-      "char_count": 432
-    }
-  ]
-}
-```
+In v1, at least `workspace` and `domain` are required.
 
 ---
 
 ### 4. Retrieval
 
-```
+```text
 POST /api/v1/retrieval/query
-POST /api/v1/context/build
 ```
 
-The most important external endpoint. Retrieval is the core value path.
+This is the main external retrieval endpoint.
 
 **Request**
 
@@ -397,87 +315,28 @@ The most important external endpoint. Retrieval is the core value path.
 }
 ```
 
-**Optional diagnostics** (only when `include_diagnostics: true`)
+Current retrieval stance:
 
-Retrieval diagnostics already exist in the query logs. In v1, they are not part of the default response.
+- retrieval is explicit-scope-driven
+- the system does not silently widen across scope boundaries
+- the current model is strongest for exact or intentionally chosen scopes
+- partial-scope and wider-scope handling remain future design areas
 
-When `include_diagnostics` is `false`, the `diagnostics` field is omitted from the response.
+Diagnostics note:
 
-```json
-{
-  "diagnostics": {
-    "candidate_count": 20,
-    "top_k_limit_hit": false,
-    "reranking_applied": true,
-    "original_ranked_chunk_ids": [1, 3, 5],
-    "reranked_chunk_ids": [3, 1, 5]
-  }
-}
-```
+- retrieval diagnostics are omitted unless `include_diagnostics=true`
+- diagnostics already exist in stored query logs for inspection
 
 ---
 
 ### 5. Context Build
 
-```
+```text
 POST /api/v1/context/build
 ```
 
 This endpoint prepares provider-free, retrieval-derived context for external consumers.
 It does not generate an answer and does not add prompt instructions.
-
-**Request**
-
-```json
-{
-  "query": "Where is refund handling described in avizo logic?",
-  "scope": {
-    "workspace": "Internal",
-    "domain": "Business Central",
-    "project": "Finance Customization",
-    "client": "CustomerA",
-    "module": "Avizo"
-  },
-  "top_k": 5,
-  "max_context_chunks": 4,
-  "include_diagnostics": false
-}
-```
-
-**Response**
-
-```json
-{
-  "status": "ok",
-  "query": "Where is refund handling described in avizo logic?",
-  "active_scope": {
-    "workspace": "Internal",
-    "domain": "Business Central",
-    "project": "Finance Customization",
-    "client": "CustomerA",
-    "module": "Avizo"
-  },
-  "context_text": "[Chunk 1]\n...",
-  "selected_chunks": [
-    {
-      "document_id": 142,
-      "chunk_id": 991,
-      "chunk_index": 0,
-      "title": "Rydoo refund avizo logic extension",
-      "source_type": "jira_ticket",
-      "similarity_score": 0.88,
-      "distance": 0.12,
-      "text": "...."
-    }
-  ],
-  "selected_chunk_count": 1,
-  "dropped_chunk_ids": [],
-  "context_stats": {
-    "char_count": 180,
-    "chunk_count": 1
-  }
-}
-```
 
 Behavior in the current slice:
 
@@ -490,116 +349,21 @@ Behavior in the current slice:
 
 ---
 
-### 6. Answer
+### 6. Query Logs / Traces
 
-```
-POST /api/v1/answer/query
-```
-
-> **This is a convenience endpoint.** The grounded answer is built on top of retrieval, with provider selection and fallback. External apps should treat this as an optional layer, not the primary integration point.
-
-**Request**
-
-```json
-{
-  "query": "Summarize the refund handling in avizo logic.",
-  "scope": {
-    "workspace": "Internal",
-    "domain": "Business Central",
-    "project": "Finance Customization",
-    "client": "CustomerA",
-    "module": "Avizo"
-  },
-  "top_k": 5,
-  "max_context_chunks": 4,
-  "language": "en",
-  "include_citations": true
-}
-```
-
-**Response**
-
-```json
-{
-  "status": "ok",
-  "answer": "Refund handling is covered in ...",
-  "active_scope": {
-    "workspace": "Internal",
-    "domain": "Business Central",
-    "project": "Finance Customization",
-    "client": "CustomerA",
-    "module": "Avizo"
-  },
-  "citations": [
-    {
-      "document_id": 142,
-      "chunk_id": 991,
-      "chunk_index": 0
-    }
-  ],
-  "provider": {
-    "configured": "auto",
-    "used": "ollama",
-    "fallback_used": false
-  },
-  "evidence": {
-    "has_evidence": true,
-    "context_used_count": 3,
-    "grounded_flag": true
-  }
-}
-```
-
-External apps can choose between using retrieval directly or using this built-in convenience layer.
-
----
-
-### 7. Query Logs / Traces
-
-```
+```text
 GET /api/v1/query-logs
-GET /api/v1/query-logs/{query_log_id}
 ```
-
-Useful for regression checks, debugging, workflow audit trails, and answering "why did it return this?".
-
-#### GET /api/v1/query-logs
 
 This endpoint is explicitly developer-oriented and intended for inspectability rather than end-user output.
 
 **Query params**: `limit`, `type` (`retrieval` | `answer`), `workspace`, `domain`, `project`, `client`, `module`
 
-When scope filtering is used, `workspace` and `domain` should be provided together.
+When scope filtering is used, `workspace` and `domain` must be provided together.
 
-**Response**
+Current note:
 
-```json
-{
-  "items": [
-    {
-      "query_log_id": 88,
-      "type": "answer",
-      "query": "Summarize refund handling",
-      "created_at": "2026-03-26T19:00:00Z",
-      "active_scope": {
-        "workspace": "Internal",
-        "domain": "Business Central"
-      },
-      "result_count": 4,
-      "provider_used": "ollama",
-      "fallback_used": false
-    }
-  ],
-  "paging": {
-    "limit": 20,
-    "returned": 1
-  }
-}
-```
-
-#### GET /api/v1/query-logs/{query_log_id}
-
-Returns a detailed trace for the given log entry.
+- there is no versioned query-log detail endpoint in the current freeze slice
 
 ---
 
@@ -618,6 +382,11 @@ All scope-bearing endpoints use the same scope shape.
   "module": "string|null"
 }
 ```
+
+Hierarchy validation in the current slice:
+
+- `client` requires `project`
+- `module` requires `client`
 
 ### ApiError
 
@@ -652,29 +421,23 @@ All scope-bearing endpoints use the same scope shape.
 |--------|---------|
 | `ok` | Success |
 | `no_results` | Query returned no matches |
-| `no_evidence` | Answer had no grounding context |
 | `validation_error` | Request was malformed or missing required fields |
-| `provider_failure` | Answer provider was unavailable or failed |
+
+Note:
+`no_evidence` and `provider_failure` remain relevant to the built-in answer capability, but they are not currently part of the versioned v1 route surface.
 
 ---
 
 ## Authentication Stance (v1)
 
-The system is currently local-first and developer-heavy. Complex auth is not introduced in v1.
+The system is currently local-first and developer-heavy.
+Complex auth is not introduced in v1.
 
-**v1 position:**
+v1 position:
 
 - no complex auth by default
-- optional API key layer to be added later
-- can be tightened during the containerization / runtime phase
-
-A future-ready header placeholder is reserved:
-
-```
-X-CFHEE-API-Key: ...
-```
-
-This is a no-op or disabled by default in v1.
+- optional API key layer may be added later
+- auth hardening belongs to later runtime and deployment work
 
 ---
 
@@ -682,17 +445,17 @@ This is a no-op or disabled by default in v1.
 
 Everything in v1 is synchronous.
 
-**Why:**
+Why:
 
-- the current core is a sync flow
+- the current core is a synchronous flow
 - simpler for external clients
 - easier to stabilize on a smaller surface area
 
-**Explicitly not in v1:**
+Explicitly not in v1:
 
 - `POST /jobs`
 - polling
 - callbacks
 - event queues
 
-Async patterns are a concern for the workflow layer, not the core.
+Async patterns are a concern for higher-level workflow layers, not the core module.

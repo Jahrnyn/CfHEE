@@ -1,6 +1,6 @@
 # Project State
 
-Last reviewed: 2026-03-27
+Last reviewed: 2026-03-30
 
 ## Current project identity
 
@@ -98,6 +98,11 @@ Implemented in code:
 - Retrieval regression guardrail:
   - fixture: `apps/backend/fixtures/retrieval_regression_cases.json`
   - runner: `apps/backend/scripts/retrieval_regression_check.py`
+- Documentation alignment for operational usage now defines:
+  - hard scope as `workspace` / `domain` / `project` / `client` / `module`
+  - `source_type`, `language`, and `source_ref` as descriptive metadata rather than retrieval partition keys
+  - deterministic ingest guidance for choosing scope values
+  - the current explicit-scope retrieval stance and its limits for partial-scope questions
 
 ## Verified status
 
@@ -134,6 +139,7 @@ Verified by code inspection:
 - query logs now also preserve original vs. reranked chunk order plus whether reranking changed the final order
 - a tiny backend-side retrieval regression pack now exists for rerunning a few high-signal real-document queries after retrieval changes
 - manual ingest scope suggestions and conservative normalization are implemented as a thin usability slice, not as a full scope-management system
+- current retrieval behavior remains explicit-scope-driven and does not silently widen when a query is underspecified relative to ingest scope
 
 Verified in the local environment during the latest check:
 
@@ -189,6 +195,8 @@ Verified in the local environment during the latest check:
 ## Not implemented yet
 
 - real scope management UI
+- query-scope resolution for partial-scope or uncertain-scope questions
+- explicit wider-scope retrieval orchestration across multiple scopes
 - broader settings or admin UI beyond the current read-only `Operations / Admin` surface
 - bulk file import, connectors, and OCR
 - explicit external-integration-oriented API contracts beyond the current app-driven endpoint set
@@ -236,6 +244,7 @@ What currently exists should be read as:
 
 Future growth should prefer:
 
+- deterministic scope taxonomy and metadata policy usage during ingest and retrieval operations
 - frontend improvements around the frozen API
 - portable runtime operations, backup, and restore on top of the current runtime slice
 - first external consumer integrations
