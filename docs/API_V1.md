@@ -413,6 +413,10 @@ POST /api/v1/context/build
 This endpoint prepares provider-free, retrieval-derived context for external consumers.
 It does not generate an answer and does not add prompt instructions.
 It also does not determine or infer scope on behalf of the caller.
+This endpoint is designed for single-scope context preparation.
+
+It is not intended to replace multi-scope orchestration or iterative retrieval strategies.
+External systems are expected to perform scope planning and multi-query aggregation when needed.
 
 Behavior in the current slice:
 

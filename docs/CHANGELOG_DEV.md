@@ -2,6 +2,22 @@
 
 ## 2026-03-30
 
+- Applied a minimal corrective patch to `README.md` without redesigning it.
+- Restored three small missing README cues:
+  - CfHEE explicitly acts as a `Knowledge Infrastructure Module`
+  - core capability is retrieval-derived context building for downstream consumers
+  - a short `Running CfHEE` section now points to dev (`4200` / `8000`), portable runtime (`4210` / `8010`), `dev-up.ps1`, and `docs/RUNTIME_OPERATIONS.md`
+
+- Rewrote `README.md` into a concise project entry point for developers and AI agents.
+- The new README now focuses on:
+  - what CfHEE is and is not
+  - the explicit scope model
+  - deterministic scoped execution
+  - a minimal ingest and retrieval example
+  - a lightweight current API overview
+  - pointers into `/docs/` as the source of truth
+- Removed outdated README sections that duplicated runtime and operational details better covered in `/docs`.
+
 - Polished the frontend `Documents` delete action styling only.
 - Kept behavior unchanged while making the `Delete` button read more clearly as a destructive action through a stronger danger-style background, border, and hover/focus treatment scoped to the Documents page.
 - Verified locally:
