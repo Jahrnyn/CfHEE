@@ -46,6 +46,12 @@ export interface ChunkSummary {
   created_at: string;
 }
 
+export interface DocumentDeleteResponse {
+  status: string;
+  document_id: number;
+  deleted_chunk_count: number;
+}
+
 @Injectable({ providedIn: 'root' })
 export class DocumentsApiService {
   private readonly http = inject(HttpClient);
@@ -61,5 +67,9 @@ export class DocumentsApiService {
 
   listDocumentChunks(documentId: number): Observable<ChunkSummary[]> {
     return this.http.get<ChunkSummary[]>(`${this.apiBaseUrl}/documents/${documentId}/chunks`);
+  }
+
+  deleteDocument(documentId: number): Observable<DocumentDeleteResponse> {
+    return this.http.delete<DocumentDeleteResponse>(`${this.apiBaseUrl}/api/v1/documents/${documentId}`);
   }
 }

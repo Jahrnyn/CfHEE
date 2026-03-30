@@ -24,6 +24,7 @@ import { ChunkSummary, DocumentSummary, DocumentsApiService } from '../documents
       </div>
 
       <p *ngIf="errorMessage" class="error">{{ errorMessage }}</p>
+      <p *ngIf="successMessage" class="success">{{ successMessage }}</p>
 
       <p *ngIf="!isLoading && documents.length === 0" class="empty">
         No documents stored yet. Add the first one from Inbox / Capture.
@@ -52,6 +53,14 @@ import { ChunkSummary, DocumentSummary, DocumentsApiService } from '../documents
           <div class="chunk-actions">
             <button type="button" (click)="toggleChunks(document.id)">
               {{ expandedDocumentId === document.id ? 'Hide chunks' : 'Inspect chunks' }}
+            </button>
+            <button
+              type="button"
+              class="danger-button"
+              (click)="confirmDelete(document)"
+              [disabled]="deletingDocumentId === document.id"
+            >
+              {{ deletingDocumentId === document.id ? 'Deleting...' : 'Delete' }}
             </button>
           </div>
 
@@ -192,6 +201,9 @@ import { ChunkSummary, DocumentSummary, DocumentsApiService } from '../documents
 
       .chunk-actions {
         margin-top: 16px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
       }
 
       .chunks {
@@ -230,6 +242,18 @@ import { ChunkSummary, DocumentSummary, DocumentsApiService } from '../documents
         color: #991b1b;
         background: #fee2e2;
       }
+
+      .success {
+        margin: 0 0 16px;
+        padding: 12px 14px;
+        border-radius: 14px;
+        color: #065f46;
+        background: #d1fae5;
+      }
+
+      .danger-button {
+        background: #b91c1c;
+      }
     `
   ]
 })
@@ -240,7 +264,9 @@ export class DocumentsPageComponent implements OnInit {
   protected documentChunks: ChunkSummary[] = [];
   protected expandedDocumentId: number | null = null;
   protected errorMessage = '';
+  protected successMessage = '';
   protected chunkErrorMessage = '';
+  protected deletingDocumentId: number | null = null;
   protected isLoading = false;
   protected isLoadingChunks = false;
 
@@ -260,6 +286,38 @@ export class DocumentsPageComponent implements OnInit {
       error: () => {
         this.errorMessage = 'Unable to load documents from the backend.';
         this.isLoading = false;
+      }
+    });
+  }
+
+  protected confirmDelete(document: DocumentSummary): void {
+    const confirmed = window.confirm(`Delete "${document.title}" and its stored chunks and vectors?`);
+    if (!confirmed) {
+      return;
+    }
+
+    this.deletingDocumentId = document.id;
+    this.errorMessage = '';
+    this.successMessage = '';
+
+    this.documentsApi.deleteDocument(document.id).subscribe({
+      next: (result) => {
+        if (this.expandedDocumentId === document.id) {
+          this.expandedDocumentId = null;
+          this.documentChunks = [];
+          this.chunkErrorMessage = '';
+        }
+
+        this.successMessage = `Deleted document ${result.document_id} and ${result.deleted_chunk_count} chunk(s).`;
+        this.deletingDocumentId = null;
+        this.loadDocuments();
+      },
+      error: (error) => {
+        this.errorMessage =
+          error?.status === 404
+            ? `Document ${document.id} was already removed.`
+            : 'Unable to delete the selected document.';
+        this.deletingDocumentId = null;
       }
     });
   }

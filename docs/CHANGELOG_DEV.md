@@ -2,6 +2,36 @@
 
 ## 2026-03-30
 
+- Added a narrow document lifecycle delete slice.
+- Added `DELETE /api/v1/documents/{document_id}`.
+- Implemented backend document deletion as an explicit service-layer operation that:
+  - checks the target document exists
+  - captures stored chunk IDs for that document
+  - removes associated vector entries through the existing vector-store abstraction
+  - deletes the document row, with associated chunk rows removed through the existing Postgres relationship
+- Kept the slice intentionally narrow:
+  - no soft delete
+  - no undo
+  - no batch delete
+  - no scope delete
+  - no query-log history cleanup
+- Added a minimal read-only-workbench delete action to the existing `Documents` page:
+  - browser confirmation before delete
+  - calls the new v1 delete route
+  - refreshes the document list after success
+  - shows a small success or error message
+- Verified locally in the source-based dev environment:
+  - backend source still compiles
+  - frontend production build still succeeds
+  - live HTTP `DELETE /api/v1/documents/{document_id}` returns `200` for inserted test documents
+  - the deleted documents no longer appear in `GET /documents`
+  - `GET /documents/{document_id}/chunks` returns no chunks after deletion in the checked cases
+  - the corresponding chunk IDs are absent from the active local Chroma collection after deletion in the checked cases
+  - deleting a missing document now returns HTTP `404` with a clear not-found message
+- Frontend verification for this slice was narrower:
+  - a live headless browser DOM check showed the `Documents` page rendering the new `Delete` action for stored documents
+  - I did not complete a full browser-automation click-through of the confirmation dialog and success state
+
 - Added a documentation-first scope taxonomy and metadata policy slice.
 - Clarified across the core docs that hard scope / retrieval partitioning is limited to:
   - `workspace`

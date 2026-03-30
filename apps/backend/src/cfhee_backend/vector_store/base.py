@@ -45,5 +45,8 @@ class VectorStore(Protocol):
     def index_chunks(self, chunks: list[VectorChunkRecord]) -> None:
         """Persist chunk vectors and metadata into the active vector index."""
 
+    def delete_chunks(self, chunk_ids: list[int]) -> None:
+        """Remove chunk vectors from the active vector index by stored chunk id."""
+
     def query_chunks(self, query: VectorQuery) -> list[VectorQueryMatch]:
         """Return scoped chunk matches for a query embedding."""

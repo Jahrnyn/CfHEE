@@ -58,6 +58,7 @@ Implemented in code:
 
 - Angular frontend shell with routes for `Overview`, `Inbox / Capture`, `Documents`, `Ask`, and `Operations / Admin`
 - Working frontend views for manual ingest and document listing
+- Working frontend `Documents` view now also supports explicit single-document deletion with confirmation
 - Manual ingest now supports reusing stored scope values through lightweight suggestions while still allowing new values
 - Working frontend view for scoped retrieval in `Ask`
 - Working frontend `Ask` flow for grounded answers plus retrieval-only inspection
@@ -69,6 +70,7 @@ Implemented in code:
 - FastAPI backend now also exposes `GET /ops/summary` as a narrow internal read-only ops summary surface, including conservative backup visibility
 - FastAPI backend also exposes `GET /scope-values` for lightweight manual-ingest scope reuse
 - FastAPI backend now also exposes the first versioned external API shell with `GET /api/v1/health`, `GET /api/v1/capabilities`, `GET /api/v1/scopes/values`, `GET /api/v1/scopes/tree`, `POST /api/v1/documents`, `POST /api/v1/retrieval/query`, `POST /api/v1/context/build`, `GET /api/v1/documents`, `GET /api/v1/documents/{document_id}`, `GET /api/v1/documents/{document_id}/chunks`, and `GET /api/v1/query-logs`
+- FastAPI backend now also exposes `DELETE /api/v1/documents/{document_id}` for deterministic document lifecycle cleanup
 - Retrieval-to-answer handoff now uses an explicit context builder with deterministic ordering, conservative dedupe, and an answer-context limit
 - Postgres schema for workspaces, domains, projects, clients, modules, documents, and chunks
 - Document ingest flow that:
@@ -134,6 +136,7 @@ Verified by code inspection:
 - source-grounded answers are implemented on top of retrieval using provider selection with Ollama plus deterministic fallback
 - Ollama grounded-answer prompting is now built through an explicit prompt builder with conservative instructions and deterministic context formatting
 - vector-store abstraction exists and is currently backed by Chroma
+- document deletion now uses the existing vector-store abstraction to remove chunk vectors from the active backend
 - embedding abstraction exists and is currently backed by a local hash embedding service
 - the repo now contains a first portable runtime container skeleton for frontend, backend, and Postgres
 - the portable runtime now wires backend Postgres access through the Compose service name and backend Chroma persistence through an explicit mounted runtime-data path
@@ -154,6 +157,7 @@ Verified by code inspection:
 - the source-based dev environment now also verifies `GET /api/v1/scopes/tree` over live HTTP against Postgres-backed data, including checked cases for two modules under one parent, a separate project branch, and a separate workspace/domain branch without duplicate module nodes
 - the frontend `Scope Explorer` page is read-only and introduces no scope editing, scope inference, or orchestration controls
 - the `Scope Explorer` polish slice removes the inline raw JSON panel and replaces it with a download action for the current scope tree payload
+- the `Documents` page now includes a narrow operational delete action that confirms before calling the new v1 delete route and refreshes the list after success
 
 Verified in the local environment during the latest check:
 
@@ -185,6 +189,11 @@ Verified in the local environment during the latest check:
 - the source-based dev frontend now serves the `/scopes` route on `http://127.0.0.1:4200`, and a live browser check showed the page rendering the fetched nested tree for the current backend data
 - frontend production build still succeeds after the `Scope Explorer` polish update
 - a live browser check now shows the `Scope Explorer` page rendering with collapsed workspace rows by default and a `Download JSON` action, with no inline raw JSON panel visible
+- backend source still compiles after adding the document delete lifecycle slice
+- frontend production build still succeeds after adding the `Documents` delete action
+- live source-based dev checks now show `DELETE /api/v1/documents/{document_id}` returning `200` for an inserted test document, removing that document from the unversioned `GET /documents` list, returning no chunks from `GET /documents/{document_id}/chunks`, and removing the corresponding chunk ID from the active local Chroma collection in the checked cases
+- live source-based dev checks now show `DELETE /api/v1/documents/{document_id}` returning `404` with a clear not-found message for a missing document ID
+- a live headless browser DOM check now shows the `Documents` page rendering the new `Delete` action for stored documents in the source-based dev frontend
 - `POST /api/v1/retrieval/query` omits the `diagnostics` field unless `include_diagnostics=true`, while still returning diagnostics when explicitly requested in local in-process checks
 - invalid nested v1 scope shapes and invalid `top_k` values now fail with request validation in local in-process checks instead of reaching retrieval execution
 - `docker compose config` resolves successfully for the new multi-container runtime definition
@@ -221,6 +230,7 @@ Verified in the local environment during the latest check:
 - broader settings or admin UI beyond the current read-only `Operations / Admin` surface
 - bulk file import, connectors, and OCR
 - explicit external-integration-oriented API contracts beyond the current app-driven endpoint set
+- broader document lifecycle management beyond explicit single-document deletion
 - versioned `/api/v1` answer, additional scope-helper, and query-log detail endpoints beyond the current health/capabilities/ingest/retrieval/document-inspection/query-log shell
 - backup validation tooling
 - restore safety tooling

@@ -1,10 +1,11 @@
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, HTTPException, Query
 
 from cfhee_backend.api.v1.models import (
     ChunkItemV1,
     DocumentChunksResponseV1,
     DocumentCreateRequestV1,
     DocumentCreateResponseV1,
+    DocumentDeleteResponseV1,
     DocumentDetailResponseV1,
     DocumentListItemV1,
     DocumentListResponseV1,
@@ -14,10 +15,12 @@ from cfhee_backend.api.v1.models import (
 from cfhee_backend.ingestion.models import DocumentCreate
 from cfhee_backend.ingestion.service import (
     create_document,
+    delete_document,
     get_document,
     get_document_chunk_count,
     list_document_chunks,
     list_documents_filtered,
+    DocumentNotFoundError,
 )
 
 router = APIRouter(tags=["api-v1-documents"])
@@ -153,4 +156,18 @@ def list_document_chunks_v1(document_id: int) -> DocumentChunksResponseV1:
             )
             for chunk in chunks
         ],
+    )
+
+
+@router.delete("/documents/{document_id}", response_model=DocumentDeleteResponseV1, tags=["documents"])
+def delete_document_v1(document_id: int) -> DocumentDeleteResponseV1:
+    try:
+        result = delete_document(document_id)
+    except DocumentNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+    return DocumentDeleteResponseV1(
+        status=result.status,
+        document_id=result.document_id,
+        deleted_chunk_count=result.deleted_chunk_count,
     )

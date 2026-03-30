@@ -49,6 +49,12 @@ class ChromaVectorStore:
             ],
         )
 
+    def delete_chunks(self, chunk_ids: list[int]) -> None:
+        if not chunk_ids:
+            return
+
+        self._collection.delete(ids=[str(chunk_id) for chunk_id in chunk_ids])
+
     def query_chunks(self, query: VectorQuery) -> list[VectorQueryMatch]:
         response = self._collection.query(
             query_embeddings=[query.embedding],

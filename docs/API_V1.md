@@ -264,6 +264,7 @@ POST /api/v1/documents
 GET  /api/v1/documents
 GET  /api/v1/documents/{document_id}
 GET  /api/v1/documents/{document_id}/chunks
+DELETE /api/v1/documents/{document_id}
 ```
 
 These routes expose the current public ingest and inspection slice.
@@ -306,6 +307,29 @@ Document listing is scoped by default.
 **Query params**: `workspace`, `domain`, `project`, `client`, `module`, `source_type`, `title_contains`, `limit`, `offset`
 
 In v1, at least `workspace` and `domain` are required.
+
+#### DELETE /api/v1/documents/{document_id}
+
+Deletes one stored document by `document_id`.
+
+Current behavior:
+
+- deletes the document row from Postgres
+- deletes associated chunk rows through the existing document-to-chunk relationship
+- deletes associated vector entries using the stored chunk IDs
+- does not remove historical query-log rows that may have referenced the deleted document
+
+If the document does not exist, the route returns `404`.
+
+**Response**
+
+```json
+{
+  "status": "ok",
+  "document_id": 123,
+  "deleted_chunk_count": 7
+}
+```
 
 ---
 

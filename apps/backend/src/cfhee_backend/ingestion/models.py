@@ -78,3 +78,9 @@ class ChunkSummary(BaseModel):
     client: str | None
     module: str | None
     created_at: datetime
+
+
+class DocumentDeleteResult(BaseModel):
+    document_id: int
+    deleted_chunk_count: int
+    status: str

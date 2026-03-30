@@ -101,6 +101,12 @@ class DocumentCreateResponseV1(BaseModel):
     indexed: bool
 
 
+class DocumentDeleteResponseV1(BaseModel):
+    status: str
+    document_id: int
+    deleted_chunk_count: int
+
+
 class DocumentListItemV1(BaseModel):
     document_id: int
     title: str

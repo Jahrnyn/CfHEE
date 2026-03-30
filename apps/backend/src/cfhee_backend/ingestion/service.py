@@ -4,11 +4,15 @@ from typing import Any
 
 from cfhee_backend.chunking.service import chunk_document
 from cfhee_backend.embeddings import get_embedding_service
-from cfhee_backend.ingestion.models import ChunkSummary, DocumentCreate, DocumentSummary
+from cfhee_backend.ingestion.models import ChunkSummary, DocumentCreate, DocumentDeleteResult, DocumentSummary
 from cfhee_backend.persistence.database import get_connection
 from cfhee_backend.scope_registry.service import resolve_scope_name
 from cfhee_backend.vector_store import get_vector_store
 from cfhee_backend.vector_store.base import VectorChunkRecord
+
+
+class DocumentNotFoundError(ValueError):
+    """Raised when a document lifecycle operation targets a missing document."""
 
 
 def create_document(payload: DocumentCreate) -> DocumentSummary:
@@ -256,6 +260,61 @@ def list_document_chunks(document_id: int) -> list[ChunkSummary]:
             rows = cursor.fetchall()
 
     return [ChunkSummary.model_validate(row) for row in rows]
+
+
+def delete_document(document_id: int) -> DocumentDeleteResult:
+    vector_store = get_vector_store()
+
+    with get_connection() as connection:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT id
+                FROM documents
+                WHERE id = %(document_id)s
+                """,
+                {"document_id": document_id},
+            )
+            document_row = cursor.fetchone()
+
+            if document_row is None:
+                raise DocumentNotFoundError(f"document {document_id} was not found")
+
+            cursor.execute(
+                """
+                SELECT id
+                FROM chunks
+                WHERE document_id = %(document_id)s
+                ORDER BY id ASC
+                """,
+                {"document_id": document_id},
+            )
+            chunk_rows = cursor.fetchall()
+            chunk_ids = [int(row["id"]) for row in chunk_rows]
+
+            # Capture the stored chunk ids first so vector cleanup follows the same explicit mapping.
+            vector_store.delete_chunks(chunk_ids)
+
+            cursor.execute(
+                """
+                DELETE FROM documents
+                WHERE id = %(document_id)s
+                RETURNING id
+                """,
+                {"document_id": document_id},
+            )
+            deleted_row = cursor.fetchone()
+
+        connection.commit()
+
+    if deleted_row is None:
+        raise DocumentNotFoundError(f"document {document_id} was not found")
+
+    return DocumentDeleteResult(
+        status="ok",
+        document_id=int(deleted_row["id"]),
+        deleted_chunk_count=len(chunk_ids),
+    )
 
 
 def get_document_chunk_count(document_id: int) -> int:
