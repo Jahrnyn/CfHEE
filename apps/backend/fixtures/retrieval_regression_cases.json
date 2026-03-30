@@ -9,7 +9,7 @@
   },
   {
     "name": "summary-question-eclsbc-1028",
-    "query_text": "Mi az ECLSBC-1028 fejlesztés összefoglalója?",
+    "query_text": "Mi az ECLSBC-1028 fejleszt\u00e9s \u00f6sszefoglal\u00f3ja?",
     "workspace": "Business Central",
     "domain": "AL",
     "top_k": 5,

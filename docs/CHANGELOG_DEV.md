@@ -2,6 +2,34 @@
 
 ## 2026-03-30
 
+- Added a narrow semantic regression verification slice for the new Ollama-backed `bge-m3` embedding path.
+- Fixed one small regression-pack setup issue:
+  - corrected the mojibake Hungarian summary query in `apps/backend/fixtures/retrieval_regression_cases.json`
+- Added a tiny semantic verification corpus fixture:
+  - `apps/backend/fixtures/semantic_regression_documents.json`
+- Added a small helper runner:
+  - `apps/backend/scripts/semantic_regression_verify.py`
+- The helper now:
+  - verifies the active embedding runtime is Ollama-backed `bge-m3`
+  - removes any prior labeled `semantic-regression/...` verification documents
+  - ingests three small labeled verification documents through the normal backend ingest path
+  - reruns the existing retrieval regression pack
+  - deletes those labeled verification documents afterward by default
+- Applied one narrow embedding-runtime readiness fix:
+  - Ollama embedding availability checks now accept the common local tag form `bge-m3:latest` for a configured `bge-m3` model
+- Verified locally:
+  - Ollama is reachable
+  - `bge-m3:latest` is available locally
+  - fresh semantic ingest succeeded for the tiny verification corpus
+  - the semantic verification helper reran the existing regression pack on fresh semantic data
+  - the checked semantic run returned `4/4` passing cases
+  - top returned results were semantically meaningful for the tiny checked corpus:
+    - `ECLSBC-1028` -> `[semantic-regression] ECLSBC-1028 SuggestVendorPayments summary`
+    - `Mi az ECLSBC-1028 fejlesztés összefoglalója?` -> `[semantic-regression] ECLSBC-1028 SuggestVendorPayments summary`
+    - `SuggestVendorPayments` -> `[semantic-regression] ECLSBC-1028 SuggestVendorPayments summary`
+    - `AN_08MTaxReportTempTable` -> `[semantic-regression] ECLSBC-899 AN_08MTaxReportTempTable notes`
+  - the helper cleaned up the temporary verification documents after the default run, so they do not remain in the local dev dataset unless `--keep-data` is used
+
 - Replaced the placeholder hash embedding path with an Ollama-backed semantic embedding provider.
 - Added explicit embedding runtime config:
   - `EMBEDDING_PROVIDER`

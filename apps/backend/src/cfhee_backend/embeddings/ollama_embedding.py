@@ -45,7 +45,11 @@ class OllamaEmbeddingService(EmbeddingService):
             return False, str(exc)
 
         models = response.get("models", [])
-        if not any(model.get("name") == self.model for model in models if isinstance(model, dict)):
+        if not any(
+            self._model_matches(str(model.get("name", "")))
+            for model in models
+            if isinstance(model, dict)
+        ):
             return False, f"Ollama embedding model '{self.model}' was not found locally."
 
         return True, None
@@ -79,6 +83,18 @@ class OllamaEmbeddingService(EmbeddingService):
             )
 
         return normalized_embeddings
+
+    def _model_matches(self, available_name: str) -> bool:
+        requested = self.model.strip()
+        available = available_name.strip()
+        if not requested or not available:
+            return False
+
+        return (
+            available == requested
+            or available == f"{requested}:latest"
+            or (requested.endswith(":latest") and requested[: -len(":latest")] == available)
+        )
 
     def _request_json(self, method: str, path: str, payload: dict[str, object] | None = None) -> dict[str, object]:
         url = f"{self.base_url}{path}"

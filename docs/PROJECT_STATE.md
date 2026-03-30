@@ -101,6 +101,9 @@ Implemented in code:
 - Retrieval regression guardrail:
   - fixture: `apps/backend/fixtures/retrieval_regression_cases.json`
   - runner: `apps/backend/scripts/retrieval_regression_check.py`
+- Semantic regression verification helper:
+  - corpus fixture: `apps/backend/fixtures/semantic_regression_documents.json`
+  - runner: `apps/backend/scripts/semantic_regression_verify.py`
 - Documentation alignment for operational usage now defines:
   - hard scope as `workspace` / `domain` / `project` / `client` / `module`
   - `source_type`, `language`, and `source_ref` as descriptive metadata rather than retrieval partition keys
@@ -151,6 +154,7 @@ Verified by code inspection:
 - query logs now also persist small retrieval diagnostics such as candidate count, top-k limit hit, returned distance values, and returned document distribution
 - query logs now also preserve original vs. reranked chunk order plus whether reranking changed the final order
 - a tiny backend-side retrieval regression pack now exists for rerunning a few high-signal real-document queries after retrieval changes
+- a tiny semantic verification helper now exists for rebuilding a fresh `bge-m3`-indexed corpus, rerunning the existing regression pack, and cleaning up its labeled verification documents afterward
 - manual ingest scope suggestions and conservative normalization are implemented as a thin usability slice, not as a full scope-management system
 - current retrieval behavior remains explicit-scope-driven and does not silently widen when a query is underspecified relative to ingest scope
 - current docs now explicitly place scope determination outside CfHEE, with future partial-scope or cross-scope orchestration treated as an external concern
@@ -186,7 +190,15 @@ Verified in the local environment during the latest check:
 - the retrieval regression pack can now be run locally against the existing Postgres and Chroma data to re-check a few exact-identifier and explicit-term cases with plain pass/fail output
 - local run command for that guardrail is:
   - `$env:PYTHONPATH="$PWD\apps\backend\src;$PWD\apps\backend\.packages"; python apps/backend/scripts/retrieval_regression_check.py`
-- the retrieval regression pack was rerun with `EMBEDDING_PROVIDER=ollama` and `EMBEDDING_MODEL=bge-m3`; in the current local environment it returned `0/4` passing cases because the checked corpus was not reingested into the new semantic Chroma collection
+- the semantic verification helper now ingests a tiny labeled Business Central / AL corpus through the current Ollama-backed `bge-m3` path, reruns the existing regression pack, and deletes those labeled verification documents afterward by default
+- the semantic verification helper was exercised locally with:
+  - `$env:PYTHONPATH='src;.packages'; .venv\Scripts\python.exe scripts/semantic_regression_verify.py`
+- that local semantic run returned `4/4` passing regression cases on freshly ingested semantic data and printed the top returned results for each case
+- the verification corpus used only three labeled documents:
+  - `[semantic-regression] ECLSBC-1028 SuggestVendorPayments summary`
+  - `[semantic-regression] ECLSBC-899 AN_08MTaxReportTempTable notes`
+  - `[semantic-regression] ECLSBC-777 posting preview cleanup`
+- the helper cleaned up those temporary verification documents at the end of the checked local run, so they do not remain in the local dev dataset after the default path completes
 - stored scope values can now be queried through `GET /scope-values`, reused in the manual-ingest form, and matched conservatively against trim, casing, and spacing variants during document creation when exercised locally
 - `GET /api/v1/scopes/tree` now returns `200` over the source-based dev backend on `http://127.0.0.1:8000`, with a nested `workspaces -> domains -> projects -> clients -> modules` shape that matched small live ingest data written through `POST /api/v1/documents`
 - live source-based dev checks show repeated ingest into the same module does not duplicate that module node in the returned tree in the checked case

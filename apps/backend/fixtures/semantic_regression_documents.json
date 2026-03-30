@@ -1,0 +1,29 @@
+[
+  {
+    "source_type": "manual_note",
+    "title": "[semantic-regression] ECLSBC-1028 SuggestVendorPayments summary",
+    "language": "en",
+    "source_ref": "semantic-regression/eclsbc-1028",
+    "workspace": "Business Central",
+    "domain": "AL",
+    "raw_text": "ECLSBC-1028 implements a focused update around SuggestVendorPayments in the vendor payment proposal flow. Summary: the development clarifies how SuggestVendorPayments collects candidate invoices, filters blocked vendor ledger entries, and prepares cleaner proposal lines for review. Hungarian summary: Az ECLSBC-1028 fejlesztes osszefoglaloja szerint a SuggestVendorPayments fuggveny a javasolt szallitoi kifizetesek eloallitasat pontositja."
+  },
+  {
+    "source_type": "manual_note",
+    "title": "[semantic-regression] ECLSBC-899 AN_08MTaxReportTempTable notes",
+    "language": "en",
+    "source_ref": "semantic-regression/eclsbc-899",
+    "workspace": "Business Central",
+    "domain": "AL",
+    "raw_text": "ECLSBC-899 documents tax report staging around AN_08MTaxReportTempTable. The implementation uses AN_08MTaxReportTempTable as the temporary table for collecting intermediate tax report rows before final rendering and export."
+  },
+  {
+    "source_type": "manual_note",
+    "title": "[semantic-regression] ECLSBC-777 posting preview cleanup",
+    "language": "en",
+    "source_ref": "semantic-regression/eclsbc-777",
+    "workspace": "Business Central",
+    "domain": "AL",
+    "raw_text": "ECLSBC-777 is an unrelated posting preview cleanup note. It discusses preview page labels, posting warnings, and minor AL readability improvements. It does not describe SuggestVendorPayments or AN_08MTaxReportTempTable."
+  }
+]
