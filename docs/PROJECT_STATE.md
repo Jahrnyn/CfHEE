@@ -128,6 +128,7 @@ Verified by code inspection:
 - the v1 ingest slice now uses a nested public `scope` object and translates that request into the existing internal document-ingest contract
 - the shared public v1 `scope` model now applies conservative normalization and hierarchy validation before document and retrieval translation handlers run
 - the v1 document-create request accepts an optional `metadata` object and now persists it as document-level JSON metadata
+- persisted document `metadata` is caller-provided descriptive data; it is not part of hard scope, retrieval partitioning, retrieval ranking, or current metadata-query/filter behavior
 - the new v1 `GET /api/v1/scopes/tree` endpoint exposes the stored scope hierarchy as a structured tree for visibility only, without deriving or suggesting scope
 - the v1 retrieval slice now uses the same nested public `scope` object and translates that request into the existing internal retrieval contract
 - the v1 retrieval response adapts current retrieval results into a public contract and omits diagnostics unless they are explicitly requested
@@ -255,6 +256,7 @@ Verified in the local environment during the latest check:
 - bulk file import, connectors, and OCR
 - explicit external-integration-oriented API contracts beyond the current app-driven endpoint set
 - broader document lifecycle management beyond explicit single-document deletion
+- metadata-based retrieval, ranking, filtering, or first-class metadata query surfaces
 - versioned `/api/v1` answer, additional scope-helper, and query-log detail endpoints beyond the current health/capabilities/ingest/retrieval/document-inspection/query-log shell
 - backup validation tooling
 - restore safety tooling

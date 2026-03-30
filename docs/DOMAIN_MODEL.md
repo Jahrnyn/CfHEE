@@ -35,6 +35,7 @@ These fields describe the document but do not define the retrieval partition:
 - `source_type`
 - `language`
 - `source_ref`
+- document-level `metadata`
 
 They are stored and returned with document and retrieval results, but they are not a substitute for hard scope.
 
@@ -53,6 +54,7 @@ They are stored and returned with document and retrieval results, but they are n
 - `module`
 - `language`
 - `source_ref`
+- `metadata`
 
 ## Field meanings and operational usage
 
@@ -136,6 +138,24 @@ Usage rule:
 Use `source_ref` when it improves traceability.
 It is not part of hard scope and should not be overloaded as a project, client, or module identifier.
 
+### document-level `metadata`
+
+Meaning:
+Caller-provided descriptive document data preserved together with the stored document.
+
+Current implementation:
+
+- persisted as document-level JSON / JSONB
+- preserved as provided by the caller
+- returned on current document inspection surfaces
+
+Usage rule:
+
+- treat `metadata` as descriptive document-associated data, not as hard scope
+- do not use `metadata` as a substitute for `workspace`, `domain`, `project`, `client`, or `module`
+- do not assume `metadata` currently affects retrieval, ranking, filtering, or scope isolation
+- `metadata` is preserved for traceability and external-consumer use, not yet as a first-class retrieval/query surface
+
 ## Deterministic ingest policy
 
 Use the smallest stable scope that matches how the document should later be found.
@@ -148,6 +168,7 @@ Operational policy:
 - `client` should identify a real customer or tenant only when that distinction matters for retrieval.
 - `module` should identify the narrowest meaningful subsystem, not an individual document topic.
 - `source_type`, `language`, and `source_ref` should be recorded as descriptive metadata and must not be treated as equivalent to hard scope.
+- document-level `metadata` may be recorded as preserved descriptive JSON but must not be treated as equivalent to hard scope.
 - if a narrower hard-scope field is not truly known or not operationally useful, leave it empty instead of inventing a value
 - reuse existing scope values where possible to avoid fragmentation caused by near-duplicate labels
 - conservative normalization currently trims and collapses whitespace and matches existing scope rows case-insensitively; this reduces accidental duplicates but does not replace deliberate scope selection

@@ -59,3 +59,7 @@ Reason: strict scoped isolation is a deliberate safety property; wider-scope res
 ## ADR-015
 CfHEE does not perform query-scope inference. Scope determination is the responsibility of the caller or an external orchestration layer. CfHEE is a scoped execution engine, not a discovery engine.
 Reason: keeping scope planning outside the module preserves deterministic scoped execution, keeps the module boundary clean, and avoids turning CfHEE into a workflow or orchestration system.
+
+## ADR-016
+Document-level `metadata` is preserved as caller-provided descriptive JSON / JSONB, but it is not part of hard scope or current retrieval semantics.
+Reason: preserving metadata improves traceability and external-consumer usefulness without turning metadata into a retrieval partition, ranking signal, or first-class query/filter subsystem before that behavior is deliberately designed.

@@ -25,7 +25,7 @@ Defines the core domain hierarchy:
 - chunk
 
 Use this when working on persistence, retrieval, scoping, scope taxonomy, and ingest metadata policy.
-This is also the primary doc for the distinction between hard scope and descriptive metadata.
+This is also the primary doc for the distinction between hard scope, descriptive metadata, and current document-level metadata boundaries.
 
 ### `docs/API_V1.md`
 Current public API v1 contract and freeze boundary.

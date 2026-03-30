@@ -132,8 +132,16 @@ Descriptive metadata fields:
 - `source_type`
 - `language`
 - `source_ref`
+- document-level `metadata`
 
 The descriptive fields are stored and returned, but they are not part of the shared scope object and do not define the retrieval partition.
+
+Current metadata boundary:
+
+- document `metadata` is caller-provided descriptive data
+- it is persisted as document-level JSON metadata
+- it is not part of hard scope
+- it is not part of retrieval partitioning, ranking, or current retrieval/filter semantics
 
 ### 3. API-first, UI-second
 
@@ -304,6 +312,12 @@ The primary ingest endpoint.
 `metadata` is optional and loosely structured.
 In the current v1 slice, it is persisted as document-level JSON metadata exactly as provided by the caller.
 
+Current metadata boundary:
+
+- the API preserves `metadata`; it does not standardize metadata keys
+- `metadata` is not used as a retrieval, ranking, or filtering signal
+- there is no first-class metadata query/filter surface in the current v1 slice
+
 Current failure note:
 
 - if the configured embedding provider is unavailable, ingest currently fails clearly with HTTP `503`
@@ -320,6 +334,7 @@ In v1, at least `workspace` and `domain` are required.
 Current document-metadata note:
 
 - document list items now also return the persisted document-level `metadata` object when present
+- this does not add metadata-based list filtering in the current v1 slice
 
 #### GET /api/v1/documents/{document_id}
 
@@ -415,6 +430,7 @@ Current retrieval stance:
 - the system does not silently widen across scope boundaries
 - the current model is strongest for exact or intentionally chosen scopes
 - partial-scope and wider-scope handling remain future design areas
+- persisted document `metadata` is not currently used as a retrieval, ranking, or filtering signal
 
 Diagnostics note:
 

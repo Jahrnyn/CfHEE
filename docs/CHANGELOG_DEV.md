@@ -2,6 +2,19 @@
 
 ## 2026-03-30
 
+- Added a docs-only metadata-boundary clarification slice after metadata persistence.
+- Clarified across the core docs that current document `metadata` is:
+  - persisted document-level descriptive data
+  - caller-provided and preserved as JSON / JSONB
+  - not part of hard scope
+  - not part of retrieval partitioning
+  - not currently used for retrieval, ranking, or filtering
+  - not currently exposed as a first-class metadata query/filter surface
+- Kept the clarification intentionally narrow:
+  - no code changes
+  - no metadata-based retrieval behavior
+  - no metadata taxonomy or schema system
+
 - Added a narrow metadata-persistence slice for document ingest.
 - Added a document-level `metadata` JSONB column to Postgres-backed document storage.
 - Updated the ingest path so caller-provided `metadata` now persists with the stored document instead of being silently ignored.
