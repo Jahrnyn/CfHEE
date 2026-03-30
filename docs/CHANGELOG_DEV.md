@@ -32,6 +32,39 @@
   - no fuzzy matching
   - no frontend changes
 - Added current-state and API v1 doc updates for the new endpoint and its non-inference boundary.
+- Verified `GET /api/v1/scopes/tree` over the live source-based dev backend at `http://127.0.0.1:8000` using small real ingest data written through the existing document-ingest flow.
+- Checked live behavior confirmed:
+  - HTTP `200`
+  - documented nested tree shape
+  - two modules under the same parent returned once each
+  - a different project branch remained separate
+  - a different workspace/domain branch remained separate
+- No backend bugfix was needed for that live verification slice.
+- Added a new read-only frontend `Scope Explorer` page wired to `GET /api/v1/scopes/tree`.
+- Added a small dedicated frontend API service for the scope-tree payload and wired the page into the main workbench navigation.
+- Kept the frontend slice intentionally narrow:
+  - read-only only
+  - no scope editing
+  - no scope inference
+  - no orchestration behavior
+  - optional raw JSON visibility only
+- Verified locally:
+  - frontend production build succeeds
+  - the source-based dev frontend serves `/scopes`
+  - a live browser check showed the rendered nested tree for the current backend data
+- Polished the `Scope Explorer` page for larger trees:
+  - replaced eager always-expanded rendering with expandable/collapsible tree sections
+  - removed the inline raw JSON panel
+  - added a JSON download action for the already-fetched scope tree payload
+- Kept the polish slice intentionally narrow:
+  - no backend changes
+  - no API changes
+  - no scope editing
+  - no inference or orchestration behavior
+- Verified locally:
+  - frontend production build still succeeds
+  - the source-based dev frontend still serves `/scopes`
+  - a live browser check showed the cleaner collapsed default tree view and confirmed that no inline raw JSON panel remained visible
 - Aligned the active doc set so `docs/TASKS.md` is no longer treated as an active source of truth.
 - Updated `docs/NEXT_STEPS.md` so the next conceptual focus is reliable scope taxonomy and metadata policy rather than broader feature expansion.
 - Tightened `docs/API_V1.md` to reflect the current implemented v1 surface more conservatively.

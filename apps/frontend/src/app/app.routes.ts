@@ -5,6 +5,7 @@ import { DocumentsPageComponent } from './pages/documents-page.component';
 import { HomePageComponent } from './pages/home-page.component';
 import { InboxPageComponent } from './pages/inbox-page.component';
 import { OperationsPageComponent } from './pages/operations-page.component';
+import { ScopeExplorerPageComponent } from './pages/scope-explorer-page.component';
 
 export const routes: Routes = [
   {
@@ -21,6 +22,11 @@ export const routes: Routes = [
     path: 'documents',
     component: DocumentsPageComponent,
     title: 'Documents'
+  },
+  {
+    path: 'scopes',
+    component: ScopeExplorerPageComponent,
+    title: 'Scope Explorer'
   },
   {
     path: 'ask',
