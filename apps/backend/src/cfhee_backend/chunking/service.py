@@ -11,7 +11,10 @@ class ChunkDraft:
     char_count: int
 
 
-def chunk_document(raw_text: str, max_chars: int = 1200) -> list[ChunkDraft]:
+def chunk_document(raw_text: str, max_chars: int = 1200, source_type: str | None = None) -> list[ChunkDraft]:
+    if source_type is not None and source_type.casefold() == "code_snippet":
+        return _chunk_code_snippet(raw_text)
+
     blocks = [block.strip() for block in raw_text.split("\n\n")]
     paragraphs = [block for block in blocks if block]
 
@@ -102,3 +105,31 @@ def _pack_units(units: list[str], max_chars: int, separator: str) -> list[str]:
 
 def _split_hard(text: str, max_chars: int) -> list[str]:
     return [text[index : index + max_chars].strip() for index in range(0, len(text), max_chars) if text[index : index + max_chars].strip()]
+
+
+def _chunk_code_snippet(raw_text: str, lines_per_chunk: int = 40, overlap_lines: int = 10) -> list[ChunkDraft]:
+    lines = raw_text.splitlines()
+    if not lines:
+        return []
+
+    step = lines_per_chunk - overlap_lines
+    chunks: list[ChunkDraft] = []
+
+    for start in range(0, len(lines), step):
+        window = lines[start : start + lines_per_chunk]
+        if not window:
+            break
+
+        text = "\n".join(window)
+        chunks.append(
+            ChunkDraft(
+                chunk_index=len(chunks),
+                text=text,
+                char_count=len(text),
+            )
+        )
+
+        if start + lines_per_chunk >= len(lines):
+            break
+
+    return chunks

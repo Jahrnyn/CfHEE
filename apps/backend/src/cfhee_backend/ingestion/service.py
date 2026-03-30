@@ -384,7 +384,7 @@ def _insert_chunks(
 ) -> list[dict[str, Any]]:
     inserted_chunks: list[dict[str, Any]] = []
 
-    for chunk in chunk_document(raw_text):
+    for chunk in chunk_document(raw_text, source_type=payload.source_type):
         cursor.execute(
             """
             INSERT INTO chunks (

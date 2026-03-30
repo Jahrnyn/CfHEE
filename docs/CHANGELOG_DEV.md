@@ -2,6 +2,19 @@
 
 ## 2026-03-30
 
+- Added a narrow code-snippet chunking path.
+- Kept normal text on the existing paragraph-first path with oversized-paragraph fallback.
+- Added a separate deterministic path for `source_type == "code_snippet"`:
+  - fixed 40-line windows
+  - 10-line overlap
+  - preserved input line order
+  - no parser, function detection, or language-specific heuristics
+- Verified locally:
+  - backend source compiles
+  - a checked `code_snippet` input longer than 40 lines produces multiple chunks
+  - adjacent checked code chunks overlap by 10 lines
+  - normal non-code input still uses the normal text path
+
 - Added a narrow chunking robustness slice for normal text only.
 - Kept paragraph-first chunking as the main model:
   - blank-line paragraph boundaries still define the normal chunking path
