@@ -302,7 +302,7 @@ The primary ingest endpoint.
 ```
 
 `metadata` is optional and loosely structured.
-In the current v1 slice, it is accepted by the public request model but not persisted by the backend translation layer.
+In the current v1 slice, it is persisted as document-level JSON metadata exactly as provided by the caller.
 
 Current failure note:
 
@@ -316,6 +316,16 @@ Document listing is scoped by default.
 **Query params**: `workspace`, `domain`, `project`, `client`, `module`, `source_type`, `title_contains`, `limit`, `offset`
 
 In v1, at least `workspace` and `domain` are required.
+
+Current document-metadata note:
+
+- document list items now also return the persisted document-level `metadata` object when present
+
+#### GET /api/v1/documents/{document_id}
+
+Current document-metadata note:
+
+- document detail now also returns the persisted document-level `metadata` object when present
 
 #### DELETE /api/v1/documents/{document_id}
 

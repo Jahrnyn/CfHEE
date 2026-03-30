@@ -40,6 +40,7 @@ def create_document_v1(payload: DocumentCreateRequestV1) -> DocumentCreateRespon
         raw_text=payload.raw_text,
         language=payload.language,
         source_ref=payload.source_ref,
+        metadata=payload.metadata,
     )
     try:
         document = create_document(internal_payload)
@@ -101,6 +102,7 @@ def list_documents_v1(
                 source_type=document.source_type,
                 language=document.language,
                 source_ref=document.source_ref,
+                metadata=document.metadata,
                 scope=ScopeRef(
                     workspace=document.workspace,
                     domain=document.domain,
@@ -132,6 +134,7 @@ def get_document_v1(document_id: int) -> DocumentDetailResponseV1:
         source_type=document.source_type,
         language=document.language,
         source_ref=document.source_ref,
+        metadata=document.metadata,
         scope=ScopeRef(
             workspace=document.workspace,
             domain=document.domain,

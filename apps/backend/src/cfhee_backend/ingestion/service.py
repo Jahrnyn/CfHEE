@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from psycopg.types.json import Jsonb
+
 from cfhee_backend.chunking.service import chunk_document
 from cfhee_backend.embeddings import get_embedding_service
 from cfhee_backend.ingestion.models import ChunkSummary, DocumentCreate, DocumentDeleteResult, DocumentSummary
@@ -120,6 +122,7 @@ def create_document(payload: DocumentCreate) -> DocumentSummary:
                   source_type,
                   language,
                   source_ref,
+                  metadata,
                   raw_text
                 )
                 VALUES (
@@ -132,6 +135,7 @@ def create_document(payload: DocumentCreate) -> DocumentSummary:
                   %(source_type)s,
                   %(language)s,
                   %(source_ref)s,
+                  %(metadata)s,
                   %(raw_text)s
                 )
                 RETURNING id
@@ -146,6 +150,7 @@ def create_document(payload: DocumentCreate) -> DocumentSummary:
                     "source_type": payload.source_type,
                     "language": payload.language,
                     "source_ref": payload.source_ref,
+                    "metadata": Jsonb(payload.metadata) if payload.metadata is not None else None,
                     "raw_text": payload.raw_text,
                 },
             )
@@ -469,6 +474,7 @@ def _document_select() -> str:
           d.source_type,
           d.language,
           d.source_ref,
+          d.metadata,
           LEFT(d.raw_text, 280) AS raw_text_preview,
           d.created_at
         FROM documents d

@@ -47,6 +47,7 @@ CREATE TABLE IF NOT EXISTS documents (
   source_type TEXT NOT NULL,
   language TEXT,
   source_ref TEXT,
+  metadata JSONB,
   raw_text TEXT NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -136,3 +137,6 @@ ADD COLUMN IF NOT EXISTS reranked_chunk_ids JSONB;
 
 ALTER TABLE query_logs
 ADD COLUMN IF NOT EXISTS reranking_applied BOOLEAN;
+
+ALTER TABLE documents
+ADD COLUMN IF NOT EXISTS metadata JSONB;

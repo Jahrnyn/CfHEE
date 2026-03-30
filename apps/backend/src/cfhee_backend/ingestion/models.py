@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict, field_validator, model_validator
 
@@ -18,6 +19,7 @@ class DocumentCreate(BaseModel):
     raw_text: str
     language: str | None = None
     source_ref: str | None = None
+    metadata: dict[str, Any] | None = None
 
     @field_validator(
         "workspace",
@@ -60,6 +62,7 @@ class DocumentSummary(BaseModel):
     source_type: str
     language: str | None
     source_ref: str | None
+    metadata: dict[str, Any] | None
     raw_text_preview: str
     created_at: datetime
 

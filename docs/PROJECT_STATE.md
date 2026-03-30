@@ -78,6 +78,7 @@ Implemented in code:
   - normalizes scope metadata conservatively for trim, collapsed whitespace, and case-insensitive scope matching
   - upserts scope rows
   - stores raw document text in Postgres
+  - stores optional caller-provided document metadata in Postgres
   - chunks text by paragraph blocks
   - computes Ollama-backed semantic embeddings with `bge-m3` by default
   - indexes chunks into Chroma
@@ -126,12 +127,12 @@ Verified by code inspection:
 - the first versioned external API ingest, retrieval, context-build, document-inspection, and query-log inspection shell exists under `/api/v1` with `GET /api/v1/health`, `GET /api/v1/capabilities`, `GET /api/v1/scopes/values`, `GET /api/v1/scopes/tree`, `POST /api/v1/documents`, `POST /api/v1/retrieval/query`, `POST /api/v1/context/build`, `GET /api/v1/documents`, `GET /api/v1/documents/{document_id}`, `GET /api/v1/documents/{document_id}/chunks`, and `GET /api/v1/query-logs`
 - the v1 ingest slice now uses a nested public `scope` object and translates that request into the existing internal document-ingest contract
 - the shared public v1 `scope` model now applies conservative normalization and hierarchy validation before document and retrieval translation handlers run
-- the v1 document-create request accepts an optional `metadata` object, which is currently ignored by the backend translation layer
+- the v1 document-create request accepts an optional `metadata` object and now persists it as document-level JSON metadata
 - the new v1 `GET /api/v1/scopes/tree` endpoint exposes the stored scope hierarchy as a structured tree for visibility only, without deriving or suggesting scope
 - the v1 retrieval slice now uses the same nested public `scope` object and translates that request into the existing internal retrieval contract
 - the v1 retrieval response adapts current retrieval results into a public contract and omits diagnostics unless they are explicitly requested
 - the v1 context-build slice now exposes provider-free retrieval-derived context preparation with deterministic chunk selection, formatted context text, selected chunks, dropped chunk IDs, and optional retrieval diagnostics
-- the v1 document inspection slice now exposes a scoped list envelope plus factual detail and chunk-envelope responses on top of the existing stored document and chunk data
+- the v1 document inspection slice now exposes a scoped list envelope plus factual detail and chunk-envelope responses on top of the existing stored document and chunk data, including persisted document metadata on list/detail responses
 - the v1 query-log slice now exposes a conservative developer-oriented list envelope for inspectable stored traces, with limit, type, and scope filters mapped onto persisted query-log fields and `workspace` + `domain` required together when scope filtering is used
 - retrieval and v1 retrieval both require explicit scope input and do not infer missing scope from query text
 - retrieval responses now include explicit scope, chunk and document identifiers, distance, and similarity score
@@ -213,6 +214,9 @@ Verified in the local environment during the latest check:
 - live source-based dev checks now show `DELETE /api/v1/documents/{document_id}` returning `200` for an inserted test document, removing that document from the unversioned `GET /documents` list, returning no chunks from `GET /documents/{document_id}/chunks`, and removing the corresponding chunk ID from the active local Chroma collection in the checked cases
 - live source-based dev checks now show `DELETE /api/v1/documents/{document_id}` returning `404` with a clear not-found message for a missing document ID
 - a live headless browser DOM check now shows the `Documents` page rendering the new `Delete` action for stored documents in the source-based dev frontend
+- live portable-runtime checks now show document ingest metadata persisting through `POST /api/v1/documents`, returning on `GET /api/v1/documents` and `GET /api/v1/documents/{document_id}`, and storing as Postgres `JSONB` on the checked document row
+- live portable-runtime checks also show ingest without metadata still working, returning `metadata: null` on the checked v1 detail response, and leaving no `metadata-check/*` verification documents behind after cleanup
+- the unversioned `POST /documents` and `GET /documents` routes still work after the metadata field was added to the shared document summary model in the checked portable-runtime smoke case
 - `POST /api/v1/retrieval/query` omits the `diagnostics` field unless `include_diagnostics=true`, while still returning diagnostics when explicitly requested in local in-process checks
 - invalid nested v1 scope shapes and invalid `top_k` values now fail with request validation in local in-process checks instead of reaching retrieval execution
 - `docker compose config` resolves successfully for the new multi-container runtime definition

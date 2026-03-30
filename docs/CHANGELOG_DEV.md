@@ -2,6 +2,26 @@
 
 ## 2026-03-30
 
+- Added a narrow metadata-persistence slice for document ingest.
+- Added a document-level `metadata` JSONB column to Postgres-backed document storage.
+- Updated the ingest path so caller-provided `metadata` now persists with the stored document instead of being silently ignored.
+- Updated the existing document inspection responses so persisted metadata is now returned on:
+  - `GET /api/v1/documents`
+  - `GET /api/v1/documents/{document_id}`
+- Kept the slice intentionally narrow:
+  - no metadata-based retrieval
+  - no metadata filters
+  - no metadata schema system
+  - no chunk-level metadata
+- Updated API docs and project-state docs so they now describe `metadata` as persisted document-level JSON rather than accepted-but-ignored input.
+- Verified locally:
+  - backend source compiles
+  - `POST /api/v1/documents` persists checked metadata and `GET /api/v1/documents` plus `GET /api/v1/documents/{document_id}` return it
+  - the checked Postgres document row stores that metadata as `JSONB`
+  - ingest without metadata still works and returns `metadata: null` on the checked v1 detail response
+  - the unversioned `POST /documents` and `GET /documents` routes still work after the shared document summary model gained the metadata field
+  - cleanup removed the temporary `metadata-check/*` documents after verification
+
 - Added a narrow portable-runtime Ollama integration slice for semantic embeddings.
 - Updated `docker-compose.yml` so the portable runtime now includes:
   - `ollama`

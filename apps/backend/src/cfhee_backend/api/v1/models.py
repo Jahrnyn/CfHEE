@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
@@ -90,7 +90,7 @@ class DocumentCreateRequestV1(BaseModel):
     language: str | None = None
     source_ref: str | None = None
     scope: ScopeRef
-    metadata: dict[str, object] | None = None
+    metadata: dict[str, Any] | None = None
 
 
 class DocumentCreateResponseV1(BaseModel):
@@ -113,6 +113,7 @@ class DocumentListItemV1(BaseModel):
     source_type: str
     language: str | None
     source_ref: str | None
+    metadata: dict[str, Any] | None
     scope: ScopeRef
     raw_text_preview: str
     created_at: str
@@ -135,6 +136,7 @@ class DocumentDetailResponseV1(BaseModel):
     source_type: str
     language: str | None
     source_ref: str | None
+    metadata: dict[str, Any] | None
     scope: ScopeRef
     raw_text_preview: str
     chunk_count: int
