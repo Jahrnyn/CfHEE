@@ -107,6 +107,9 @@ Explicitly out of scope:
 ### 1. Scope is mandatory
 
 Retrieval is already scoped by default. The API must enforce this strictly.
+CfHEE does not perform query-scope inference.
+Scope determination is the responsibility of the caller or an external orchestration layer.
+CfHEE is a scoped execution engine, not a discovery engine.
 
 ### 2. Hard scope is distinct from descriptive metadata
 
@@ -318,6 +321,8 @@ This is the main external retrieval endpoint.
 Current retrieval stance:
 
 - retrieval is explicit-scope-driven
+- CfHEE executes retrieval within caller-provided scope
+- missing query scope is not inferred from the user question inside CfHEE
 - the system does not silently widen across scope boundaries
 - the current model is strongest for exact or intentionally chosen scopes
 - partial-scope and wider-scope handling remain future design areas
@@ -337,6 +342,7 @@ POST /api/v1/context/build
 
 This endpoint prepares provider-free, retrieval-derived context for external consumers.
 It does not generate an answer and does not add prompt instructions.
+It also does not determine or infer scope on behalf of the caller.
 
 Behavior in the current slice:
 

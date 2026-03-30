@@ -19,6 +19,10 @@
   - retrieval does not silently widen across scope boundaries
   - the current model is strongest for exact or intentionally chosen scopes
   - partial-scope and wider-scope query handling remain future design areas
+- Clarified the scope-resolution boundary across the core docs:
+  - CfHEE does not perform query-scope inference
+  - scope determination belongs to the caller or an external orchestration layer
+  - CfHEE is a scoped execution engine, not a discovery engine
 - Aligned the active doc set so `docs/TASKS.md` is no longer treated as an active source of truth.
 - Updated `docs/NEXT_STEPS.md` so the next conceptual focus is reliable scope taxonomy and metadata policy rather than broader feature expansion.
 - Tightened `docs/API_V1.md` to reflect the current implemented v1 surface more conservatively.

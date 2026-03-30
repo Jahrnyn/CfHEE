@@ -103,6 +103,7 @@ Implemented in code:
   - `source_type`, `language`, and `source_ref` as descriptive metadata rather than retrieval partition keys
   - deterministic ingest guidance for choosing scope values
   - the current explicit-scope retrieval stance and its limits for partial-scope questions
+  - the boundary that CfHEE does not perform query-scope inference and remains a scoped execution engine rather than a discovery engine
 
 ## Verified status
 
@@ -120,6 +121,7 @@ Verified by code inspection:
 - the v1 context-build slice now exposes provider-free retrieval-derived context preparation with deterministic chunk selection, formatted context text, selected chunks, dropped chunk IDs, and optional retrieval diagnostics
 - the v1 document inspection slice now exposes a scoped list envelope plus factual detail and chunk-envelope responses on top of the existing stored document and chunk data
 - the v1 query-log slice now exposes a conservative developer-oriented list envelope for inspectable stored traces, with limit, type, and scope filters mapped onto persisted query-log fields and `workspace` + `domain` required together when scope filtering is used
+- retrieval and v1 retrieval both require explicit scope input and do not infer missing scope from query text
 - retrieval responses now include explicit scope, chunk and document identifiers, distance, and similarity score
 - retrieval now applies a small explicit lexical rescoring step after vector candidate retrieval while preserving original vector signals
 - source-grounded answers are implemented on top of retrieval using provider selection with Ollama plus deterministic fallback
@@ -140,6 +142,7 @@ Verified by code inspection:
 - a tiny backend-side retrieval regression pack now exists for rerunning a few high-signal real-document queries after retrieval changes
 - manual ingest scope suggestions and conservative normalization are implemented as a thin usability slice, not as a full scope-management system
 - current retrieval behavior remains explicit-scope-driven and does not silently widen when a query is underspecified relative to ingest scope
+- current docs now explicitly place scope determination outside CfHEE, with future partial-scope or cross-scope orchestration treated as an external concern
 
 Verified in the local environment during the latest check:
 
@@ -245,6 +248,7 @@ What currently exists should be read as:
 Future growth should prefer:
 
 - deterministic scope taxonomy and metadata policy usage during ingest and retrieval operations
+- external scope planning or orchestration on top of the current scoped execution core, rather than moving that responsibility into CfHEE
 - frontend improvements around the frozen API
 - portable runtime operations, backup, and restore on top of the current runtime slice
 - first external consumer integrations

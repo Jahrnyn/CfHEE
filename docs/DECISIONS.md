@@ -55,3 +55,7 @@ Reason: deterministic ingest reduces fragmentation and makes strict scoped retri
 ## ADR-014
 Current retrieval remains explicit-scope-driven and must not silently widen for partial-scope or uncertain-scope queries.
 Reason: strict scoped isolation is a deliberate safety property; wider-scope resolution is a future design area that must be made explicit rather than implicit.
+
+## ADR-015
+CfHEE does not perform query-scope inference. Scope determination is the responsibility of the caller or an external orchestration layer. CfHEE is a scoped execution engine, not a discovery engine.
+Reason: keeping scope planning outside the module preserves deterministic scoped execution, keeps the module boundary clean, and avoids turning CfHEE into a workflow or orchestration system.

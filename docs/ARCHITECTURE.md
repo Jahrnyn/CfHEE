@@ -64,6 +64,12 @@ The system should grow incrementally through verifiable slices, not broad unvali
 
 Workflow engines, automation pipelines, agents, and domain-specific business logic should be built as separate consumers of the module, not folded into the core system.
 
+### 10. Scope determination belongs outside scoped execution
+
+CfHEE does not perform query-scope inference.
+Scope determination is the responsibility of the caller or an external orchestration layer.
+CfHEE is a scoped execution engine, not a discovery engine.
+
 ---
 
 ## Target System Shape
@@ -206,7 +212,7 @@ This layer protects isolation and keeps the knowledge base partitioned correctly
 
 - Scope Registry
 - Scope Policy Engine
-- Query Scope Resolver
+- later: helper surfaces that support external scope planning without moving orchestration into CfHEE
 
 ### Core rules
 
@@ -214,6 +220,8 @@ This layer protects isolation and keeps the knowledge base partitioned correctly
 - cross-workspace access is forbidden unless explicitly enabled
 - global search is opt-in only
 - user-provided top-level scope is never silently overridden
+- CfHEE does not perform query-scope inference
+- scope determination belongs to the caller or to an external orchestration layer
 - partial-scope and wider-scope query handling are future resolver concerns, not implicit current behavior
 
 ---
@@ -279,6 +287,8 @@ Query → Scope resolve → Embed → Scoped retrieval → Rank/select → Build
 - empty retrieval must be explicit
 - retrieved results must remain inspectable
 - retrieved chunks must preserve source traceability
+- CfHEE executes retrieval within an explicit scope
+- missing query scope is not inferred from the user question inside CfHEE
 - the current design is strongest for exact or intentionally chosen scopes
 - future scope resolution or explicit widening must remain visible and explicit
 
@@ -427,6 +437,8 @@ CfHEE does not include:
 - external connector ecosystems as a core identity
 
 Those should be implemented outside the module and communicate with it through stable APIs.
+
+This includes any higher-level handling of partial-scope, uncertain-scope, or cross-scope user questions.
 
 ---
 

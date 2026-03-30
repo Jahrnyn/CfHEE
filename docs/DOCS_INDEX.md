@@ -8,6 +8,7 @@ This file explains the role of each documentation file in the repository.
 High-level architecture overview of the system.
 Use this to understand the module boundary, layers, integration direction, and long-term structure.
 This document describes the intended architecture and does not serve as the authoritative source for current implementation status.
+Use this especially when a task touches the boundary between strict scoped execution inside CfHEE and any future external orchestration or scope planning.
 
 ### `docs/DECISIONS.md`
 Architecture decisions that should not be re-debated casually.
@@ -29,6 +30,7 @@ This is also the primary doc for the distinction between hard scope and descript
 ### `docs/API_V1.md`
 Current public API v1 contract and freeze boundary.
 Use this when working on versioned external endpoints, request/response shapes, and what is or is not allowed during API v1 stabilization.
+This is also the contract reference for the fact that v1 retrieval requires explicit scope and does not promise query-scope inference.
 
 ## Live project state docs
 

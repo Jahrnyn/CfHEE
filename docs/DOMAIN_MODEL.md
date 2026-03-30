@@ -159,6 +159,8 @@ Current verified behavior:
 - retrieval is explicit-scope-driven
 - retrieval is scoped by default
 - the system does not silently widen across workspace, domain, project, client, or module boundaries
+- CfHEE executes retrieval within an explicit scope
+- CfHEE does not perform query-scope inference
 - the strongest current behavior is for exact scopes or intentionally chosen scopes at query time
 - user-provided top-level scope remains authoritative
 
@@ -166,6 +168,17 @@ Current limitation:
 
 Partial-scope, uncertain-scope, and wider-scope query handling is not a solved capability in the current slice.
 If ingest scope and query scope do not align, relevant knowledge may be missed rather than silently found through wider search.
+
+## Scope-resolution boundary
+
+Scope determination is the responsibility of the caller or an external orchestration layer.
+CfHEE is a scoped execution engine, not a discovery engine.
+
+Operational implication:
+
+- if a higher-level app wants to handle partial-scope questions, it must decide how to choose or propose scope outside CfHEE
+- if a higher-level app wants to handle cross-scope questions, that orchestration must happen outside CfHEE
+- future helper surfaces may support external scope planning, but that would not make CfHEE itself a discovery engine
 
 ## Future direction
 

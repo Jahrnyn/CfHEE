@@ -50,8 +50,13 @@ Why this is next:
 
 1. Keep the documented scope taxonomy and ingest metadata policy explicit and consistent across docs and future implementation work.
 2. Exercise current scoped retrieval against realistic exact-scope queries and use the regression guardrail when retrieval behavior changes.
-3. Avoid redesigning retrieval during the freeze; document partial-scope and wider-scope handling as future work instead of implying it already exists.
+3. Keep the scope-resolution boundary explicit: CfHEE executes retrieval within caller-provided scope and does not infer missing scope from user questions.
 4. Build or validate consumers against the frozen API only after the scope semantics they depend on are deterministic.
+
+External-consumer note:
+
+- if a higher-level app wants to answer partial-scope or cross-scope questions, the planning and orchestration for that must happen outside CfHEE
+- future helper surfaces may support external scope planning, but CfHEE itself should remain a scoped execution engine rather than a discovery engine
 
 Runtime portability note:
 
