@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 
 from cfhee_backend.api.v1.models import (
     RetrievalDiagnosticsV1,
@@ -7,6 +7,7 @@ from cfhee_backend.api.v1.models import (
     RetrievalResultV1,
     ScopeRef,
 )
+from cfhee_backend.embeddings.base import EmbeddingProviderError
 from cfhee_backend.retrieval.models import RetrievalQueryRequest
 from cfhee_backend.retrieval.service import _safe_insert_query_log, execute_retrieval
 
@@ -29,7 +30,10 @@ def query_retrieval_v1(payload: RetrievalQueryRequestV1) -> RetrievalQueryRespon
         module=payload.scope.module,
         top_k=payload.top_k,
     )
-    execution = execute_retrieval(internal_payload)
+    try:
+        execution = execute_retrieval(internal_payload)
+    except EmbeddingProviderError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
     _safe_insert_query_log(payload=internal_payload, execution=execution)
 
     results = [

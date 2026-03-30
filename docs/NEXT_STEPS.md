@@ -50,8 +50,9 @@ Why this is next:
 
 1. Keep the documented scope taxonomy and ingest metadata policy explicit and consistent across docs and future implementation work.
 2. Exercise current scoped retrieval against realistic exact-scope queries and use the regression guardrail when retrieval behavior changes.
-3. Keep the scope-resolution boundary explicit: CfHEE executes retrieval within caller-provided scope and does not infer missing scope from user questions.
-4. Build or validate consumers against the frozen API only after the scope semantics they depend on are deterministic.
+3. When checking retrieval after the semantic embedding switch, make sure the checked corpus is actually indexed in the active semantic Chroma collection rather than an older hash-vector collection.
+4. Keep the scope-resolution boundary explicit: CfHEE executes retrieval within caller-provided scope and does not infer missing scope from user questions.
+5. Build or validate consumers against the frozen API only after the scope semantics they depend on are deterministic.
 
 External-consumer note:
 

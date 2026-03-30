@@ -14,6 +14,12 @@ class HashEmbeddingService(EmbeddingService):
     def __init__(self, dimensions: int = 64) -> None:
         self.dimensions = dimensions
 
+    def describe(self) -> dict[str, str]:
+        return {
+            "provider": "hash",
+            "dimensions": str(self.dimensions),
+        }
+
     def embed_texts(self, texts: list[str]) -> list[list[float]]:
         return [self._embed_text(text) for text in texts]
 

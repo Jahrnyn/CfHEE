@@ -31,6 +31,9 @@ services:
       DATABASE_URL: postgresql://cfhee:cfhee@postgres:5432/cfhee
       CHROMA_PERSIST_DIRECTORY: /app/data/chroma
       CORS_ALLOW_ORIGINS: ${CFHEE_CORS_ALLOW_ORIGINS:-http://localhost:4210,http://127.0.0.1:4210}
+      EMBEDDING_PROVIDER: ${CFHEE_EMBEDDING_PROVIDER:-ollama}
+      EMBEDDING_OLLAMA_BASE_URL: ${CFHEE_EMBEDDING_OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+      EMBEDDING_MODEL: ${CFHEE_EMBEDDING_MODEL:-bge-m3}
       ANSWER_PROVIDER: ${CFHEE_ANSWER_PROVIDER:-deterministic}
     ports:
       - "8010:8000"

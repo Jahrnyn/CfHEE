@@ -43,6 +43,10 @@ function Get-OllamaBaseUrl {
 $OllamaBaseUrl = Get-OllamaBaseUrl
 $OllamaTagsUrl = "$OllamaBaseUrl/api/tags"
 $OllamaModel = Get-OllamaModelName
+$EmbeddingProvider = if ($env:EMBEDDING_PROVIDER) { $env:EMBEDDING_PROVIDER } else { "ollama" }
+$EmbeddingOllamaBaseUrl = if ($env:EMBEDDING_OLLAMA_BASE_URL) { $env:EMBEDDING_OLLAMA_BASE_URL.TrimEnd("/") } else { $OllamaBaseUrl }
+$EmbeddingOllamaTagsUrl = "$EmbeddingOllamaBaseUrl/api/tags"
+$EmbeddingModel = if ($env:EMBEDDING_MODEL) { $env:EMBEDDING_MODEL } else { "bge-m3" }
 
 function Write-Step {
     param([string]$Message)
@@ -304,7 +308,12 @@ else {
 
 Write-Step "Checking Ollama availability"
 if (-not (Test-CommandAvailable "ollama")) {
-    Write-Host "Ollama CLI was not found. The backend will fall back to the deterministic answer provider." -ForegroundColor Yellow
+    if ($EmbeddingProvider -eq "ollama") {
+        Write-Host "Ollama CLI was not found. EMBEDDING_PROVIDER=ollama is the current default, so ingest and retrieval will fail until Ollama is installed and running or EMBEDDING_PROVIDER is set to hash explicitly." -ForegroundColor Yellow
+    }
+    else {
+        Write-Host "Ollama CLI was not found. The backend can still run because EMBEDDING_PROVIDER is set to hash explicitly and answers can fall back to the deterministic provider." -ForegroundColor Yellow
+    }
 }
 else {
     $ollamaTags = Invoke-OllamaJson -Url $OllamaTagsUrl
@@ -331,6 +340,22 @@ else {
         }
         else {
             Write-Host "Configured Ollama model '$OllamaModel' is missing locally. Run 'ollama pull $OllamaModel' to enable Ollama-backed answers. Deterministic fallback remains available." -ForegroundColor Yellow
+        }
+
+        if ($EmbeddingProvider -eq "ollama") {
+            $embeddingTags = if ($EmbeddingOllamaBaseUrl -eq $OllamaBaseUrl) { $ollamaTags } else { Invoke-OllamaJson -Url $EmbeddingOllamaTagsUrl }
+            if ($null -eq $embeddingTags) {
+                Write-Host "Embedding runtime is configured for Ollama at $EmbeddingOllamaBaseUrl but is not reachable. Ingest and retrieval will fail until it is reachable." -ForegroundColor Yellow
+            }
+            else {
+                $embeddingModelNames = @($embeddingTags.models | ForEach-Object { $_.name })
+                if ($embeddingModelNames -contains $EmbeddingModel) {
+                    Write-Host "Configured embedding model '$EmbeddingModel' is available locally." -ForegroundColor Green
+                }
+                else {
+                    Write-Host "Configured embedding model '$EmbeddingModel' is missing locally. Run 'ollama pull $EmbeddingModel' or set EMBEDDING_PROVIDER=hash explicitly if you need the placeholder fallback." -ForegroundColor Yellow
+                }
+            }
         }
     }
 }

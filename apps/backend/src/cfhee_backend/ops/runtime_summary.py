@@ -8,6 +8,7 @@ from urllib.parse import urlparse
 
 from pydantic import BaseModel
 
+from cfhee_backend.embeddings import get_embedding_runtime_summary
 from cfhee_backend.persistence.database import get_database_url
 from cfhee_backend.vector_store.chroma_adapter import get_chroma_persist_directory
 
@@ -33,11 +34,20 @@ class PostgresTargetSummary(BaseModel):
     database: str | None
 
 
+class EmbeddingSummary(BaseModel):
+    provider_selection: str
+    active_provider: str
+    model: str | None = None
+    base_url: str | None = None
+    dimensions: str | None = None
+
+
 class ConfigSummary(BaseModel):
     frontend_api_base_url: str | None
     backend_cors_origins: list[str]
     postgres_target: PostgresTargetSummary
     chroma_persist_directory: str
+    embedding: EmbeddingSummary
     runtime_lifecycle_control: Literal["external"]
 
 
@@ -77,6 +87,7 @@ def build_ops_summary() -> OpsSummaryResponse:
     chroma_persist_directory = get_chroma_persist_directory()
     database_url = get_database_url()
     runtime_mode = _detect_runtime_mode(database_url=database_url, chroma_persist_directory=chroma_persist_directory)
+    embedding_runtime_summary = get_embedding_runtime_summary()
 
     return OpsSummaryResponse(
         status="ok",
@@ -96,6 +107,13 @@ def build_ops_summary() -> OpsSummaryResponse:
             backend_cors_origins=_get_allowed_origins_summary(),
             postgres_target=_summarize_database_target(database_url),
             chroma_persist_directory=chroma_persist_directory,
+            embedding=EmbeddingSummary(
+                provider_selection=embedding_runtime_summary["provider_selection"],
+                active_provider=embedding_runtime_summary["provider"],
+                model=embedding_runtime_summary.get("model"),
+                base_url=embedding_runtime_summary.get("base_url"),
+                dimensions=embedding_runtime_summary.get("dimensions"),
+            ),
             runtime_lifecycle_control="external",
         ),
         storage_visibility=StorageVisibilitySummary(

@@ -2,6 +2,25 @@
 
 ## 2026-03-30
 
+- Replaced the placeholder hash embedding path with an Ollama-backed semantic embedding provider.
+- Added explicit embedding runtime config:
+  - `EMBEDDING_PROVIDER`
+  - `EMBEDDING_OLLAMA_BASE_URL`
+  - `EMBEDDING_MODEL`
+- Set the normal backend embedding path to Ollama with `bge-m3`.
+- Kept hash embeddings only as an explicit fallback mode through `EMBEDDING_PROVIDER=hash`.
+- Added a small Ollama embedding client using `POST /api/embed`.
+- Updated ingest and retrieval routes to fail clearly with HTTP `503` when the configured embedding provider is unavailable.
+- Updated the active Chroma collection naming so it now derives from the embedding provider/model, preventing old 64-d hash-vector collections from colliding with new semantic collections.
+- Extended `scripts/dev-up.ps1`, `scripts/dev-check.ps1`, Compose config, and ops summary output to surface the embedding runtime and model explicitly.
+- Verified locally:
+  - backend source compiles
+  - local Ollama has `bge-m3`
+  - direct local embedding calls return real `1024`-dimensional vectors from `bge-m3`
+  - a temporary semantic ingest + scoped retrieval + delete smoke test succeeds against local Postgres and Chroma
+  - retrieval returns HTTP `503` with a clear message when the configured Ollama embedding runtime is unreachable
+  - the existing retrieval regression runner was rerun under the new semantic provider and currently fails `0/4` in this environment because the checked corpus was not reingested into the new semantic Chroma collection
+
 - Applied a minimal corrective patch to `README.md` without redesigning it.
 - Restored three small missing README cues:
   - CfHEE explicitly acts as a `Knowledge Infrastructure Module`

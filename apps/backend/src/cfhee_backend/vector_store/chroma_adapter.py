@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import os
+import re
 from pathlib import Path
 
 import chromadb
 
+from cfhee_backend.embeddings import get_embedding_runtime_summary
 from cfhee_backend.vector_store.base import VectorChunkRecord, VectorQuery, VectorQueryMatch
 
 
@@ -18,11 +20,28 @@ def get_chroma_persist_directory() -> str:
     )
 
 
+def get_chroma_collection_name() -> str:
+    configured_name = os.getenv("CHROMA_COLLECTION_NAME")
+    if configured_name and configured_name.strip():
+        return configured_name.strip()
+
+    embedding_summary = get_embedding_runtime_summary()
+    provider = _slugify_collection_part(embedding_summary["provider"])
+    model = _slugify_collection_part(embedding_summary.get("model"))
+    dimensions = _slugify_collection_part(embedding_summary.get("dimensions"))
+
+    suffix_parts = [part for part in (provider, model, dimensions) if part]
+    if not suffix_parts:
+        return DEFAULT_COLLECTION_NAME
+
+    return f"{DEFAULT_COLLECTION_NAME}__{'__'.join(suffix_parts)}"
+
+
 class ChromaVectorStore:
     def __init__(self, persist_directory: str | None = None) -> None:
         path = persist_directory or get_chroma_persist_directory()
         self._client = chromadb.PersistentClient(path=path)
-        self._collection = self._client.get_or_create_collection(name=DEFAULT_COLLECTION_NAME)
+        self._collection = self._client.get_or_create_collection(name=get_chroma_collection_name())
 
     def index_chunks(self, chunks: list[VectorChunkRecord]) -> None:
         if not chunks:
@@ -104,3 +123,11 @@ class ChromaVectorStore:
             return clauses[0]
 
         return {"$and": clauses}
+
+
+def _slugify_collection_part(value: str | None) -> str:
+    if value is None:
+        return ""
+
+    normalized = re.sub(r"[^a-zA-Z0-9]+", "_", value.strip().lower()).strip("_")
+    return normalized[:48]

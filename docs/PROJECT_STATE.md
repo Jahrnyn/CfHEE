@@ -79,7 +79,7 @@ Implemented in code:
   - upserts scope rows
   - stores raw document text in Postgres
   - chunks text by paragraph blocks
-  - computes local hash-based embeddings
+  - computes Ollama-backed semantic embeddings with `bge-m3` by default
   - indexes chunks into Chroma
 - Windows-first local bootstrap scripts:
   - `scripts/dev-up.ps1`
@@ -137,7 +137,8 @@ Verified by code inspection:
 - Ollama grounded-answer prompting is now built through an explicit prompt builder with conservative instructions and deterministic context formatting
 - vector-store abstraction exists and is currently backed by Chroma
 - document deletion now uses the existing vector-store abstraction to remove chunk vectors from the active backend
-- embedding abstraction exists and is currently backed by a local hash embedding service
+- embedding abstraction now supports explicit `ollama` and `hash` modes, with Ollama-backed `bge-m3` as the default normal path
+- the active Chroma collection name now derives from the configured embedding provider/model so new semantic vectors do not collide with older hash-vector collections
 - the repo now contains a first portable runtime container skeleton for frontend, backend, and Postgres
 - the portable runtime now wires backend Postgres access through the Compose service name and backend Chroma persistence through an explicit mounted runtime-data path
 - the frontend portable runtime now injects its backend base URL through container-time generation of `runtime-config.js`
@@ -164,6 +165,10 @@ Verified in the local environment during the latest check:
 - `dev-check.ps1` runs successfully when invoked with `powershell.exe -ExecutionPolicy Bypass -File ...`
 - frontend production build succeeds with `npm.cmd run build`
 - backend source compiles with `python -m compileall`
+- local Ollama now has `bge-m3` available in this environment
+- direct local Ollama embedding calls now return real `1024`-dimensional `bge-m3` vectors
+- a local in-process smoke test now confirms semantic ingest, scoped retrieval, and cleanup against Postgres + Chroma using `EMBEDDING_PROVIDER=ollama`
+- retrieval now returns HTTP `503` with a clear message when semantic embeddings are configured but the Ollama embedding runtime is unreachable
 - the frontend runtime config helper keeps `http://127.0.0.1:8000` as the default API base URL when no override is provided
 - the backend CORS helper keeps localhost frontend origins for both `4200` and `4210` as defaults and accepts a comma-separated `CORS_ALLOW_ORIGINS` override in code-level checks
 - retrieval endpoint accepts `top_k`, returns explicit empty results, logs query, scope, and result count, and rejects missing scope with a clear validation error when exercised against local Postgres and Chroma
@@ -181,6 +186,7 @@ Verified in the local environment during the latest check:
 - the retrieval regression pack can now be run locally against the existing Postgres and Chroma data to re-check a few exact-identifier and explicit-term cases with plain pass/fail output
 - local run command for that guardrail is:
   - `$env:PYTHONPATH="$PWD\apps\backend\src;$PWD\apps\backend\.packages"; python apps/backend/scripts/retrieval_regression_check.py`
+- the retrieval regression pack was rerun with `EMBEDDING_PROVIDER=ollama` and `EMBEDDING_MODEL=bge-m3`; in the current local environment it returned `0/4` passing cases because the checked corpus was not reingested into the new semantic Chroma collection
 - stored scope values can now be queried through `GET /scope-values`, reused in the manual-ingest form, and matched conservatively against trim, casing, and spacing variants during document creation when exercised locally
 - `GET /api/v1/scopes/tree` now returns `200` over the source-based dev backend on `http://127.0.0.1:8000`, with a nested `workspaces -> domains -> projects -> clients -> modules` shape that matched small live ingest data written through `POST /api/v1/documents`
 - live source-based dev checks show repeated ingest into the same module does not duplicate that module node in the returned tree in the checked case
@@ -244,7 +250,9 @@ Verified in the local environment during the latest check:
 - backend is required
 - frontend developer workbench is required
 - Chroma local vector state is required
-- Ollama is optional and only affects the built-in grounded-answer convenience flow
+- current normal semantic ingest and retrieval require Ollama reachability for embeddings
+- `hash` embeddings remain available only as an explicit fallback mode through `EMBEDDING_PROVIDER=hash`
+- Ollama for grounded answers remains optional because the answer layer still supports deterministic fallback
 
 ## Current portable runtime model
 
@@ -253,7 +261,7 @@ Verified in the local environment during the latest check:
 - Postgres container is implemented
 - Postgres persistent data is bound to `runtime-data/postgres`
 - Chroma persistent data is bound to `runtime-data/chroma`
-- Ollama is not included in the minimum portable runtime
+- Ollama is not included in Compose, but the backend now defaults its embedding runtime to an external Ollama endpoint for normal semantic operation
 - source-based local development remains valid and separate
 - portable runtime frontend/backend host ports are now intentionally separated from source-based dev
 - runtime start/stop/log/update guidance now exists and is documented

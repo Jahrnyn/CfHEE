@@ -1,6 +1,6 @@
 # Runtime Operations
 
-Last reviewed: 2026-03-27
+Last reviewed: 2026-03-30
 
 ## Purpose
 
@@ -31,6 +31,8 @@ Today that means:
 - backend container
 - Postgres container
 - persistent runtime data under `runtime-data/`
+
+For the current normal semantic embedding path, the backend also needs reachability to an Ollama runtime with `bge-m3` available.
 
 ## Runtime layer vs data layer
 
@@ -112,6 +114,13 @@ What this does:
 - starts backend
 - starts frontend
 
+Current semantic-embedding note:
+
+- the backend now defaults to `EMBEDDING_PROVIDER=ollama`
+- in portable runtime mode, Compose defaults `EMBEDDING_OLLAMA_BASE_URL` to `http://host.docker.internal:11434`
+- make sure the host Ollama runtime is reachable there and has `bge-m3` pulled if you want normal semantic ingest and retrieval
+- `EMBEDDING_PROVIDER=hash` remains available only as an explicit placeholder fallback mode
+
 Default host ports:
 
 - frontend: `4210`
@@ -170,6 +179,7 @@ It provides conservative app-visible information such as:
 
 - runtime mode summary
 - answer-provider mode
+- embedding provider and model summary
 - backend CORS origins summary
 - Postgres target summary without secrets
 - Chroma persistence path
@@ -261,6 +271,22 @@ In container mode, the backend reaches Postgres through the Compose service name
 
 - `postgresql://cfhee:cfhee@postgres:5432/cfhee`
 
+### Backend to Ollama embedding path
+
+In the current portable runtime, Compose defaults the embedding runtime URL to:
+
+- `http://host.docker.internal:11434`
+
+Relevant backend env vars:
+
+- `EMBEDDING_PROVIDER`
+- `EMBEDDING_OLLAMA_BASE_URL`
+- `EMBEDDING_MODEL`
+
+Current default model:
+
+- `bge-m3`
+
 ### Backend CORS
 
 The backend still uses `CORS_ALLOW_ORIGINS`.
@@ -289,6 +315,7 @@ The current data-path difference that most often matters is Chroma persistence:
 Postgres instance data for the portable runtime remains under `runtime-data/postgres`.
 
 If retrieval or context-building results look different, first confirm which frontend/backend port pair you are using before assuming data has been deleted.
+Also confirm whether the active environment is using the same embedding configuration and Chroma collection lineage.
 
 ## Update the runtime
 

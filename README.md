@@ -36,6 +36,7 @@ External systems are expected to retrieve scoped context from CfHEE and use it d
 - Scope: `workspace -> domain -> project -> client -> module`
 - Ingest: document plus explicit scope is stored, chunked, and indexed
 - Retrieval: queries execute inside caller-provided scope
+- Embeddings: normal operation uses Ollama-backed `bge-m3` semantic vectors
 - Answer: grounded only in retrieved context
 - Context: deterministic selection of retrieved chunks
 
@@ -132,11 +133,20 @@ For the current public contract, use [docs/API_V1.md](docs/API_V1.md).
 - No automatic reasoning over scopes
 - No silent cross-scope retrieval widening
 
+## Embedding Runtime
+
+- Default semantic path: `EMBEDDING_PROVIDER=ollama`
+- Default embedding model: `EMBEDDING_MODEL=bge-m3`
+- Embedding Ollama URL: `EMBEDDING_OLLAMA_BASE_URL` or fallback `OLLAMA_BASE_URL`
+- Explicit placeholder fallback only: `EMBEDDING_PROVIDER=hash`
+- If semantic embeddings are configured but Ollama or `bge-m3` is unavailable, ingest and retrieval fail clearly
+
 ## Running CfHEE
 
 - DEV: source-based workbench on `http://127.0.0.1:4200` with backend on `http://127.0.0.1:8000`
 - Use the current `scripts/dev-up.ps1` workflow for source-based local development
 - RUNTIME: portable containerized instance on `http://127.0.0.1:4210` with backend on `http://127.0.0.1:8010`
+- For normal semantic ingest and retrieval, make sure Ollama is reachable and `bge-m3` is pulled
 - For full runtime details, use [docs/RUNTIME_OPERATIONS.md](docs/RUNTIME_OPERATIONS.md)
 
 ## Full Documentation

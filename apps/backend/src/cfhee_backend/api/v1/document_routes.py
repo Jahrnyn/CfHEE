@@ -12,6 +12,7 @@ from cfhee_backend.api.v1.models import (
     PagingInfoV1,
     ScopeRef,
 )
+from cfhee_backend.embeddings.base import EmbeddingProviderError
 from cfhee_backend.ingestion.models import DocumentCreate
 from cfhee_backend.ingestion.service import (
     create_document,
@@ -40,7 +41,10 @@ def create_document_v1(payload: DocumentCreateRequestV1) -> DocumentCreateRespon
         language=payload.language,
         source_ref=payload.source_ref,
     )
-    document = create_document(internal_payload)
+    try:
+        document = create_document(internal_payload)
+    except EmbeddingProviderError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
     chunk_count = len(list_document_chunks(document.id))
 
     return DocumentCreateResponseV1(

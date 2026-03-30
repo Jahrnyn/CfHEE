@@ -1,6 +1,6 @@
 # Portable Runtime Design
 
-Last reviewed: 2026-03-27
+Last reviewed: 2026-03-30
 
 ## Purpose
 
@@ -24,11 +24,13 @@ The design intent still matters here, but this document is no longer planning-on
 - `scripts/dev-check.ps1` still verifies the source-based local workflow
 - backend defaults to `DATABASE_URL=postgresql://cfhee:cfhee@localhost:5432/cfhee`
 - backend defaults Chroma persistence to `apps/backend/data/chroma`, overridable through `CHROMA_PERSIST_DIRECTORY`
+- backend now defaults `EMBEDDING_PROVIDER` to `ollama` and `EMBEDDING_MODEL` to `bge-m3`
 - frontend defaults to `http://127.0.0.1:8000` and can be redirected through `apps/frontend/public/runtime-config.js`
 - the portable runtime now publishes different host-facing ports than source-based dev:
   - frontend on `4210`
   - backend on `8010`
-- Ollama is optional in the current repo and only affects grounded-answer convenience behavior
+- the backend now uses Ollama-backed semantic embeddings for normal ingest and retrieval
+- the current portable runtime keeps Ollama outside Compose and points the backend at an external embedding runtime URL instead
 
 ## First implemented portable runtime slice
 
@@ -88,28 +90,24 @@ The minimum portable runtime should include:
 - Postgres: required
 - Chroma persistent state: required
 
-The minimum portable runtime should not require Ollama.
+Current repo-state note:
 
-## Why Ollama is optional
+- the current normal semantic embedding path also needs Ollama reachability for the backend embedding runtime
+- Ollama is still not packaged as a Compose service in this slice
+
+## Current Ollama dependency shape
 
 **Observed current repo state**
 
-- Ollama is used only for the built-in grounded-answer convenience flow
-- storage does not depend on Ollama
-- retrieval does not depend on Ollama
-- retrieval-derived context building does not depend on Ollama
-- the system already has deterministic fallback behavior for answer generation
+- Ollama-backed `bge-m3` embeddings are now the default normal path for ingest and retrieval
+- `EMBEDDING_PROVIDER=hash` remains available only as an explicit fallback mode
+- grounded-answer generation still has deterministic fallback behavior and therefore does not require Ollama
+- the current portable runtime points embedding traffic at an external Ollama base URL rather than packaging Ollama in Compose
 
 **Design intent**
 
-Ollama should remain outside the minimum portable runtime because it is not required for the core module boundary:
-
-- ingestion
-- storage
-- scoped retrieval
-- grounded data access and context building
-
-If Ollama is added later for a given runtime, it should be treated as an optional companion dependency, not as a baseline requirement for a portable CfHEE instance.
+Ollama should remain outside Compose in this slice even though the current normal semantic path depends on it.
+If a portable instance needs semantic ingest and retrieval, the backend must be able to reach an external Ollama runtime.
 
 ## Component model
 
@@ -301,13 +299,13 @@ Given the current repo state, the practical staged path is:
 - the repo now also contains a first Compose-based portable runtime slice for frontend + backend + Postgres
 - Chroma already uses local persistent filesystem state
 - conservative stopped-runtime backup and restore helpers now exist for the current runtime-data layout
-- Ollama is optional
+- the current normal semantic path depends on externally reachable Ollama embeddings
 
 **Design intent**
 
 - future portable CfHEE should be a movable instance made of runtime layer plus persistent data layer
 - minimum runtime should require frontend, backend, Postgres, and Chroma persistence
-- Ollama should stay outside the minimum runtime
+- Ollama should stay outside Compose even when a given instance needs it for semantic embeddings
 - portable runtime packaging should complement, not replace, the current dev workflow
 
 **Not implemented yet**

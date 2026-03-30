@@ -15,9 +15,13 @@ $PostgresContainerName = "cfhee-postgres"
 $BackendUrl = "http://127.0.0.1:$BackendPort/health"
 $FrontendUrl = "http://127.0.0.1:$FrontendPort"
 $OllamaBaseUrl = if ($env:OLLAMA_BASE_URL) { $env:OLLAMA_BASE_URL.TrimEnd("/") } else { "http://127.0.0.1:11434" }
+$EmbeddingOllamaBaseUrl = if ($env:EMBEDDING_OLLAMA_BASE_URL) { $env:EMBEDDING_OLLAMA_BASE_URL.TrimEnd("/") } else { $OllamaBaseUrl }
 $OllamaTagsUrl = "$OllamaBaseUrl/api/tags"
+$EmbeddingOllamaTagsUrl = "$EmbeddingOllamaBaseUrl/api/tags"
 $OllamaModel = if ($env:OLLAMA_MODEL) { $env:OLLAMA_MODEL } else { "qwen2.5:7b" }
+$EmbeddingModel = if ($env:EMBEDDING_MODEL) { $env:EMBEDDING_MODEL } else { "bge-m3" }
 $AnswerProviderSelection = if ($env:ANSWER_PROVIDER) { $env:ANSWER_PROVIDER } else { "auto" }
+$EmbeddingProviderSelection = if ($env:EMBEDDING_PROVIDER) { $env:EMBEDDING_PROVIDER } else { "ollama" }
 $hasFailures = $false
 
 function Write-Step {
@@ -59,8 +63,10 @@ function Invoke-EndpointCheck {
 }
 
 function Invoke-OllamaTags {
+    param([string]$Url)
+
     try {
-        return Invoke-RestMethod -Uri $OllamaTagsUrl -Method Get -TimeoutSec 5
+        return Invoke-RestMethod -Uri $Url -Method Get -TimeoutSec 5
     }
     catch {
         return $null
@@ -109,7 +115,7 @@ else {
 }
 
 Write-Step "Checking Ollama reachability"
-$ollamaTags = Invoke-OllamaTags
+$ollamaTags = Invoke-OllamaTags -Url $OllamaTagsUrl
 if ($null -eq $ollamaTags) {
     Write-Warn "Ollama is not reachable at $OllamaBaseUrl. The backend should fall back to the deterministic provider."
 }
@@ -122,6 +128,31 @@ else {
     }
     else {
         Write-Warn "Configured Ollama model '$OllamaModel' is not available locally. Run 'ollama pull $OllamaModel' if you want Ollama-backed answers."
+    }
+}
+
+Write-Step "Checking embedding-provider readiness"
+$embeddingOllamaTags = $null
+if ($EmbeddingProviderSelection -eq "hash") {
+    Write-Ok "EMBEDDING_PROVIDER is set to hash. Retrieval will use the explicit placeholder fallback mode."
+}
+elseif ($EmbeddingProviderSelection -ne "ollama") {
+    Write-Fail "Unknown EMBEDDING_PROVIDER '$EmbeddingProviderSelection'. Supported values are 'ollama' and 'hash'."
+}
+else {
+    $embeddingOllamaTags = if ($EmbeddingOllamaBaseUrl -eq $OllamaBaseUrl) { $ollamaTags } else { Invoke-OllamaTags -Url $EmbeddingOllamaTagsUrl }
+    if ($null -eq $embeddingOllamaTags) {
+        Write-Fail "EMBEDDING_PROVIDER is ollama but Ollama is not reachable at $EmbeddingOllamaBaseUrl. Ingest and retrieval will fail until Ollama is reachable."
+    }
+    else {
+        Write-Ok "Embedding Ollama endpoint responded from $EmbeddingOllamaBaseUrl."
+        $embeddingModelNames = @($embeddingOllamaTags.models | ForEach-Object { $_.name })
+        if ($embeddingModelNames -contains $EmbeddingModel) {
+            Write-Ok "Configured embedding model '$EmbeddingModel' is available locally."
+        }
+        else {
+            Write-Fail "Configured embedding model '$EmbeddingModel' is not available locally. Run 'ollama pull $EmbeddingModel' or switch EMBEDDING_PROVIDER to hash explicitly."
+        }
     }
 }
 

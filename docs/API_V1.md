@@ -66,6 +66,11 @@ The key statement:
 
 > **CfHEE API v1 = scoped ingest + scoped retrieval + context building + inspectability**
 
+Current implementation note:
+
+- normal embedding execution behind ingest and retrieval uses `EMBEDDING_PROVIDER=ollama` with `EMBEDDING_MODEL=bge-m3`
+- `EMBEDDING_PROVIDER=hash` remains available only as an explicit fallback mode
+
 ---
 
 ## What is in v1
@@ -299,6 +304,10 @@ The primary ingest endpoint.
 `metadata` is optional and loosely structured.
 In the current v1 slice, it is accepted by the public request model but not persisted by the backend translation layer.
 
+Current failure note:
+
+- if the configured embedding provider is unavailable, ingest currently fails clearly with HTTP `503`
+
 #### GET /api/v1/documents
 
 Filterable list endpoint.
@@ -401,6 +410,7 @@ Diagnostics note:
 
 - retrieval diagnostics are omitted unless `include_diagnostics=true`
 - diagnostics already exist in stored query logs for inspection
+- if the configured embedding provider is unavailable, retrieval currently fails clearly with HTTP `503`
 
 ---
 
