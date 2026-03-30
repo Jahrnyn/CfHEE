@@ -2,6 +2,12 @@
 
 ## 2026-03-30
 
+- Polished the frontend `Documents` delete action styling only.
+- Kept behavior unchanged while making the `Delete` button read more clearly as a destructive action through a stronger danger-style background, border, and hover/focus treatment scoped to the Documents page.
+- Verified locally:
+  - frontend production build still succeeds
+  - the delete action still renders from the existing Documents page template
+
 - Added a narrow document lifecycle delete slice.
 - Added `DELETE /api/v1/documents/{document_id}`.
 - Implemented backend document deletion as an explicit service-layer operation that:

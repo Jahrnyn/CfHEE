@@ -252,7 +252,22 @@ import { ChunkSummary, DocumentSummary, DocumentsApiService } from '../documents
       }
 
       .danger-button {
-        background: #b91c1c;
+        color: var(--error-text) !important;
+        background: linear-gradient(180deg, #8f1d2c 0%, #6f1622 100%) !important;
+        border: 1px solid rgba(255, 180, 191, 0.3) !important;
+        box-shadow: 0 10px 22px rgba(111, 22, 34, 0.28);
+      }
+
+      .danger-button:not(:disabled):hover,
+      .danger-button:not(:disabled):focus-visible {
+        background: linear-gradient(180deg, #a32133 0%, #7b1926 100%) !important;
+        border-color: rgba(255, 180, 191, 0.42) !important;
+        box-shadow: 0 12px 26px rgba(111, 22, 34, 0.34) !important;
+      }
+
+      .danger-button:not(:disabled):focus-visible {
+        outline: 2px solid rgba(255, 180, 191, 0.36);
+        outline-offset: 2px;
       }
     `
   ]
