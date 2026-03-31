@@ -2,6 +2,23 @@
 
 ## 2026-03-31
 
+- Fixed a backend manual-ingest regression in the shared ingestion service.
+- Root cause:
+  - `_insert_chunks(...)` still referenced `payload.source_type` after a refactor even though `payload` was not in scope there
+  - this broke the shared document-create path used by both `POST /documents` and `POST /api/v1/documents` with a `NameError`
+- Applied the smallest service-layer fix:
+  - `create_document(...)` now passes `source_type` explicitly into `_insert_chunks(...)`
+  - `_insert_chunks(...)` now forwards that explicit `source_type` into `chunk_document(...)`
+- Kept the slice intentionally narrow:
+  - no API contract changes
+  - no route-specific workaround
+  - no ingest redesign
+- Verified locally:
+  - backend source compiles after the fix
+  - backend app creation succeeds locally once Compose-backed Postgres is up
+  - temporary source-based ingest using `EMBEDDING_PROVIDER=hash` now succeeds through both `POST /documents` and `POST /api/v1/documents`, and the temporary documents clean up afterward
+  - a direct local check of `_insert_chunks(...)` with `source_type='code_snippet'` now succeeds and produces multiple chunks without the previous `NameError`
+
 - Completed a narrow V1 documentation alignment and completeness audit across `README.md` and the active `/docs` set.
 - Kept the slice documentation-only:
   - no code changes

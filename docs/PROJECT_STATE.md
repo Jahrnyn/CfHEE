@@ -79,6 +79,7 @@ Implemented in code:
   - upserts scope rows
   - stores raw document text in Postgres without collapsing internal whitespace or line breaks
   - stores optional caller-provided document metadata in Postgres
+  - passes `source_type` explicitly through chunk persistence so manual ingest does not depend on an out-of-scope payload during chunk creation
   - chunks normal text by blank-line paragraph blocks with greedy paragraph packing up to the current `1200`-character target
   - applies sentence-based fallback for oversized normal-text paragraphs and a final hard character fallback when sentence boundaries still do not produce safe chunks
   - chunks `code_snippet` inputs by fixed 40-line windows with 10-line overlap
@@ -239,6 +240,7 @@ Verified in the local environment during the latest check:
   - oversized paragraphs with poor or missing sentence boundaries fall back to deterministic hard character splits
   - `code_snippet` input longer than 40 lines now produces multiple overlapping chunks using windows `1-40`, `31-70`, `61-100`, and so on
   - adjacent checked `code_snippet` chunks overlap by 10 lines
+- a local source-based backend check with `EMBEDDING_PROVIDER=hash` and Compose-backed Postgres now shows temporary manual ingest succeeding again through both `POST /documents` and `POST /api/v1/documents` after the shared chunk-insert `source_type` regression fix, with cleanup succeeding afterward
 - `POST /api/v1/retrieval/query` omits the `diagnostics` field unless `include_diagnostics=true`, while still returning diagnostics when explicitly requested in local in-process checks
 - invalid nested v1 scope shapes and invalid `top_k` values now fail with request validation in local in-process checks instead of reaching retrieval execution
 - `docker compose config` resolves successfully for the new multi-container runtime definition

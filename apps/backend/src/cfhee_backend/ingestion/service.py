@@ -165,6 +165,7 @@ def create_document(payload: DocumentCreate) -> DocumentSummary:
                 client_id=client_id,
                 module_id=module_id,
                 raw_text=payload.raw_text,
+                source_type=payload.source_type,
             )
 
             _index_chunks(chunk_rows=chunk_rows, payload=payload, canonical_scope=canonical_scope)
@@ -381,10 +382,11 @@ def _insert_chunks(
     client_id: int | None,
     module_id: int | None,
     raw_text: str,
+    source_type: str,
 ) -> list[dict[str, Any]]:
     inserted_chunks: list[dict[str, Any]] = []
 
-    for chunk in chunk_document(raw_text, source_type=payload.source_type):
+    for chunk in chunk_document(raw_text, source_type=source_type):
         cursor.execute(
             """
             INSERT INTO chunks (
