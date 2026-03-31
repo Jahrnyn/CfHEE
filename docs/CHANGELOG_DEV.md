@@ -1,5 +1,28 @@
 # Dev Changelog
 
+## 2026-03-31
+
+- Completed a narrow V1 documentation alignment and completeness audit across `README.md` and the active `/docs` set.
+- Kept the slice documentation-only:
+  - no code changes
+  - no API changes
+  - no runtime-topology changes
+- Tightened `README.md` so the project entry surface now more clearly explains:
+  - what CfHEE is and is not
+  - how an external system should use the module
+  - the current scope responsibility boundary
+  - the current frozen `/api/v1` surface vs. the built-in unversioned grounded-answer convenience path
+  - current chunking and metadata behavior at a high level
+- Tightened `docs/API_V1.md` so the ingest contract now also records the current high-level execution facts behind the stable contract:
+  - default Ollama-backed `bge-m3` embedding path
+  - paragraph-first normal-text chunking
+  - oversized-paragraph sentence fallback with final hard split
+  - `code_snippet` 40-line windows with 10-line overlap
+- Corrected one stale portable-runtime statement in `docs/PORTABLE_RUNTIME.md`:
+  - removed the outdated claim that portable-runtime Ollama integration was still not implemented
+  - clarified the current role of `runtime-data/ollama` as persisted runtime-local model cache rather than current helper-driven backup payload
+- Updated `docs/PROJECT_STATE.md` so the verified current-state summary now records the doc-set alignment itself.
+
 ## 2026-03-30
 
 - Added a narrow code-snippet chunking path.

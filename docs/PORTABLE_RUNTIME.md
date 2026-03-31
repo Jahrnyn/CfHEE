@@ -1,6 +1,6 @@
 # Portable Runtime Design
 
-Last reviewed: 2026-03-30
+Last reviewed: 2026-03-31
 
 ## Purpose
 
@@ -154,6 +154,11 @@ Based on the current repo state, the minimum persistent data to carry with a por
 - Postgres persistent data
 - Chroma persistent data
 
+Current repo-state note:
+
+- `runtime-data/ollama` is also part of the current portable-runtime data layout as a persisted runtime-local model cache
+- it is not part of the current helper-driven backup payload, but preserving it avoids unnecessary `bge-m3` re-pulls after restart or move
+
 This document does not add a separate raw-artifact storage directory to the minimum portable runtime because that is not a distinct implemented persistent runtime requirement in the repo today.
 
 ### Conceptual layout
@@ -292,7 +297,6 @@ Given the current repo state, the practical staged path is:
 - partial restore or merge restore
 - backup validation tooling
 - restore safety automation beyond explicit confirmation
-- Ollama portable integration
 - production hardening
 - non-localhost operational defaults
 

@@ -1,6 +1,6 @@
 # Project State
 
-Last reviewed: 2026-03-30
+Last reviewed: 2026-03-31
 
 ## Current project identity
 
@@ -113,6 +113,9 @@ Implemented in code:
   - deterministic ingest guidance for choosing scope values
   - the current explicit-scope retrieval stance and its limits for partial-scope questions
   - the boundary that CfHEE does not perform query-scope inference and remains a scoped execution engine rather than a discovery engine
+- the documentation entry surface is now aligned to the current V1 state:
+  - `README.md` now reflects the current module boundary, external-consumer usage flow, metadata persistence boundary, and the current frozen `/api/v1` surface
+  - the core docs now consistently describe the current embedding, chunking, scope, metadata, and portable-runtime behavior without the earlier stale portable-runtime Ollama note
 - API v1 now also includes a scope-tree visibility helper that exposes the stored scope hierarchy without adding scope inference, scope resolution, or planning logic
 - the frontend now also includes a read-only scope-tree consumer that makes existing scope combinations visible inside the workbench without adding scope editing or scope-planning behavior
 - the `Scope Explorer` frontend slice now keeps the tree collapsed by default for cleaner large-tree inspection and uses JSON download instead of inline raw JSON rendering

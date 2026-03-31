@@ -322,6 +322,13 @@ Current failure note:
 
 - if the configured embedding provider is unavailable, ingest currently fails clearly with HTTP `503`
 
+Current ingest-execution note:
+
+- normal ingest uses Ollama-backed `bge-m3` embeddings by default
+- normal non-`code_snippet` text is chunked paragraph-first from blank-line paragraph boundaries
+- oversized normal-text paragraphs fall back to sentence splitting first and hard character splitting only when needed
+- `code_snippet` uses fixed 40-line windows with 10-line overlap
+
 #### GET /api/v1/documents
 
 Filterable list endpoint.

@@ -36,7 +36,9 @@ External systems are expected to retrieve scoped context from CfHEE and use it d
 - Scope: `workspace -> domain -> project -> client -> module`
 - Ingest: document plus explicit scope is stored, chunked, and indexed
 - Retrieval: queries execute inside caller-provided scope
+- Chunking: normal text uses paragraph-first chunking; `code_snippet` uses fixed 40-line windows with 10-line overlap
 - Embeddings: normal operation uses Ollama-backed `bge-m3` semantic vectors
+- Metadata: caller-provided document `metadata` is persisted as descriptive JSON, not as hard scope
 - Answer: grounded only in retrieved context
 - Context: deterministic selection of retrieved chunks
 
@@ -85,7 +87,8 @@ At minimum, `workspace` and `domain` must always be provided.
 
 1. Ingest a document with explicit scope.
 2. Query with explicit scope.
-3. Use scoped retrieval results directly, or ask for a grounded answer built from those results.
+3. Build deterministic scoped context through `POST /api/v1/context/build` when an external system needs provider-free context assembly.
+4. Use scoped retrieval results directly, or call the built-in unversioned grounded-answer convenience route if you need local answer validation.
 
 ## Example
 
@@ -142,6 +145,11 @@ Main versioned endpoints:
 - `GET /api/v1/query-logs`
 
 For the current public contract, use [docs/API_V1.md](docs/API_V1.md).
+
+External-consumer note:
+
+- the stable public v1 surface is centered on ingest, retrieval, context building, inspection, and traces
+- the built-in grounded-answer capability exists, but it is a convenience consumer and not part of the current frozen `/api/v1` route surface
 
 ## Current Capabilities
 
